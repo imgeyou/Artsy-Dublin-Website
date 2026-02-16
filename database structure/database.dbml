@@ -72,12 +72,15 @@ Table sourcePlatform{
 }
 
 /////////////////////////////post data///////////////////////////////////
+//update: both comments and posts are considered "post" and stored in this table now
 Table posts {
   postId integer [pk, increment]
-  userId integer [ref: > users.userId, not null]
-  eventId integer [ref: > events.eventId, null]
-  
-  postType varchar [ref: > postType.typeId, not null] 
+  postType varchar [ref: > postType.typeId, not null] // post | comment under the post
+
+  userId integer [ref: > users.userId, not null] //who publish the post
+  eventId integer [ref: > events.eventId, null] //if it's a comment rather than a post (event review), this field can be null
+  postParentId integer [ref: > posts.postId, null] //if it's a post, this field can be null; if it's a comment, keep checking its parent until it finds the primary post.
+
   content text [not null]
   //imageUrls json =>removed. images now store in a seperate table connected with postId
 
@@ -88,6 +91,25 @@ Table postImages{
   postImageId integer [pk, increment]
   imageUrl varchar(255)
   postId integer [ref: > posts.postId]
+}
+
+/////////////////////////posts interaction////////////////////////////////////
+Table postLikes{
+  likeId integer [pk, increment]//** added bcs Joris suggest having a primary key for each table to prevent duplication. neither of userId or postId can be pk bcs they are "many-to-many" relationship
+  userId integer [ref: > users.userId]
+  postId integer [ref: > posts.postId]
+  postLikedAt timestamp [default: `now()`]
+}
+
+Table postComments{
+  commentId integer [pk, increment]
+  userId integer [ref: > users.userId, not null]
+  postId integer [ref: > posts.postId, not null]
+  //parentCommentId integer [ref: > postComments.commentId, null] 
+  
+  content text [not null]
+  createdAt timestamp  [default: `now()`]
+  updatedAt timestamp
 }
 
 /////////////////////////////chat data///////////////////////////////////
@@ -101,6 +123,7 @@ Table chats {
 }
 
 Table chatParticipants {
+  chatParticipantId integer [pk, increment]//** added bcs Joris suggest having a primary key for each table to prevent duplication
   chatId integer [ref: > chats.chatId]
   userId integer [ref: > users.userId]
   joinedAt timestamp [default: `now()`]
@@ -118,17 +141,8 @@ Table chatMessages {
   sentAt timestamp [default: `now()`]
   content text [not null]
   
-  isDeleted boolean [default: false] //"deletede for everyone". access is saved for the sender. 
+  isDeleted boolean [default: false] //access is reserved for the sender. 
   deletedAt timestamp //clean all the deleted notifications in the database after a period of time
-  
-}
-Table messageVisibility {
-  messageId integer [ref: > chatMessages.messageId]
-  userId integer [ref: > users.userId] //receivers of the message in the group chat
-
-  isRead boolean [default: false]
-  isHidden boolean [default: false] //“Delete for me". other user an still see the message
-  hiddenAt timestamp
 }
 
 ////////////////////////system notification///////////////////////////////
@@ -149,12 +163,14 @@ Table notifications {
 ////////////////////////////events interaction//////////////////////////////
 //after saving the event, the event is displayed in the users' "planned" section. Other users can see this list and request to be his/her event buddy through that list
 Table eventSaves {
+  eventSaveId integer [pk, increment]
   userId integer [ref: > users.userId]
   eventId integer [ref: > events.eventId]
   eventSavedAt timestamp [default: `now()`]
 }
 
 Table eventBuddy{
+  requestId integer [pk, increment]
   userId integer [ref: > users.userId, not null]
   buddyId integer [ref: > users.userId, not null]
   eventId integer [ref: > events.eventId, not null]
@@ -164,6 +180,7 @@ Table eventBuddy{
 }
 
 Table eventAttended{
+  eventAttendId integer [pk, increment] //** added to prevent duplication
   userId integer [ref: > users.userId] // the one who logged the attendence
   eventId integer [ref: > events.eventId]
   attended boolean [default: true]
@@ -171,24 +188,6 @@ Table eventAttended{
   createdAt timestamp [default: `now()`]
   rating integer // 1-5 stars
   postId integer [ref: > posts.postId, null] 
-}
-
-/////////////////////////posts interaction////////////////////////////////////
-Table postLikes{
-  userId integer [ref: > users.userId]
-  postId integer [ref: > posts.postId]
-  postLikedAt timestamp [default: `now()`]
-}
-
-Table postComments{
-  commentId integer [pk, increment]
-  userId integer [ref: > users.userId, not null]
-  postId integer [ref: > posts.postId, not null]
-  //parentCommentId integer [ref: > postComments.commentId, null] 
-  
-  content text [not null]
-  createdAt timestamp  [default: `now()`]
-  updatedAt timestamp
 }
 
 ////////////////attribute reference table//////////////////
@@ -223,7 +222,7 @@ Table currency{
 }
 Table postType{
   typeId integer [pk]
-  typeName varchar //review | anouncement of new event
+  typeName varchar // post | comments under a post
 }
 Table chatType{
   typeId integer [pk]
@@ -247,32 +246,37 @@ Table eventCategories {
 }
 //Tag: Specific interests (like subgenres)
 Table eventTags {
-  eventTagId integer [pk, increment]
+  tagId integer [pk, increment]
   tagName varchar(50) [unique, not null]
 }
 //Category: "I like Music and Theatre"
 Table user_category_map { 
+  userCategoryId integer [pk, increment]//pk added to prevent duplicate
   userId integer [ref: > users.userId]
   categoryId integer [ref: > eventCategories.categoryId]
 }
 //Tag: "I love specifically: Jazz, Indie Rock, Shakespeare"
 Table user_tag_map { 
+  userTagId integer [pk, increment]//pk added to prevent duplicate
   userId integer [ref: > users.userId]
-  eventTagId integer [ref: > eventTags.eventTagId]
+  tagId integer [ref: > eventTags.tagId]
 }
 //Category: "This event is Music"
 Table event_category_map{
-   eventId integer [ref: > events.eventId]
-   categoryId integer [ref: > eventCategories.categoryId]
+  eventCategoryId integer [pk, increment]//pk added to prevent duplicate
+  eventId integer [ref: > events.eventId]
+  categoryId integer [ref: > eventCategories.categoryId]
 }
 //Tag: "This event is: Jazz, Live Performance"
 Table event_tag_map{ 
-   eventId integer [ref: > events.eventId]
-   eventTagId integer [ref: > eventTags.eventTagId]
+  eventTagId integer [pk, increment]//pk added to prevent duplicate
+  eventId integer [ref: > events.eventId]
+  tagId integer [ref: > eventTags.tagId]
 }
 
 
 Table blocked_users {
+  blockId integer [pk, increment]//pk added to prevent duplicate
   blockerId integer [ref: > users.userId] //the person who blocks 
   blockedId integer [ref: > users.userId]
   blockedAt timestamp [default: `now()`]
