@@ -73,9 +73,14 @@ Table sourcePlatform{
 
 /////////////////////////////post data///////////////////////////////////
 //update: both comments and posts are considered "post" and stored in this table now
+
+// CHANGED: postComments table has been REMOVED, you also mentioned above: both comments and posts are considered "post" and stored in this table now, but have not removed postComments t.
+// The original schema stored comments in both `posts` (via postParentId) and in a separate `postComments` table — that's redundant duplication.
+// All posts and comments now live solely in this table, using postParentId
+
 Table posts {
   postId integer [pk, increment]
-  postType varchar [ref: > postType.typeId, not null] // post | comment under the post
+  postType varchar [ref: > postType.typeId, not null] // post (diary entry) | comment under the post
 
   userId integer [ref: > users.userId, not null] //who publish the post
   eventId integer [ref: > events.eventId, null] //if it's a comment rather than a post (event review), this field can be null
@@ -84,9 +89,16 @@ Table posts {
   content text [not null]
   //imageUrls json =>removed. images now store in a seperate table connected with postId
 
+// ADDED: delete to support REQ 3.4 (delete diary entries).
+// Was missing from table posts despite being present on chatMessages and notifications.
+
+  isDeleted boolean [default: false]
+  deletedAt timestamp
+
   createdAt timestamp [default: `now()`]
   updatedAt timestamp
 }
+
 Table postImages{
   postImageId integer [pk, increment]
   imageUrl varchar(255)
@@ -101,16 +113,7 @@ Table postLikes{
   postLikedAt timestamp [default: `now()`]
 }
 
-Table postComments{
-  commentId integer [pk, increment]
-  userId integer [ref: > users.userId, not null]
-  postId integer [ref: > posts.postId, not null]
-  //parentCommentId integer [ref: > postComments.commentId, null] 
-  
-  content text [not null]
-  createdAt timestamp  [default: `now()`]
-  updatedAt timestamp
-}
+// REMOVED: postComments table deleted - see note on posts table above in table posts
 
 /////////////////////////////chat data///////////////////////////////////
 Table chats {
@@ -150,6 +153,14 @@ Table chatMessages {
 Table notifications {
   notificationId integer [pk, increment]
   userId integer [ref: > users.userId, not null]
+
+// ADDED: actorId - the user who triggered the notification
+  // e.g. "Sarah wants to be your event buddy" - you need to know who Sarah is
+  // Nullable because some system notifications may have no human actor
+//eg when Sarah sends you a buddy request, the backend needs to store "Sarah's userId" somewhere 
+//in that notification row so it can render her name, avatar, link to her profile
+
+  actorId integer [ref: > users.userId, null]
   type varchar(50) [not null]
   relatedEntityType varchar [ref: > relatedEntityType.typeId] // event | post | user | message - what it`s about
   relatedEntityId integer //eventId, postId, userId, messageId
@@ -166,6 +177,11 @@ Table eventSaves {
   eventSaveId integer [pk, increment]
   userId integer [ref: > users.userId]
   eventId integer [ref: > events.eventId]
+// ADDED: wantBuddy flag for REQ 2.2 and 2.5 which require filtering buddy pool by
+  // users who both saved the event AND want a buddy. Without this field,
+  // there's no way to distinguish "just interested" from "looking for a buddy"
+
+  wantBuddy boolean [default: false]
   eventSavedAt timestamp [default: `now()`]
 }
 
@@ -183,7 +199,7 @@ Table eventAttended{
   eventAttendId integer [pk, increment] //** added to prevent duplication
   userId integer [ref: > users.userId] // the one who logged the attendence
   eventId integer [ref: > events.eventId]
-  attended boolean [default: true]
+  //CHANGED: removed `attended boolean [default: true]` - it was always true - i am not sure
   attendedAt timestamp
   createdAt timestamp [default: `now()`]
   rating integer // 1-5 stars
