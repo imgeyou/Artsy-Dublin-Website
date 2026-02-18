@@ -1,0 +1,234 @@
+// THIS DOCUMENT IS IN PROGRESS AND IS NOT THE END RESULT.
+
+// ARTSY DUBLIN — MVP DATABASE (P0 Requirements Only)
+
+
+
+// REQ 1.1 - Create Profile
+// REQ 1.3 - Select Interests (interests stored in mapping tables below)
+
+Table users {
+  userId integer [pk, increment]
+
+  // required
+  userName varchar [unique, not null, default: `userId`]
+  email varchar(255) [unique, not null]
+  avatarUrl varchar(255)
+  passwordHash varchar(255) [not null]
+
+  // optional profile fields (public)
+  birthday date
+  location integer [ref: > userLocation.locationId]
+  bio varchar(255)
+  gender integer [ref: > userGender.genderId]
+
+  createdAt timestamp [default: `now()`]
+  updatedAt timestamp
+}
+
+
+
+// REQ 2.1 - Event Data Sourcing
+// REQ 2.2 - Event Detail Page
+// REQ 2.3 - All Events Grid View with Filters
+
+Table events {
+  eventId integer [pk, increment]
+  creatorId integer [ref: > users.userId, null] // null for API-sourced events
+
+  // basic info
+  title varchar(255) [not null]
+  description varchar
+  posterUrl varchar
+
+  // time & place
+  startDateTime timestamp [not null]
+  endDateTime timestamp
+  venue integer [ref: > venues.venueId, null]
+  location integer [ref: > eventLocation.locationId] // fallback if no venue
+
+  // ticket & price
+  minprice decimal(10,2) [default: 0]
+  maxprice decimal(10,2) [default: 0]
+  currency integer [ref: > currency.currencyId]
+  ticketlink varchar
+
+  // metadata
+  viewCount integer [default: 0]
+  sourcePlatform integer [ref: > sourcePlatform.sourceId]
+  createdAt timestamp [default: `now()`]
+  updatedAt timestamp
+}
+
+
+
+// REQ 2.1 - Event Data Sourcing (external API )
+
+Table eventExternalSources {
+  eventId integer [ref: > events.eventId, pk]
+  externalApiId varchar
+  externalApiSource integer [ref: > sourcePlatform.sourceId]
+  externalUrl varchar
+  lastSyncedAt timestamp
+}
+
+Table sourcePlatform {
+  sourceId integer [pk]
+  sourceName varchar
+  sourceIconUrl varchar
+}
+
+
+
+// REQ 2.4 - Save Event
+// REQ 2.5 - Buddy Suggesting System (wantBuddy flag)
+
+Table eventSaves {
+  eventSaveId integer [pk, increment]
+  userId integer [ref: > users.userId]
+  eventId integer [ref: > events.eventId]
+  wantBuddy boolean [default: false] // REQ 2.5: used to filter buddy pool
+  eventSavedAt timestamp [default: `now()`]
+}
+
+
+
+// REQ 3.1 - Log Event Attendance
+// REQ 3.2 - Review Events + Rating
+// REQ 3.3 - Personal Art Diary
+
+Table eventAttended { //was not in general version, redo
+  eventAttendId integer [pk, increment]
+  userId integer [ref: > users.userId]
+  eventId integer [ref: > events.eventId]
+  attendedAt timestamp
+  createdAt timestamp [default: `now()`]
+  rating integer // 1–5 stars
+  postId integer [ref: > posts.postId, null] // linked diary entry
+}
+
+
+
+// REQ 3.2 - Diary Entries (posts = diary entries)
+// REQ 4.1  Like Posts
+// REQ 4.2 Comment on Posts
+// REQ 4.3  Edit/Delete Comments
+
+Table posts {
+  postId integer [pk, increment]
+  postType integer [ref: > postType.typeId, not null] // diary_entry | comment
+
+  userId integer [ref: > users.userId, not null]
+  eventId integer [ref: > events.eventId, null] // null for comments
+  postParentId integer [ref: > posts.postId, null] // null for top-level posts; set for comments
+
+  content text [not null]
+
+  isDeleted boolean [default: false]
+  deletedAt timestamp
+
+  createdAt timestamp [default: `now()`]
+  updatedAt timestamp
+}
+
+Table postImages {
+  postImageId integer [pk, increment]
+  imageUrl varchar(255)
+  postId integer [ref: > posts.postId]
+}
+
+// REQ 4.1 Like diary entries
+Table postLikes {
+  likeId integer [pk, increment]
+  userId integer [ref: > users.userId]
+  postId integer [ref: > posts.postId]
+  postLikedAt timestamp [default: `now()`]
+}
+
+
+
+// REQ 1.3 Select Interests (categories + tags)
+// REQ 2.3 Filter events by category
+
+Table eventCategories {
+  categoryId integer [pk, increment]
+  categoryName varchar(50) [unique, not null]
+  description text
+}
+
+Table eventTags {
+  tagId integer [pk, increment]
+  tagName varchar(50) [unique, not null]
+}
+
+// "I like Music and Theatre"
+Table user_category_map {
+  userCategoryId integer [pk, increment]
+  userId integer [ref: > users.userId]
+  categoryId integer [ref: > eventCategories.categoryId]
+}
+
+// "I love specifically Jazz, Indie Rock"
+Table user_tag_map {
+  userTagId integer [pk, increment]
+  userId integer [ref: > users.userId]
+  tagId integer [ref: > eventTags.tagId]
+}
+
+// "This event is: Music"
+Table event_category_map {
+  eventCategoryId integer [pk, increment]
+  eventId integer [ref: > events.eventId]
+  categoryId integer [ref: > eventCategories.categoryId]
+}
+
+// "This event has tags: Jazz, Live Performance"
+Table event_tag_map {
+  eventTagId integer [pk, increment]
+  eventId integer [ref: > events.eventId]
+  tagId integer [ref: > eventTags.tagId]
+}
+
+
+//
+// Reference / Lookup Tables
+// 
+
+// Used by users table
+Table userGender {
+  genderId integer [pk]
+  genderName varchar
+}
+
+Table userLocation {
+  locationId integer [pk]
+  locationName varchar
+}
+
+// Used by events table
+Table venues {
+  venueId integer [pk, increment]
+  venueName varchar(255) [not null]
+  address varchar(255)
+  latitude decimal(10,8) [not null]
+  longitude decimal(11,8) [not null]
+  website varchar(255)
+  createdAt timestamp
+}
+
+Table eventLocation {
+  locationId integer [pk, increment]
+  latitude decimal(10,8) [not null]
+  longitude decimal(11,8) [not null]
+  createdAt timestamp
+}
+
+Table currency {
+  currencyId integer [pk]
+  currencyName varchar(3) [default: 'EUR']
+}
+
+Table postType {
+  typeId integer [pk]
+  typeName varchar // diary_entry | comment
+}
