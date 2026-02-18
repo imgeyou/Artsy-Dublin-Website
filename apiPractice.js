@@ -8,11 +8,16 @@ const ticketmaster_api = axios.create({
   }
 });
 
+// TODO: 
+  // ADD DESCRIPTION, PRICE -- cant do these for this event
+  // END DATE (FOR OPTIMIZING DATABASE) -- n/a for MVP
+  // use long/lat to show googlemaps
+  // CONNECT TO DATABASE
+
 async function searchTheatreEvents() {
-  const eventRes = await ticketmaster_api.get('events', {
+  const theatreEvents = await ticketmaster_api.get('events', {
     params: {
-      // specify dublin
-      countryCode: 'IE',
+      countryCode: 'IE', // can't specify dublin
       genreId: 'KnvZfZ7v7l1', // theatre
       keyword: 'comedy', // comedy, musical etc.
       startDateTime: '2026-05-10T19:00:00Z', // get user's current date and set end to a month later
@@ -20,15 +25,22 @@ async function searchTheatreEvents() {
     }
   });
 
-  // const venueRes = await ticketmaster_api.get('events', {
-  //   params: {
-  //     id: 'KovZ917AZa7'
-  //   }
-  // });
-  console.log("Link to theatre event near you: " + eventRes.data._embedded.events[0].url);
-  console.log("Link to event venue: " + eventRes.data._embedded.events[0]._embedded.venues[0].url); 
-  // use long/lat to show googlemaps instead of ticketmaster URL
-  return eventRes.data;
+  // get the id of the first event returned from API
+  let id = theatreEvents.data._embedded.events[0].id;
+
+  // get the details of that event via another API call
+  const eventData = await ticketmaster_api.get(`events/${id}`);
+
+  let linkToEvent = eventData.data.url;
+  let linkToVenueOnTm = eventData.data._embedded.venues[0].url;
+  let venueLong = eventData.data._embedded.venues[0].location.longitude; 
+  let venueLat = eventData.data._embedded.venues[0].location.latitude;
+
+  console.log("Link to theatre event near you: " + linkToEvent);
+  console.log("Link to event venue: " + linkToVenueOnTm); 
+  console.log(venueLat, venueLong);
+
+  return theatreEvents.data;
 }
 
 const tmdb_api = axios.create({
@@ -53,8 +65,5 @@ async function searchShowingFilms() {
   return response.data;
 }
 
-// TODO: ADD DESCRIPTION, PRICE, END DATE (FOR OPTIMIZING DATABASE)
-// CONNECT TO DATABASE
-
-searchShowingFilms();
+// searchShowingFilms();
 searchTheatreEvents();
