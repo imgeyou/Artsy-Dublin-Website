@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main class="detail-page">
+    <a href="/diary" class="btn small outline">← Back to Diary</a>
+
+    <h1><%= entry.eventTitle || 'Diary Entry' %></h1>
+    <p>📅 Attended: <%= entry.date || 'Date TBC' %> &nbsp;|&nbsp; 📍 <%= entry.venue || 'Venue TBC' %></p>
+    <p class="stars big"><%= '★'.repeat(entry.rating) %><%= '☆'.repeat(5 - entry.rating) %></p>
+
+    <% if (entry.reviewText) { %>
+      <p class="review-text"><%= entry.reviewText %></p>
+    <% } %>
+
+    <% if (entry.imageUrl) { %>
+      <img src="<%= entry.imageUrl %>" alt="My photo" class="diary-image"/>
+    <% } %>
+
+    <hr/>
+
+    <!-- Comments section -->
+    <section class="comments">
+      <h2>Comments (<%= comments.length %>)</h2>
+
+      <% if (comments.length === 0) { %>
+        <p>No comments yet. Be the first!</p>
+      <% } %>
+
+      <% comments.forEach(c => { %>
+        <div class="comment">
+          <p><%= c.content %></p>
+          <small><%= new Date(c.createdAt).toLocaleDateString('en-IE') %></small>
+        </div>
+      <% }) %>
+
+      <form method="POST" action="/diary/<%= entry.entryId %>/comments" class="comment-form">
+        <label for="content">Leave a comment</label>
+        <textarea name="content" id="content" rows="3" maxlength="500"
+          placeholder="Share your thoughts... (max 500 chars)" required></textarea>
+        <button type="submit" class="btn small">Post Comment</button>
+      </form>
+    </section>
+  </main>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>

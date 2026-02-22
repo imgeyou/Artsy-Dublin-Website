@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>📓 My Art Diary</h1>
+
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+
+    <% if (entries.length === 0) { %>
+      <p>No diary entries yet. <a href="/events">Discover events</a> and log your attendance!</p>
+    <% } %>
+
+    <div class="diary-grid">
+      <% entries.forEach(entry => { %>
+        <div class="diary-card">
+          <% if (entry.posterUrl) { %>
+            <img src="<%= entry.posterUrl %>" alt="<%= entry.eventTitle %>"/>
+          <% } else if (entry.imageUrl) { %>
+            <img src="<%= entry.imageUrl %>" alt="My photo"/>
+          <% } else { %>
+            <div class="no-image">📓</div>
+          <% } %>
+          <div class="card-body">
+            <h3><%= entry.eventTitle || 'Event' %></h3>
+            <p class="stars"><%= '★'.repeat(entry.rating) %><%= '☆'.repeat(5 - entry.rating) %></p>
+            <% if (entry.reviewText) { %>
+              <p class="preview"><%= entry.reviewText.substring(0, 100) %><%= entry.reviewText.length > 100 ? '...' : '' %></p>
+            <% } %>
+            <p class="date"><%= new Date(entry.createdAt).toLocaleDateString('en-IE') %></p>
+            <a href="/diary/<%= entry.entryId %>" class="btn small">Read Entry</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main class="form-page">
+    <h1>Log Attendance: <%= event.title %></h1>
+
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/diary" enctype="multipart/form-data" class="diary-form">
+      <input type="hidden" name="eventId" value="<%= event.eventId %>"/>
+
+      <label for="rating">Your Rating (1–5) *</label>
+      <div class="star-input">
+        <% for(let i = 1; i <= 5; i++) { %>
+          <input type="radio" name="rating" id="star<%= i %>" value="<%= i %>" required/>
+          <label for="star<%= i %>">★</label>
+        <% } %>
+      </div>
+
+      <label for="reviewText">Your Review (optional, max 1000 chars)</label>
+      <textarea name="reviewText" id="reviewText" rows="5" maxlength="1000"
+        placeholder="How was the event? Share your experience..."></textarea>
+      <span id="charCount">0 / 1000</span>
+
+      <label for="image">Upload a Photo (optional, JPG/PNG/WebP, max 5MB)</label>
+      <input type="file" name="image" id="image" accept=".jpg,.jpeg,.png,.webp"/>
+
+      <button type="submit" class="btn">Save to Diary</button>
+      <a href="/events/<%= event.eventId %>" class="btn outline">Cancel</a>
+    </form>
+  </main>
+
+  <script>
+    const textarea  = document.getElementById('reviewText');
+    const charCount = document.getElementById('charCount');
+    textarea.addEventListener('input', () => {
+      charCount.textContent = `${textarea.value.length} / 1000`;
+    });
+  </script>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>

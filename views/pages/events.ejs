@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h1>All Events</h1>
+
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+
+    <!-- Category filter -->
+    <form method="GET" action="/events" class="filter-form">
+      <label for="categoryId">Filter by Category:</label>
+      <select name="categoryId" id="categoryId">
+        <option value="">All Categories</option>
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat.categoryId %>" <%= selectedCategory == cat.categoryId ? 'selected' : '' %>>
+            <%= cat.categoryName %>
+          </option>
+        <% }) %>
+      </select>
+      <button type="submit" class="btn small">Filter</button>
+      <a href="/events" class="btn small outline">Clear</a>
+    </form>
+
+    <div class="event-grid">
+      <% if (events.length === 0) { %>
+        <p>No events found. Try a different category.</p>
+      <% } %>
+      <% events.forEach(event => { %>
+        <div class="event-card">
+          <% if (event.posterUrl) { %>
+            <img src="<%= event.posterUrl %>" alt="<%= event.title %>" />
+          <% } else { %>
+            <div class="no-image">🎭</div>
+          <% } %>
+          <div class="card-body">
+            <span class="category-badge"><%= event.categoryName || 'Event' %></span>
+            <h3><%= event.title %></h3>
+            <p>📅 <%= event.date || 'Date TBC' %></p>
+            <p>📍 <%= event.venue || 'Venue TBC' %></p>
+            <a href="/events/<%= event.eventId %>" class="btn small">View Details</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>

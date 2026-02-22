@@ -1,0 +1,18 @@
+# env contains database passwords - must be secure
+.env
+
+# Dependency Folders 
+node_modules/
+
+# System files, for macos users
+.DS_Store
+Thumbs.db
+
+#this is done for fr certain files like env to stay private and safe
+
+
+
+
+# User uploaded images (keep the folder, ignore the files)
+public/uploads/*
+!public/uploads/.gitkeep

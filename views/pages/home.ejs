@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <h1>Discover Art & Events in Dublin</h1>
+      <p>Theatre, music, film, dance, and more — all in one place.</p>
+      <a href="/events" class="btn">Browse All Events</a>
+    </section>
+
+    <% if (error) { %>
+      <div class="alert error"><%= error %></div>
+    <% } %>
+
+    <section>
+      <h2>Upcoming Events</h2>
+      <div class="event-grid">
+        <% events.slice(0, 6).forEach(event => { %>
+          <div class="event-card">
+            <% if (event.posterUrl) { %>
+              <img src="<%= event.posterUrl %>" alt="<%= event.title %>" />
+            <% } else { %>
+              <div class="no-image">🎭</div>
+            <% } %>
+            <div class="card-body">
+              <span class="category-badge"><%= event.categoryName || 'Event' %></span>
+              <h3><%= event.title %></h3>
+              <p>📅 <%= event.date || 'Date TBC' %></p>
+              <p>📍 <%= event.venue || 'Venue TBC' %></p>
+              <a href="/events/<%= event.eventId %>" class="btn small">View Details</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  </main>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>

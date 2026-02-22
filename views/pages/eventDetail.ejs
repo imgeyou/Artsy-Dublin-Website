@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">🎭 Artsy Dublin</a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/events">All Events</a></li>
+      <li><a href="/diary">My Diary</a></li>
+    </ul>
+  </nav>
+
+  <main class="detail-page">
+    <a href="/events" class="btn small outline">← Back to Events</a>
+
+    <div class="detail-layout">
+      <div class="detail-poster">
+        <% if (event.posterUrl) { %>
+          <img src="<%= event.posterUrl %>" alt="<%= event.title %>"/>
+        <% } else { %>
+          <div class="no-image large">🎭</div>
+        <% } %>
+      </div>
+
+      <div class="detail-info">
+        <span class="category-badge"><%= event.categoryName || 'Event' %></span>
+        <h1><%= event.title %></h1>
+        <p><strong>📅 Date:</strong> <%= event.date || 'TBC' %></p>
+        <p><strong>📍 Venue:</strong> <%= event.venue || 'TBC' %></p>
+        <% if (event.description) { %>
+          <p><%= event.description %></p>
+        <% } %>
+        <div class="action-buttons">
+          <% if (event.eventUrl) { %>
+            <a href="<%= event.eventUrl %>" target="_blank" class="btn">🎟 Get Tickets</a>
+          <% } %>
+          <a href="/events/<%= event.eventId %>/log" class="btn outline">📓 Log Attendance</a>
+        </div>
+        <p class="source-info">Source: <%= event.source || 'Unknown' %></p>
+      </div>
+    </div>
+  </main>
+
+  <footer><p>© 2026 Artsy Dublin</p></footer>
+</body>
+</html>
