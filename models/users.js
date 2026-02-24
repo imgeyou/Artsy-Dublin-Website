@@ -15,13 +15,6 @@ class usersModel{
     async getUsersPool(){
         // Connect to the database
         const connection = await mysql.createConnection(dbconfig);
-        connection.connect(error => {
-        if (error) {
-            console.error('Error connecting to the database:', error);
-        return;
-        }
-        console.log('Connected to the database');
-        });
 
         let que;//mysql query
         try{
@@ -30,7 +23,7 @@ class usersModel{
             return results;
         }
         catch(err){
-            return console.error("Query Error: " + err);
+            console.error("Query Error: " + err);
         }finally{
             connection.end();}
     }
@@ -39,14 +32,6 @@ class usersModel{
     async getUsersByName(name){
         // Connect to the database
         const connection = await mysql.createConnection(dbconfig);
-        connection.connect(error => {
-        if (error) {
-            console.error('Error connecting to the database:', error);
-        return;
-        }
-            console.log('Connected to the database');
-        });
-
         try{
             const que = 
             `select users.*, userLocation.locationName, userGender.genderName
