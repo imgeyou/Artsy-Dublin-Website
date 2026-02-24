@@ -1,0 +1,20 @@
+CREATE TABLE `users` (
+  `userId` int NOT NULL AUTO_INCREMENT,
+  `userName` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `avatarUrl` varchar(255) DEFAULT NULL,
+  `passwordHash` varchar(255) NOT NULL,
+  `birthday` date DEFAULT NULL,
+  `location` int DEFAULT NULL,
+  `bio` varchar(255) DEFAULT NULL,
+  `gender` int DEFAULT NULL,
+  `createdAt` timestamp NULL DEFAULT (now()),
+  `updatedAt` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`userId`),
+  UNIQUE KEY `userName` (`userName`),
+  UNIQUE KEY `email` (`email`),
+  KEY `location` (`location`),
+  KEY `gender` (`gender`),
+  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`location`) REFERENCES `userlocation` (`locationId`),
+  CONSTRAINT `users_ibfk_2` FOREIGN KEY (`gender`) REFERENCES `usergender` (`genderId`)
+) 
