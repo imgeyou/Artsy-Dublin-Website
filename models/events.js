@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: 'localhost',     
     user: 'root',          
     password: dotenv.parsed.DB_PASSWORD,          
-    database: dotenv.parsed.EVENTS_DB_NAME       
+    database: dotenv.parsed.EVENTS_SCHEMA       
 });
 
 // Connect to the database
@@ -25,7 +25,7 @@ connection.connect(error => {
 // Get all events - promise to await response
 function get() {
     return new Promise((resolve, reject) => {
-    connection.query('SELECT * FROM events;', (error, results) => {
+    connection.query(`SELECT * FROM ${dotenv.parsed.EVENTS_TABLE};`, (error, results) => {
         if (error) {
             reject(error);
             return;
@@ -70,7 +70,7 @@ async function fetchAndPopulate() {
     connection.connect(function(err) {
         if (err) throw err;
         for (let event of eventsData) {
-            let sql = `INSERT IGNORE INTO events (name, url) VALUES (?, ?)`;
+            let sql = `INSERT IGNORE INTO ${dotenv.parsed.EVENTS_TABLE} (name, url) VALUES (?, ?)`;
             connection.query(sql, [event.name, event.url], (err) => {
                 if (err) throw err;
             });
