@@ -1,4 +1,4 @@
-CREATE TABLE `events` (
+CREATE TABLE `apievents` (
   `name` varchar(255) NOT NULL,
   `url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`name`)
