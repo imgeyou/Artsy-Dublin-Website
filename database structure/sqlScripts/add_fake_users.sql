@@ -1,5 +1,3 @@
-USE adp01;
-
 INSERT INTO users (userName, email, passwordHash, birthday, location, bio, gender) VALUES
 ('alice', 'alice@email.com', 'hashedpw123', '1998-03-15', 1, 'Art lover based in Dublin', 1),
 ('bob', 'bob@email.com', 'hashedpw456', '1992-07-22', 2, 'Music and theatre enthusiast', 2),
