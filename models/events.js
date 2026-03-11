@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: 'localhost',     
     user: 'root',          
     password: dotenv.parsed.DB_PASSWORD,          
-    database: dotenv.parsed.EVENTS_SCHEMA       
+    database: dotenv.parsed.DB_NAME     
 });
 
 // Connect to the database
