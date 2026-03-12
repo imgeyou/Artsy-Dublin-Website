@@ -30,6 +30,7 @@ function get() {
             reject(error);
             return;
         }
+        console.log(results);
         resolve(results);
     });
     });
