@@ -1,7 +1,7 @@
 -- Event Saves (waiting to be populated)
 
 -- Event Attended
-INSERT INTO eventAttendees (eventAttendId, userId, eventId, attendedAt, createdAt, rating) VALUES
+INSERT INTO eventAttended (eventAttendId, userId, eventId, attendedAt, createdAt, rating) VALUES
 (1,  1, 1, '2025-11-15 19:00:00', '2026-02-21 00:55:47', 5),
 (2,  2, 3, '2025-11-20 18:30:00', '2026-02-21 00:55:47', 4),
 (3,  3, 2, '2025-12-01 20:00:00', '2026-02-21 00:55:47', 5),
