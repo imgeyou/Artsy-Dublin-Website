@@ -18,3 +18,16 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`location`) REFERENCES `userlocation` (`locationId`),
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`gender`) REFERENCES `usergender` (`genderId`)
 ) 
+
+CREATE TABLE `userlocation` (
+  `locationId` int NOT NULL,
+  `locationName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`locationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `usergender` (
+  `genderId` int NOT NULL,
+  `genderName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`genderId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
