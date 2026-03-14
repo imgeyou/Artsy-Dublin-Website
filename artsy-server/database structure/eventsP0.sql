@@ -3,6 +3,15 @@ CREATE TABLE `apievents` (
   `url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`name`)
 ) 
+CREATE TABLE `events` (
+  `eventId` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `posterUrl` varchar(255) DEFAULT NULL,
+  `createdAt` timestamp NULL DEFAULT (now()),
+  `updatedAt` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`eventId`)
+) 
 
 -- CREATE TABLE `users` (
 --   `userId` integer PRIMARY KEY AUTO_INCREMENT,
