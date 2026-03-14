@@ -10,6 +10,8 @@ CREATE TABLE `events` (
   `posterUrl` varchar(255) DEFAULT NULL,
   `createdAt` timestamp NULL DEFAULT (now()),
   `updatedAt` timestamp NULL DEFAULT NULL,
+  `reviewCount` INT DEFAULT 0,
+  `saveCount` INT DEFAULT 0,
   PRIMARY KEY (`eventId`)
 );
 
