@@ -1,3 +1,15 @@
+CREATE TABLE `userlocation` (
+  `locationId` int NOT NULL,
+  `locationName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`locationId`)
+);
+
+CREATE TABLE `usergender` (
+  `genderId` int NOT NULL,
+  `genderName` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`genderId`)
+);
+
 CREATE TABLE `users` (
   `userId` int NOT NULL AUTO_INCREMENT,
   `userName` varchar(255) NOT NULL,
@@ -18,16 +30,3 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`location`) REFERENCES `userlocation` (`locationId`),
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`gender`) REFERENCES `usergender` (`genderId`)
 );
-
-CREATE TABLE `userlocation` (
-  `locationId` int NOT NULL,
-  `locationName` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`locationId`)
-);
-
-CREATE TABLE `usergender` (
-  `genderId` int NOT NULL,
-  `genderName` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`genderId`)
-);
-
