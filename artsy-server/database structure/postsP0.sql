@@ -12,6 +12,7 @@ CREATE TABLE `eventattended` (
   `attendedAt` timestamp NULL DEFAULT NULL,
   `createdAt` timestamp NULL DEFAULT (now()),
   `rating` int DEFAULT NULL,
+  `isDeleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`eventAttendId`),
   KEY `userId` (`userId`),
   KEY `eventId` (`eventId`),
