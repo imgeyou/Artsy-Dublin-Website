@@ -1,0 +1,128 @@
+<!-- for test -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Write a Review</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 16px;
+      }
+      textarea {
+        width: 100%;
+        height: 150px;
+        resize: vertical;
+        padding: 8px;
+        box-sizing: border-box;
+        margin-bottom: 12px;
+      }
+      .btn {
+        background: #007bff;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+      }
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        margin-right: 8px;
+      }
+      #preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      #preview img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+      #msg {
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Write a Review</h1>
+
+    <textarea id="review-content" placeholder="Share your experience..."></textarea>
+
+    <label>Upload Images (optional)</label><br />
+    <input type="file" id="image-input" accept="image/*" multiple /><br />
+    <p id="file-count"></p>
+    <div id="preview"></div>
+
+    <div>
+      <button class="btn-secondary" onclick="history.back()">Skip</button>
+      <button class="btn" onclick="submitReview()">Submit Review</button>
+    </div>
+    <p id="msg"></p>
+
+    <script>
+      const API_BASE = "http://localhost:3005";
+      const params = new URLSearchParams(window.location.search);
+      const EVENT_ID = params.get("eventId");
+      const EVENT_ATTEND_ID = params.get("eventAttendId");
+
+      // accumulate files across multiple dialog opens
+      let selectedFiles = [];
+
+      document.getElementById("image-input").addEventListener("change", function () {
+        for (const file of this.files) {
+          if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+            selectedFiles.push(file);
+          }
+        }
+        const preview = document.getElementById("preview");
+        preview.innerHTML = "";
+        selectedFiles.forEach(file => {
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(file);
+          preview.appendChild(img);
+        });
+        document.getElementById("file-count").innerText = `${selectedFiles.length} image(s) selected`;
+      });
+
+      async function submitReview() {
+        const content = document.getElementById("review-content").value.trim();
+        if (!content) {
+          document.getElementById("msg").innerText = "Please write something.";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("content", content);
+        formData.append("eventId", EVENT_ID);
+        for (const file of selectedFiles) {
+          formData.append("images", file);
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/posts/post/${EVENT_ATTEND_ID}`, {
+            method: "POST",
+            body: formData,
+          });
+          if (res.ok) {
+            const { postId } = await res.json();
+            window.location.href = `postDetail.html?postId=${postId}`;
+          } else {
+            document.getElementById("msg").innerText = "Failed to submit review.";
+          }
+        } catch {
+          document.getElementById("msg").innerText = "Failed to submit review.";
+        }
+      }
+    </script>
+  </body>
+</html>

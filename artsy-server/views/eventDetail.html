@@ -1,0 +1,303 @@
+<!-- for test -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Artsy Dublin Events</title>
+    <style>
+      .event-card {
+        width: 50%;
+      }
+      .event-card img{
+        display: block;
+        width: 50%;
+      }
+      .star {
+        font-size: 2rem;
+        cursor: pointer;
+        color: gray;
+      }
+      .star.active {
+        color: gold;
+      }
+      .review-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        max-width: 520px;
+        background: #fff;
+      }
+      .review-card .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+      .review-card .review-author { font-weight: bold; font-size: 0.95rem; }
+      .review-card .review-meta { font-size: 0.78rem; color: #888; }
+      .review-card .review-stars { color: gold; font-size: 0.9rem; }
+      .review-card .review-content {
+        font-size: 0.88rem;
+        color: #333;
+        margin: 6px 0;
+        text-decoration: none;
+        display: block;
+      }
+      .review-card .review-content:hover { text-decoration: underline; }
+      .review-card .review-footer {
+        font-size: 0.78rem;
+        color: #888;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .review-card .like-btn {
+        font-size: 0.78rem;
+        background: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 2px 8px;
+      }
+      .review-card .like-btn:hover { background: #f0f0f0; }
+      .review-card .comment-btn {
+        font-size: 0.78rem;
+        color: #555;
+        text-decoration: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 2px 8px;
+      }
+      .review-card .comment-btn:hover { background: #f0f0f0; }
+    </style>
+  </head>
+  <body>
+    <h1>Event Detail</h1>
+    <div id="event-detail"></div>
+
+    <div id="posts-section">
+      <h3>Reviews</h3>
+      <div id="posts-list"></div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3005";
+      const EVENT_ID = new URLSearchParams(window.location.search).get("eventId") ?? 4;
+      const container = document.getElementById("event-detail");
+      container.innerHTML = "";
+      const card = document.createElement("div");
+      card.className = "event-card";
+
+      let selectedRating = 0;
+
+      async function loadEventDetail() {
+        try {
+          const response = await fetch(`${API_BASE}/events/${EVENT_ID}`);
+          const event = await response.json();
+
+          card.innerHTML = `
+            <h3>${event.title}</h3>
+            <img src="${API_BASE}/${event.posterUrl}">
+            <p>${event.createdAt}</p>
+            <p>${event.description}</p>
+            <div id="action-area"></div>`;
+          container.appendChild(card);
+
+          if (event.attendance?.eventAttendId) {
+            renderAttendedUI(event.attendance.eventAttendId, event.attendance.rating);
+          } else {
+            renderLogAttendanceBtn();
+          }
+        } catch (error) {
+          document.getElementById("event-detail").innerText = "Failed to load data.";
+        }
+      }
+
+      function renderLogAttendanceBtn() {
+        const now = new Date();
+        const localDatetime = new Date(now - now.getTimezoneOffset() * 60000)
+          .toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM" for datetime-local default
+
+        document.getElementById("action-area").innerHTML = `
+          <button onclick="showAttendanceForm()">Log Attendance</button>
+          <div id="attendance-form" style="display:none; margin-top:10px;">
+            <label style="font-size:0.88rem;">When did you attend?</label><br>
+            <input type="datetime-local" id="attended-at" value="${localDatetime}" style="margin:6px 0; font-size:0.88rem;">
+            <br>
+            <button onclick="logAttendance()">Confirm</button>
+            <button onclick="document.getElementById('attendance-form').style.display='none'">Cancel</button>
+          </div>
+          <p id="action-msg"></p>`;
+      }
+
+      function showAttendanceForm() {
+        document.getElementById("attendance-form").style.display = "block";
+      }
+
+      function renderAttendedUI(eventAttendId, currentRating) {
+        const starsHtml = [1, 2, 3, 4, 5]
+          .map(n => `<span class="star" data-value="${n}" onclick="selectRating(${n})">&#9733;</span>`)
+          .join("");
+
+        document.getElementById("action-area").innerHTML = `
+          <button disabled>Attended</button>
+          <button onclick="deleteAttendance(${eventAttendId})">Delete Attendance</button>
+          <div id="rating-section">
+            <p>Your rating: <span id="current-rating">${currentRating ?? "Not rated yet"}</span></p>
+            <div id="star-rating">${starsHtml}</div>
+            <button onclick="submitRating(${eventAttendId})">Submit Rating</button>
+          </div>
+          <br>
+          <a href="writeReview.html?eventId=${EVENT_ID}&eventAttendId=${eventAttendId}">Write a Review</a>
+          <p id="action-msg"></p>`;
+
+        if (currentRating) highlightStars(currentRating);
+      }
+
+      async function logAttendance() {
+        const raw = document.getElementById("attended-at").value;
+        if (!raw) {
+          document.getElementById("action-msg").innerText = "Please select a date and time.";
+          return;
+        }
+        const attendedAt = raw.replace("T", " ") + ":00"; // "YYYY-MM-DD HH:MM:00"
+        try {
+          const res = await fetch(`${API_BASE}/posts/${EVENT_ID}/attend`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ attendedAt }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            renderAttendedUI(data.eventAttendId, null);
+          } else {
+            document.getElementById("action-msg").innerText = "Failed to log attendance.";
+          }
+        } catch {
+          document.getElementById("action-msg").innerText = "Failed to log attendance.";
+        }
+      }
+
+      function selectRating(value) {
+        selectedRating = value;
+        highlightStars(value);
+      }
+
+      function highlightStars(value) {
+        document.querySelectorAll(".star").forEach(star => {
+          star.classList.toggle("active", Number(star.dataset.value) <= value);
+        });
+      }
+
+      async function submitRating(eventAttendId) {
+        if (!selectedRating) {
+          document.getElementById("action-msg").innerText = "Please select a rating first.";
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/posts/${eventAttendId}/rating`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rating: selectedRating }),
+          });
+          if (res.ok) {
+            document.getElementById("current-rating").innerText = selectedRating;
+            document.getElementById("action-msg").innerText = "Rating submitted!";
+          } else {
+            document.getElementById("action-msg").innerText = "Failed to submit rating.";
+          }
+        } catch {
+          document.getElementById("action-msg").innerText = "Failed to submit rating.";
+        }
+      }
+
+      async function deleteAttendance(eventAttendId) {
+        const ok = await inlineConfirm("Delete attedance? All related review will also be deleted");
+      if (!ok) return;
+        try {
+          const res = await fetch(`${API_BASE}/posts/${eventAttendId}/attend`, { method: "DELETE" });
+          if (res.ok) {
+            renderLogAttendanceBtn();
+          } else {
+            document.getElementById("action-msg").innerText = "Failed to delete attendance.";
+          }
+        } catch {
+          document.getElementById("action-msg").innerText = "Failed to delete attendance.";
+        }
+      }
+
+      async function loadPosts() {
+        try {
+          const res = await fetch(`${API_BASE}/posts/event/${EVENT_ID}`);
+          const posts = await res.json();
+          const list = document.getElementById("posts-list");
+
+          if (!posts.length) {
+            list.innerHTML = "<p>No reviews yet.</p>";
+            return;
+          }
+
+          list.innerHTML = "";
+          posts.forEach(post => {
+            const div = document.createElement("div");
+            div.className = "review-card";
+            const preview = post.content.length > 120
+              ? post.content.slice(0, 120) + "…"
+              : post.content;
+            const stars = post.rating
+              ? "★".repeat(post.rating) + "☆".repeat(5 - post.rating)
+              : "";
+            div.innerHTML = `
+              <div class="review-header">
+                <span class="review-author">${post.username}</span>
+                <span class="review-meta">${new Date(post.createdAt).toLocaleDateString()}</span>
+              </div>
+              ${stars ? `<div class="review-stars">${stars}</div>` : ""}
+              <a class="review-content" href="postDetail.html?postId=${post.postId}">${preview}</a>
+              <div class="review-footer">
+                <a href="postDetail.html?postId=${post.postId}#comments" class="comment-btn">💬 ${post.commentCount ?? 0}</a>
+                <button class="like-btn" data-count="${post.likeCount ?? 0}">♡ ${post.likeCount ?? 0}</button>
+              </div>`;
+
+            div.querySelector(".like-btn").addEventListener("click", async (e) => {
+              const btn = e.currentTarget;
+              try {
+                const r = await fetch(`${API_BASE}/posts/${post.postId}/like`, { method: "POST" });
+                const { liked } = await r.json();
+                const newCount = parseInt(btn.dataset.count) + (liked ? 1 : -1);
+                btn.dataset.count = newCount;
+                btn.textContent = `Like (${newCount})`;
+              } catch { /* silently fail */ }
+            });
+
+            list.appendChild(div);
+          });
+        } catch {
+          document.getElementById("posts-list").innerText = "Failed to load reviews.";
+        }
+      }
+      function inlineConfirm(message) {
+  return new Promise(resolve => {
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      position:fixed; inset:0; background:rgba(0,0,0,.4);
+      display:flex; align-items:center; justify-content:center; z-index:9999;
+    `;
+    modal.innerHTML = `
+      <div style="background:#fff;padding:24px;border-radius:8px;max-width:320px;text-align:center;">
+        <p style="margin:0 0 16px">${message}</p>
+        <button id="conf-yes">Delete</button>
+        <button id="conf-no" style="margin-left:8px">Cancel</button>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector("#conf-yes").onclick = () => { document.body.removeChild(modal); resolve(true); };
+    modal.querySelector("#conf-no").onclick  = () => { document.body.removeChild(modal); resolve(false); };
+  });
+}
+      loadEventDetail();
+      loadPosts();
+    </script>
+  </body>
+</html>

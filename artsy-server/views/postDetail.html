@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Detail</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f5f5f5;
+        color: #222;
+        margin: 0;
+        padding: 24px 16px;
+      }
+      h1 { font-size: 1.4rem; margin-bottom: 20px; }
+      h3 { font-size: 1rem; margin: 20px 0 10px; color: #444; }
+
+      /* layout container */
+      .post-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 16px 20px;
+        max-width: 560px;
+        margin-bottom: 20px;
+      }
+      .post-card > p:first-child { font-size: 0.85rem; color: #888; margin: 0 0 12px; }
+
+      /* buttons */
+      .btn, .btn-sm {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer;
+        color: #333;
+      }
+      .btn { padding: 6px 14px; font-size: 0.85rem; }
+      .btn-sm { padding: 3px 10px; font-size: 0.78rem; }
+      .btn:hover, .btn-sm:hover { background: #f0f0f0; }
+
+      /* comment section */
+      .comment-section { max-width: 560px; }
+      .comment {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 10px;
+      }
+      .comment > p:first-child { font-size: 0.82rem; color: #888; margin: 0 0 6px; }
+      .comment-content { margin: 4px 0 8px; font-size: 0.92rem; }
+      .comment-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .replies { margin-top: 10px; padding-left: 16px; border-left: 2px solid #eee; }
+
+      /* comment form */
+      .comment-form {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-top: 16px;
+      }
+      .comment-form textarea, .reply-form textarea {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 8px;
+        font-size: 0.88rem;
+        resize: vertical;
+        min-height: 70px;
+        font-family: inherit;
+      }
+      .reply-form {
+        margin-top: 8px;
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 8px 10px;
+      }
+
+      .event-card {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        background: #f8f8f8;
+        text-decoration: none;
+        color: inherit;
+        max-width: 480px;
+      }
+      .event-card:hover { background: #efefef; }
+      .event-card img {
+        width: 72px;
+        height: 72px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+      .event-card-info { overflow: hidden; }
+      .event-card-info h4 { margin: 0 0 4px; font-size: 0.95rem; }
+      .event-card-info .meta { font-size: 0.78rem; color: #666; margin: 0 0 4px; }
+      .event-card-info p {
+        margin: 0;
+        font-size: 0.83rem;
+        color: #444;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .event-card-rating { font-size: 0.8rem; color: #888; margin-top: 2px; }
+      /* post image grid */
+      .images {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin: 10px 0;
+      }
+      .images img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .images img:only-child {
+        grid-column: 1 / -1;
+        max-height: 320px;
+        aspect-ratio: unset;
+        object-fit: cover;
+      }
+
+      /* comment image grid */
+      .img-thumbs {
+        display: grid;
+        grid-template-columns: repeat(3, 64px);
+        gap: 5px;
+        margin: 6px 0;
+      }
+      .img-thumbs img {
+        width: 64px; height: 64px; object-fit: cover;
+        border-radius: 5px; cursor: pointer; border: 1px solid #e0e0e0;
+      }
+
+      /* upload preview (same grid) */
+      #comment-img-preview {
+        display: grid;
+        grid-template-columns: repeat(3, 64px);
+        gap: 5px;
+        margin: 6px 0;
+      }
+      #comment-img-preview img {
+        width: 64px; height: 64px; object-fit: cover;
+        border-radius: 5px; cursor: pointer; border: 1px solid #e0e0e0;
+      }
+
+      .img-upload-label { font-size: 0.82rem; color: #555; cursor: pointer; }
+      .img-err { font-size: 0.78rem; color: #c00; margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <h1>Post Detail</h1>
+    <div id="post-detail"></div>
+
+    <div class="comment-section">
+      <h3>Comments</h3>
+      <div id="comments"></div>
+      <div class="comment-form">
+        <textarea id="comment-input" placeholder="Write a comment..."></textarea>
+        <label class="img-upload-label">
+          + Add images (max 3)
+          <input type="file" id="comment-images" accept="image/*" multiple style="display:none">
+        </label>
+        <p class="img-err" id="comment-img-err"></p>
+        <div class="img-thumbs" id="comment-img-preview"></div>
+        <div><button class="btn" onclick="submitComment()">Post Comment</button></div>
+        <p id="comment-msg"></p>
+      </div>
+    </div>
+</body>
+<script>
+  const API_BASE = "http://localhost:3005";
+  const params = new URLSearchParams(window.location.search);
+  const POST_ID = params.get("postId");
+
+  // --- image upload helpers ---
+  const MAX_IMAGES = 3;
+
+  function setupImageInput(inputEl, previewEl, errEl, filesRef) {
+    inputEl.addEventListener("change", function () {
+      for (const file of this.files) {
+        if (filesRef.list.length >= MAX_IMAGES) break;
+        if (!filesRef.list.find(f => f.name === file.name && f.size === file.size)) {
+          filesRef.list.push(file);
+        }
+      }
+      this.value = ""; // reset so same file can be re-added after removal
+      if (filesRef.list.length >= MAX_IMAGES) {
+        errEl.innerText = `Max ${MAX_IMAGES} images.`;
+      } else {
+        errEl.innerText = "";
+      }
+      renderPreview(previewEl, filesRef);
+    });
+  }
+
+  function renderPreview(previewEl, filesRef) {
+    previewEl.innerHTML = "";
+    filesRef.list.forEach((file, i) => {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.title = "Click to remove";
+      img.addEventListener("click", () => {
+        filesRef.list.splice(i, 1);
+        renderPreview(previewEl, filesRef);
+      });
+      previewEl.appendChild(img);
+    });
+  }
+
+  function openFull(url) {
+    window.open(url, "_blank");
+  }
+
+  // comment form file state
+  const commentFilesRef = { list: [] };
+  document.addEventListener("DOMContentLoaded", () => {
+    setupImageInput(
+      document.getElementById("comment-images"),
+      document.getElementById("comment-img-preview"),
+      document.getElementById("comment-img-err"),
+      commentFilesRef
+    );
+  });
+
+  async function loadPost() {
+    try {
+      const res = await fetch(`${API_BASE}/posts/${POST_ID}`);
+      const post = await res.json();
+
+      // fetch full event info for the card
+      const eventRes = await fetch(`${API_BASE}/events/${post.eventId}`);
+      const event = eventRes.ok ? await eventRes.json() : null;
+
+      const images = post.images?.length
+        ? post.images.map(url => `<img src="${API_BASE}/${url}">`).join("")
+        : "";
+
+      const ratingHtml = post.rating
+        ? `<div class="event-card-rating">Your rating: ${"★".repeat(post.rating)}${"☆".repeat(5 - post.rating)}</div>`
+        : "";
+
+      const thumb = event?.posterUrl
+        ? `<img src="${API_BASE}/${event.posterUrl}" alt="event poster">`
+        : "";
+      const date = event?.createdAt ? `<p class="meta">${new Date(event.createdAt).toLocaleDateString()}</p>` : "";
+      const desc = event?.description
+        ? `<p>${event.description}</p>`
+        : "";
+
+      document.getElementById("post-detail").innerHTML = `
+        <div class="post-card">
+          <p><strong>${post.username}</strong> · ${post.createdAt}</p>
+          <a class="event-card" href="eventDetail.html?eventId=${post.eventId}">
+            ${thumb}
+            <div class="event-card-info">
+              <h4>${post.title}</h4>
+              ${date}
+              ${desc}
+              ${ratingHtml}
+            </div>
+          </a>
+          <p class="post-content">${post.content}</p>
+          <div class="images">${images}</div>
+          <div class="post-actions">
+            <button id="like-btn" class="btn" data-count="${post.likeCount ?? 0}" onclick="toggleLike()">
+              Like (${post.likeCount ?? 0})
+            </button>
+            <button class="btn edit-post-btn">Edit</button>
+            <button class="btn" onclick="deletePost(${post.postId}, true)">Delete</button>
+          </div>
+        </div>`;
+
+      const postCard = document.getElementById("post-detail").querySelector(".post-card");
+      postCard.querySelector(".edit-post-btn").addEventListener("click", () => {
+        startInlineEdit(post.postId, postCard.querySelector(".post-content"), postCard.querySelector(".post-actions"));
+      });
+
+      document.querySelector(".comment-section h3").innerText = `Comments (${post.commentCount ?? 0})`;
+      renderComments(post.comments || [], document.getElementById("comments"));
+    } catch (error) {
+      document.getElementById("post-detail").innerText = "Failed to load post.";
+    }
+  }
+
+  async function toggleLike() {
+    try {
+      const res = await fetch(`${API_BASE}/posts/${POST_ID}/like`, { method: "POST" });
+      const { liked } = await res.json();
+      const btn = document.getElementById("like-btn");
+      const currentCount = parseInt(btn.dataset.count ?? 0);
+      const newCount = liked ? currentCount + 1 : currentCount - 1;
+      btn.dataset.count = newCount;
+      btn.classList.toggle("liked", liked);
+      btn.textContent = `Like (${newCount})`;
+    } catch {
+      // silently fail
+    }
+  }
+
+  async function submitComment() {
+    const content = document.getElementById("comment-input").value.trim();
+    if (!content) {
+      document.getElementById("comment-msg").innerText = "Please write something.";
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("content", content);
+      for (const file of commentFilesRef.list) formData.append("images", file);
+      const res = await fetch(`${API_BASE}/posts/comment/${POST_ID}`, {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        document.getElementById("comment-input").value = "";
+        document.getElementById("comment-msg").innerText = "";
+        commentFilesRef.list = [];
+        document.getElementById("comment-img-preview").innerHTML = "";
+        document.getElementById("comment-img-err").innerText = "";
+        loadPost();
+      } else {
+        document.getElementById("comment-msg").innerText = "Failed to post comment.";
+      }
+    } catch {
+      document.getElementById("comment-msg").innerText = "Failed to post comment.";
+    }
+  }
+
+  async function toggleCommentLike(postId, btn) {
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}/like`, { method: "POST" });
+      const { liked } = await res.json();
+      const currentCount = parseInt(btn.dataset.count ?? 0);
+      const newCount = liked ? currentCount + 1 : currentCount - 1;
+      btn.dataset.count = newCount;
+      btn.classList.toggle("liked", liked);
+      btn.textContent = `Like (${newCount})`;
+    } catch {
+      // silently fail
+    }
+  }
+
+  async function submitReply(parentId, textarea, msgEl, filesRef, previewEl, errEl) {
+    const content = textarea.value.trim();
+    if (!content) { msgEl.innerText = "Please write something."; return; }
+    try {
+      const formData = new FormData();
+      formData.append("content", content);
+      for (const file of filesRef.list) formData.append("images", file);
+      const res = await fetch(`${API_BASE}/posts/comment/${parentId}`, {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        textarea.value = "";
+        msgEl.innerText = "";
+        filesRef.list = [];
+        previewEl.innerHTML = "";
+        errEl.innerText = "";
+        loadPost();
+      } else {
+        msgEl.innerText = "Failed to post reply.";
+      }
+    } catch {
+      msgEl.innerText = "Failed to post reply.";
+    }
+  }
+
+  function renderComments(comments, container, startIndex = 1) {
+    container.innerHTML = "";
+    if (!comments.length) {
+      container.innerHTML = "<p>No comments yet.</p>";
+      return;
+    }
+    comments.forEach((c, i) => {
+      const div = document.createElement("div");
+      div.className = "comment";
+      div.innerHTML = `
+        <p><strong>${c.userName}</strong> · ${c.createdAt} · <span style="color:#999">#${startIndex + i}</span></p>
+        <p class="comment-content">${c.content}</p>
+        <div class="img-thumbs comment-imgs"></div>
+        <div class="comment-actions">
+          <button class="btn-sm like-btn" data-count="${c.likeCount ?? 0}">Like (${c.likeCount ?? 0})</button>
+          <button class="btn-sm reply-toggle">Reply</button>
+          <button class="btn-sm edit-btn">Edit</button>
+          <button class="btn-sm delete-btn">Delete</button>
+        </div>
+        <div class="reply-form" style="display:none; flex-direction:column; gap:4px;">
+          <textarea placeholder="Write a reply..."></textarea>
+          <label class="img-upload-label">
+            + Add images (max 3)
+            <input type="file" accept="image/*" multiple style="display:none">
+          </label>
+          <p class="img-err"></p>
+          <div class="img-thumbs reply-img-preview"></div>
+          <div><button class="btn-sm reply-btn">Post Reply</button></div>
+          <p class="reply-msg"></p>
+        </div>`;
+
+      // render existing comment images as clickable thumbnails
+      const imgContainer = div.querySelector(".comment-imgs");
+      (c.images ?? []).forEach(url => {
+        const img = document.createElement("img");
+        img.src = `${API_BASE}/${url}`;
+        img.addEventListener("click", () => openFull(img.src));
+        imgContainer.appendChild(img);
+      });
+
+      const likeBtn = div.querySelector(".like-btn");
+      likeBtn.addEventListener("click", () => toggleCommentLike(c.postId, likeBtn));
+
+      const replyToggle = div.querySelector(".reply-toggle");
+      const replyForm = div.querySelector(".reply-form");
+      replyToggle.addEventListener("click", () => {
+        replyForm.style.display = replyForm.style.display === "none" ? "flex" : "none";
+      });
+
+      // reply image state
+      const replyFilesRef = { list: [] };
+      const replyPreviewEl = replyForm.querySelector(".reply-img-preview");
+      const replyErrEl = replyForm.querySelector(".img-err");
+      const replyFileInput = replyForm.querySelector("input[type=file]");
+      setupImageInput(replyFileInput, replyPreviewEl, replyErrEl, replyFilesRef);
+
+      const replyBtn = replyForm.querySelector(".reply-btn");
+      const textarea = replyForm.querySelector("textarea");
+      const msgEl = replyForm.querySelector(".reply-msg");
+      replyBtn.addEventListener("click", () => submitReply(c.postId, textarea, msgEl, replyFilesRef, replyPreviewEl, replyErrEl));
+
+      const editBtn = div.querySelector(".edit-btn");
+      editBtn.addEventListener("click", () => startInlineEdit(c.postId, div.querySelector(".comment-content"), div.querySelector(".comment-actions")));
+
+      const deleteBtn = div.querySelector(".delete-btn");
+      deleteBtn.addEventListener("click", () => deletePost(c.postId, false));
+
+      if (c.replies?.length) {
+        const repliesDiv = document.createElement("div");
+        repliesDiv.className = "replies";
+        renderComments(c.replies, repliesDiv);
+        div.appendChild(repliesDiv);
+      }
+      container.appendChild(div);
+    });
+  }
+
+  function startInlineEdit(postId, contentEl, actionsEl) {
+    const textarea = document.createElement("textarea");
+    textarea.value = contentEl.innerText;
+    textarea.rows = 3;
+    textarea.style.cssText = "width:100%;box-sizing:border-box;";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.className = "btn-sm";
+    saveBtn.textContent = "Save";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "btn-sm";
+    cancelBtn.textContent = "Cancel";
+
+    const msgEl = document.createElement("p");
+    msgEl.style.cssText = "font-size:0.8rem;color:#c00;margin:2px 0;";
+
+    const editWrapper = document.createElement("div");
+    editWrapper.append(textarea, saveBtn, cancelBtn, msgEl);
+    contentEl.replaceWith(editWrapper);
+    actionsEl.style.display = "none";
+
+    cancelBtn.addEventListener("click", () => {
+      editWrapper.replaceWith(contentEl);
+      actionsEl.style.display = "";
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const newContent = textarea.value.trim();
+      if (!newContent) { msgEl.innerText = "Content cannot be empty."; return; }
+      try {
+        const res = await fetch(`${API_BASE}/posts/${postId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: newContent }),
+        });
+        if (res.ok) {
+          contentEl.innerText = newContent;
+          editWrapper.replaceWith(contentEl);
+          actionsEl.style.display = "";
+        } else {
+          msgEl.innerText = "Failed to save.";
+        }
+      } catch {
+        msgEl.innerText = "Failed to save.";
+      }
+    });
+  }
+
+  async function deletePost(postId, isRoot) {
+    const ok = await inlineConfirm("Delete this post? This cannot be undone.");
+    if (!ok) return;
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}`, { method: "DELETE" });
+      if (res.ok) {
+        if (isRoot) {
+          window.history.back();
+        } else {
+          loadPost();
+        }
+      } else {
+        alert("Failed to delete.");
+      }
+    } catch {
+      alert("Failed to delete.");
+    }
+  }
+  function inlineConfirm(message) {
+  return new Promise(resolve => {
+    const modal = document.createElement("div");
+    modal.style.cssText = `
+      position:fixed; inset:0; background:rgba(0,0,0,.4);
+      display:flex; align-items:center; justify-content:center; z-index:9999;
+    `;
+    modal.innerHTML = `
+      <div style="background:#fff;padding:24px;border-radius:8px;max-width:320px;text-align:center;">
+        <p style="margin:0 0 16px">${message}</p>
+        <button id="conf-yes">Delete</button>
+        <button id="conf-no" style="margin-left:8px">Cancel</button>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector("#conf-yes").onclick = () => { document.body.removeChild(modal); resolve(true); };
+    modal.querySelector("#conf-no").onclick  = () => { document.body.removeChild(modal); resolve(false); };
+  });
+}
+  loadPost();
+</script>
+</html>
