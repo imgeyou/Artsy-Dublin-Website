@@ -4,6 +4,14 @@ const path = require('path');
 const dotenv = require('dotenv').config({path: path.join(__dirname, '..', '.env')});
 const axios = require('axios');
 
+//import node-querybuilder and configure file
+const dbconfig = require("../utils/dbconfig");
+const queryBuilder = require("node-querybuilder");
+
+// one pool shared across all methods. never recreated per request
+const pool = new queryBuilder(dbconfig, "mysql", "pool");
+
+
 // Make mysql connection
 const mysql = require('mysql2');
 const connection = mysql.createConnection({
