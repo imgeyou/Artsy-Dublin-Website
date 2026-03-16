@@ -125,8 +125,10 @@ class postsModel {
         const postIds = posts.map(p => p.postId);
         if (postIds.length > 0) {
             const [postImages] = await que.query(
-                `SELECT imageUrl, postId FROM postImages WHERE postId IN (?)`,
-                [postIds]
+                `SELECT imageUrl, postId 
+                FROM postImages 
+                WHERE postId IN (?)
+                `,[postIds]
             );
             posts.forEach(p => {
                 p.images = postImages.filter(i => i.postId === p.postId).map(i => i.imageUrl);
@@ -142,8 +144,12 @@ class postsModel {
         try {
             que = await pool.getConnection();
             const [result] = await que.query(
-                `SELECT eventAttendId, rating FROM eventattended WHERE userId = ? AND eventId = ? AND isDeleted = 0`,
-                [userId, eventId]
+                `SELECT eventAttendId, rating 
+                FROM eventattended 
+                WHERE userId = ? 
+                AND eventId = ? 
+                AND isDeleted = 0
+                `,[userId, eventId]
             );
             return result[0] ?? null; //null if not attended
 
@@ -164,8 +170,11 @@ class postsModel {
 
             // check if a record already exists (active or soft-deleted)
             const [existing] = await que.query(
-                `SELECT eventAttendId, isDeleted FROM eventattended WHERE userId = ? AND eventId = ?`,
-                [userId, eventId]
+                `SELECT eventAttendId, isDeleted 
+                FROM eventattended 
+                WHERE userId = ? 
+                AND eventId = ?
+                `,[userId, eventId]
             );
 
             if (existing[0]) {
@@ -173,13 +182,17 @@ class postsModel {
 
                 // restore the soft-deleted record with new date, clear old rating
                 await que.query(
-                    `UPDATE eventattended SET isDeleted = 0, attendedAt = ?, rating = NULL WHERE eventAttendId = ?`,
-                    [attendedAt, existing[0].eventAttendId]
+                    `UPDATE eventattended 
+                    SET isDeleted = 0, attendedAt = ?, rating = NULL 
+                    WHERE eventAttendId = ?
+                    `,[attendedAt, existing[0].eventAttendId]
                 );
 
                 await que.query(
-                    `UPDATE events SET attendCount = attendCount + 1, updatedAt = NOW() WHERE eventId = ?`,
-                    [eventId]
+                    `UPDATE events 
+                    SET attendCount = attendCount + 1, updatedAt = NOW() 
+                    WHERE eventId = ?
+                    `,[eventId]
                 );
 
                 return existing[0].eventAttendId;
@@ -219,8 +232,10 @@ class postsModel {
 
             //increment reviewCount in TABLE events
             await que.query(
-                `UPDATE events SET reviewCount = reviewCount + 1, updatedAt = NOW() WHERE eventId = ?`,
-                [eventId]
+                `UPDATE events 
+                SET reviewCount = reviewCount + 1, updatedAt = NOW() 
+                WHERE eventId = ?
+                `,[eventId]
             );
 
             //get postId for the newly created post
@@ -257,8 +272,9 @@ class postsModel {
 
             //increment commentCount in TABLE posts
             await que.query(
-                `UPDATE posts SET commentCount = commentCount + 1, updatedAt = NOW() WHERE postId = ?`,
-                [postParentId]
+                `UPDATE posts 
+                SET commentCount = commentCount + 1, updatedAt = NOW() 
+                WHERE postId = ?`,[postParentId]
             );
 
             //add imageUrls to the TABLE postImages
@@ -282,20 +298,27 @@ class postsModel {
         try{
             que = await pool.getConnection();
             const [result] = await que.query(
-                `SELECT postId FROM postLikes WHERE postId = ? AND userId = ?`,
-                [likePostId, likeUserId]
+                `SELECT postId 
+                FROM postLikes 
+                WHERE postId = ? 
+                AND userId = ?
+                `,[likePostId, likeUserId]
             );
 
             if (result.length > 0) {
                 await que.query(
-                    `DELETE FROM postLikes WHERE postId = ? AND userId = ?`,
-                    [likePostId, likeUserId]
+                    `DELETE FROM postLikes 
+                    WHERE postId = ? 
+                    AND userId = ?
+                    `,[likePostId, likeUserId]
                 );
 
                 //decrement likeCount in TABLE posts
                 await que.query(
-                    `UPDATE posts SET likeCount = likeCount - 1, updatedAt = NOW() WHERE postId = ?`,
-                    [likePostId]
+                    `UPDATE posts 
+                    SET likeCount = likeCount - 1, updatedAt = NOW() 
+                    WHERE postId = ?
+                    `,[likePostId]
                 );
 
                 return false; //unlike
@@ -308,8 +331,10 @@ class postsModel {
 
                 //increment likeCount in TABLE posts
                 await que.query(
-                    `UPDATE posts SET likeCount = likeCount + 1, updatedAt = NOW() WHERE postId = ?`,
-                    [likePostId]
+                    `UPDATE posts 
+                    SET likeCount = likeCount + 1, updatedAt = NOW() 
+                    WHERE postId = ?
+                    `,[likePostId]
                 );
 
                 return true; //like
@@ -330,8 +355,10 @@ class postsModel {
             que = await pool.getConnection();
             //update rating in TABLE eventAttended, filter by the same eventAttendId
             const [result] = await que.query(
-                `UPDATE eventattended SET rating = ? WHERE eventAttendId = ?`,
-                [rating, eventAttendId]
+                `UPDATE eventattended 
+                SET rating = ? 
+                WHERE eventAttendId = ?
+                `,[rating, eventAttendId]
             );
 
             if (result.affectedRows === 0) throw new Error('record-not-found');
@@ -349,8 +376,11 @@ class postsModel {
         try {
             que = await pool.getConnection();
             const [result] = await que.query(
-                `UPDATE posts SET content = ? WHERE postId = ? AND isDeleted = 0`,
-                [content, postId]
+                `UPDATE posts 
+                SET content = ? 
+                WHERE postId = ? 
+                AND isDeleted = 0
+                `,[content, postId]
             );
 
             if (result.affectedRows === 0) throw new Error('Post-not-found');
@@ -373,8 +403,11 @@ class postsModel {
 
             // verify post exists and get its related data
             const [post] = await que.query(
-                `SELECT postId, postParentId, eventId, type FROM posts WHERE postId = ? AND isDeleted = 0`,
-                [postId]
+                `SELECT postId, postParentId, eventId, type 
+                FROM posts 
+                WHERE postId = ? 
+                AND isDeleted = 0
+                `,[postId]
             );
 
             if (!post[0]) throw new Error('Post-not-found');
@@ -395,22 +428,28 @@ class postsModel {
 
             // soft-delete all (post + all nested comments)
             await que.query(
-                `UPDATE posts SET isDeleted = 1, updatedAt = NOW() WHERE postId IN (?)`,
-                [commentsIds]
+                `UPDATE posts 
+                SET isDeleted = 1, updatedAt = NOW() 
+                WHERE postId IN (?)
+                `,[commentsIds]
             );
 
             // alter counts
             if (post[0].type === 1) {
                 // diary post: decrement event's reviewCount
                 await que.query(
-                    `UPDATE events SET reviewCount = GREATEST(reviewCount - 1, 0), updatedAt = NOW() WHERE eventId = ?`,
-                    [post[0].eventId]
+                    `UPDATE events 
+                    SET reviewCount = GREATEST(reviewCount - 1, 0), updatedAt = NOW() 
+                    WHERE eventId = ?
+                    `,[post[0].eventId]
                 );
             } else if (post[0].postParentId) {
                 // comment: decrement direct parentPost's commentCount
                 await que.query(
-                    `UPDATE posts SET commentCount = GREATEST(commentCount - 1, 0), updatedAt = NOW() WHERE postId = ?`,
-                    [post[0].postParentId]
+                    `UPDATE posts 
+                    SET commentCount = GREATEST(commentCount - 1, 0), updatedAt = NOW() 
+                    WHERE postId = ?
+                    `,[post[0].postParentId]
                 );
             }
 
@@ -429,8 +468,10 @@ class postsModel {
             que = await pool.getConnection();
             // get eventId before deleting
             const [attendance] = await que.query(
-                `SELECT eventId FROM eventattended WHERE eventAttendId = ?`,
-                [eventAttendId]
+                `SELECT eventId 
+                FROM eventattended 
+                WHERE eventAttendId = ?
+                `,[eventAttendId]
             );
 
             if (!attendance[0]) throw new Error('record-not-found');
@@ -439,33 +480,43 @@ class postsModel {
 
             // soft-delete any posts linked to this attendance
             const [linkedPosts] = await que.query(
-                `SELECT postId FROM posts WHERE eventAttendId = ?`,
-                [eventAttendId]
+                `SELECT postId 
+                FROM posts 
+                WHERE eventAttendId = ?
+                `,[eventAttendId]
             );
 
             if (linkedPosts.length > 0) {
                 //linkedPosts: set isDeleted to 1
                 await que.query(
-                    `UPDATE posts SET isDeleted = 1, updatedAt = NOW() WHERE eventAttendId = ?`,
-                    [eventAttendId]
+                    `UPDATE posts 
+                    SET isDeleted = 1, updatedAt = NOW() 
+                    WHERE eventAttendId = ?
+                    `,[eventAttendId]
                 );
                 // alter counts: decrement event's reviewCount
                 await que.query(
-                    `UPDATE events SET reviewCount = GREATEST(reviewCount - ?, 0), updatedAt = NOW() WHERE eventId = ?`,
-                    [linkedPosts.length, eventId]
+                    `UPDATE events 
+                    SET reviewCount = GREATEST(reviewCount - ?, 0), updatedAt = NOW() 
+                    WHERE eventId = ?
+                    `,[linkedPosts.length, eventId]
                 );
             }
 
             // alter counts: decrement event's attendCount
             await que.query(
-                `UPDATE events SET attendCount = GREATEST(attendCount - 1, 0), updatedAt = NOW() WHERE eventId = ?`,
-                [eventId]
+                `UPDATE events 
+                SET attendCount = GREATEST(attendCount - 1, 0), updatedAt = NOW() 
+                WHERE eventId = ?
+                `,[eventId]
             );
 
             //attendance: set isDeleted to 1
             await que.query(
-                `UPDATE eventattended SET isDeleted = 1 WHERE eventAttendId = ?`,
-                [eventAttendId]
+                `UPDATE eventattended 
+                SET isDeleted = 1 
+                WHERE eventAttendId = ?
+                `,[eventAttendId]
             );
 
         } catch (err) {
