@@ -53,7 +53,7 @@ CREATE TABLE `postimages` (
   PRIMARY KEY (`postImageId`),
   KEY `postId` (`postId`),
   CONSTRAINT `postimages_ibfk_1` FOREIGN KEY (`postId`) REFERENCES `posts` (`postId`)
-) 
+);
 
 CREATE TABLE `postlikes` (
   `likeId` int NOT NULL AUTO_INCREMENT,
