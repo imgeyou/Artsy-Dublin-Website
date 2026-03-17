@@ -1,5 +1,5 @@
 
------------------
+------USERS---------------------------------------------------------------
 CREATE TABLE `userlocation` (
   `locationId` int NOT NULL,
   `locationName` varchar(255) DEFAULT NULL,
@@ -33,7 +33,9 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`gender`) REFERENCES `usergender` (`genderId`)
 );
 
----------------------------------------------------
+
+
+-----------EVENTS------------------------------------------------------------------------------------------
 CREATE TABLE `apievents` (
   `name` varchar(255) NOT NULL,
   `url` varchar(255) DEFAULT NULL,
@@ -274,7 +276,9 @@ CREATE TABLE `events` (
 
 -- ALTER TABLE `event_tag_map` ADD FOREIGN KEY (`tagId`) REFERENCES `eventTags` (`tagId`);
 
----------------------
+
+
+--------POSTS (seen in diary): all the tables storing data regarding post/comment, log-event, like, star-rate, etc-------------
 CREATE TABLE `posttype` (
   `typeId` int NOT NULL,
   `typeName` varchar(255) DEFAULT NULL,
