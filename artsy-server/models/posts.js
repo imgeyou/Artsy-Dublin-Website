@@ -37,7 +37,7 @@ class postsModel {
                 AND posts.isDeleted = 0
                 AND posts.userId = COALESCE(?, posts.userId)
                 AND posts.eventId = COALESCE(?, posts.eventId)
-            `, [filters.userId ?? null, filters.eventId ?? null]);
+            `, [filters.userId ?? null, filters.eventId ?? null]); //If the filter attribute is undefined, it will be null; the condition forever be true;
 
             //attach imageUrls to the "images" attribute of the post object
             await this._attachImages(que, results);
