@@ -1,6 +1,6 @@
 // this is the controller for image related stuff
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
@@ -8,22 +8,21 @@ const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES_PER_POST = 5;
 
-const TEMP_DIR   = path.join(__dirname, '..', 'public', 'uploads', 'temp');
+const TEMP_DIR = path.join(__dirname, '..', 'public', 'uploads', 'temp');
 const RESIZED_DIR = path.join(__dirname, '..', 'public', 'uploads', 'resized');
 
 // create directories if they don't exist yet
-if (!fs.existsSync(TEMP_DIR))    fs.mkdirSync(TEMP_DIR,    { recursive: true });
+if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR,    { recursive: true });
 if (!fs.existsSync(RESIZED_DIR)) fs.mkdirSync(RESIZED_DIR, { recursive: true });
 
-/**
- * Processes images uploaded via express-fileupload.
- * Validates type and size, resizes to 750px width using sharp,
- * deletes the temp original, and returns relative URLs for database storage.
+/**Processes images uploaded via express-fileupload.
+ Validates type and size, resizes to 750px width using sharp,
+ deletes the temp original, and returns relative URLs for database storage.
  * @param {object} files - req.files from express-fileupload middleware
  * @returns {Promise<string[]>} array of relative image URLs
  */
 async function processUploadedImages(files) {
-    // no files uploaded — return empty array (images are optional)
+    // no files uploaded, return empty array (images are optional)
     if (!files || !files.images) return [];
 
     // normalise: single file comes as object, multiple come as array
@@ -49,8 +48,8 @@ async function processUploadedImages(files) {
         }
 
         // build file paths
-        const uniqueName  = Date.now() + '_' + image.name;
-        const tempPath    = path.join(TEMP_DIR,    uniqueName);
+        const uniqueName = Date.now() + '_' + image.name;
+        const tempPath = path.join(TEMP_DIR,    uniqueName);
         const resizedName = 'resized_' + uniqueName;
         const resizedPath = path.join(RESIZED_DIR, resizedName);
 
