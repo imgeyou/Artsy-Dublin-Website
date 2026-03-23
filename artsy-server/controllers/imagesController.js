@@ -1,77 +1,64 @@
-// this is the controller for image related stuff
-
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
-
-const ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-const MAX_IMAGES_PER_POST = 5;
-
+const ALLOWED_MIME_TYPES =  ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 5*1024*1024; 
+const MAX_IMAGES = 5;
 const TEMP_DIR = path.join(__dirname, '..', 'public', 'uploads', 'temp');
-const RESIZED_DIR = path.join(__dirname, '..', 'public', 'uploads', 'resized');
+ const RESIZED_DIR = path.join(__dirname, '..', 'public', 'uploads', 'resized');
 
-// create directories if they don't exist yet
-if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR,    { recursive: true });
+// create directories 
+if  (!fs.existsSync(TEMP_DIR))  fs.mkdirSync(TEMP_DIR, { recursive: true });
+
 if (!fs.existsSync(RESIZED_DIR)) fs.mkdirSync(RESIZED_DIR, { recursive: true });
 
-/**Processes images uploaded via express-fileupload.
- Validates type and size, resizes to 750px width using sharp,
- deletes the temp original, and returns relative URLs for database storage.
- * @param {object} files - req.files from express-fileupload middleware
- * @returns {Promise<string[]>} array of relative image URLs
+/**Processes images uploaded via express-fileupload- type, size, resize,etc
+  @param {object} files 
+  @returns {Promise<string[]>} 
  */
 async function processUploadedImages(files) {
-    // no files uploaded, return empty array (images are optional)
-    if (!files || !files.images) return [];
+   if (!files || !files.images) return []; 
 
-    // normalise: single file comes as object, multiple come as array
-    const imageFiles = Array.isArray(files.images) ? files.images : [files.images];
+ //normalising
+ const imageFiles= Array.isArray (files.images) ? files.images : [files.images];
 
-    // validate image count
-    if (imageFiles.length > MAX_IMAGES_PER_POST) {
-        throw new Error(`Too many images. Maximum allowed is ${MAX_IMAGES_PER_POST}.`);
+//validate img count
+  if (imageFiles.length > MAX_IMAGES) {
+     throw new Error (`Maximum amount of images allowed is ${MAX_IMAGES}`);
     }
-
     const savedUrls = [];
 
-    for (const image of imageFiles) {
-
-        // validate file type
-        if (ACCEPTED_MIME_TYPES.indexOf(image.mimetype) < 0) {
-            throw new Error(`"${image.name}" is not a valid image. Only JPG, PNG and WebP are allowed.`);
+ for (const image of imageFiles) {
+ //validation type and size
+     if (ALLOWED_MIME_TYPES.indexOf(image.mimetype) < 0) {
+         throw new Error (`"${image.name}" is invalid image format. Please, make sure you image is .jpg, .jpeg, .png or .webp`);
+        }
+     if (image.size > MAX_FILE_SIZE) {
+         throw new Error (`"${image.name}" exceeds the allowed 5MB size limit`);
         }
 
-        // validate file size
-        if (image.size > MAX_FILE_SIZE_BYTES) {
-            throw new Error(`"${image.name}" exceeds the 5MB size limit.`);
-        }
-
-        // build file paths
-        const uniqueName = Date.now() + '_' + image.name;
-        const tempPath = path.join(TEMP_DIR,    uniqueName);
-        const resizedName = 'resized_' + uniqueName;
-        const resizedPath = path.join(RESIZED_DIR, resizedName);
-
-        // move uploaded file to temp location
-        await image.mv(tempPath);
-
-        // resize to 750px width, preserving aspect ratio
-        await sharp(tempPath)
-            .resize(750)
-            .toFile(resizedPath);
-
-        // delete the original temp file after resizing
-        fs.unlink(tempPath, (err) => {
-            if (err) console.error('Failed to delete temp file:', err.message);
-            else console.log(tempPath + ' deleted');
+    //build file paths
+     const uniqueName = Date.now() + '_' + image.name;
+     const tempPath = path.join(TEMP_DIR, uniqueName);
+     const resizedName = 'resized_' + uniqueName;
+     const resizedPath = path.join(RESIZED_DIR, resizedName);
+     await image.mv(tempPath); //move uploaded file to temp location
+     await sharp(tempPath) //resize to 750px
+         .resize(750)
+         .toFile(resizedPath);
+     // delete the temp file after img is resized
+     fs.unlink(tempPath, (err) => {
+         if (err) console.error('Failed to delete temp file:', err.message);
+         else console.log(tempPath + ' deleted');
         });
-
         // store relative URL for the database
-        savedUrls.push('uploads/resized/' + resizedName);
+     savedUrls.push('uploads/resized/' + resizedName);
     }
+ return savedUrls;
 
-    return savedUrls;
 }
 
-module.exports = { processUploadedImages };
+
+
+
+module.exports= { processUploadedImages };
