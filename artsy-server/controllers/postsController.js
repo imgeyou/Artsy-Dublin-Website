@@ -96,7 +96,7 @@ class postsController{
         }
     }
 
-    //B2. create post (review, iary) - need to get eventAttendId first
+    //B2. create post (review, diary) - need to get eventAttendId first
     async createPost(req, res){
         try {
             const eventAttendedId = req.params.eventAttendedId;
@@ -105,9 +105,14 @@ class postsController{
             const imageUrls = await processUploadedImages(req.files);
             const postId = await postsModel.createPost(userId, eventAttendedId, eventId, content, imageUrls);
             res.status(201).json({ postId });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Server error' });
+        } catch (err) { //informative error msgs on image upload
+     if (err.message.includes('Maximum amount of images') ||
+        err.message.includes('invalid image format') ||
+        err.message.includes('exceeds the allowed')) {
+        return res.status(400).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error:'Server error' });
         }
     }
 
@@ -120,10 +125,15 @@ class postsController{
             const imageUrls = await processUploadedImages(req.files);
             const postId = await postsModel.createComment(userId, postParentId, content, imageUrls);
             res.status(201).json({ postId });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ error: 'Server error' });
-        }
+       } catch (err) { //informative error msgs on image upload
+     if (err.message.includes('Maximum amount of images') ||
+        err.message.includes('invalid image format') ||
+        err.message.includes('exceeds the allowed')) {
+        return res.status(400).json({ error: err.message });
+    }
+    console.error(err);
+    res.status(500).json({ error:'Server error' });
+       }
     }
 
     //B4. Toggle like/unlike a post
@@ -206,6 +216,8 @@ class postsController{
         }
     }
 
+    
 }
 
 module.exports = new postsController();
+
