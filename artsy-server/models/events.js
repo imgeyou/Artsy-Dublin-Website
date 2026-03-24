@@ -35,18 +35,24 @@ async function fetchAndPopulate() {
         sort: 'date,asc'
         }
     });
-    let eventsData = theatreEvents.data._embedded.events.map((e) => ({
-        name: e.name,
+
+    // clean up data by producing an obj with all the data we need for our db
+    let eventsData = theatreEvents.data._embedded.events.map((e) =>  ({
+        title: e.name,
         url: e.url,
+        // some sort of nested loop search for scraping segment, (sub)genres
+        desc: `${e.classifications[0].segment.name}, ${e.classifications[0].subGenre.name}`, 
+        posterUrl: e.images[0].url,
+        // event: e,
     }));
 
     // populate into db, skipping repeats
     for (let event of eventsData) {
-        await pool.query(
-            `INSERT IGNORE INTO ${dotenv.parsed.EVENTS_TABLE} (name, url) VALUES (?, ?)`,
-            [event.name, event.url]
-        );
-    }
+            await pool.query(
+                `INSERT IGNORE INTO ${dotenv.parsed.EVENTS_TABLE} (title, url, description, posterURL) VALUES (?, ?, ?, ?)`,
+                [event.title, event.url, event.posterUrl, event.desc]
+            );
+        }
     return eventsData;
 }
 
