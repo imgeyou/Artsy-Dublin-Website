@@ -1,7 +1,8 @@
 import { useState } from "react";
+import './Login.css';
 
 const flowerImage =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Jan_Davidsz._de_Heem_-_Vase_of_Flowers_-_Google_Art_Project.jpg/800px-Jan_Davidsz._de_Heem_-_Vase_of_Flowers_-_Google_Art_Project.jpg";
+  "login.png";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,13 +15,12 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.page}>
-
-      <div style={styles.card}>
+    <div className="page">
+      <div className="card">
         {/* Left: Form */}
-        <div style={styles.formSection}>
+        <div className="formSection">
           {/* Logo */}
-          <div style={styles.logoWrap}>
+          <div className="logoWrap">
             <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
               <text
                 x="50%"
@@ -47,37 +47,33 @@ export default function Login() {
             </svg>
           </div>
 
-          <h1 style={styles.title}>Welcome to Artsy Dublin</h1>
-          <p style={styles.subtitle}>Find new activities to join</p>
+          <h1 className="title">Welcome to Artsy Dublin</h1>
+          <p className="subtitle">Find new activities to join</p>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Email</label>
+          <div className="formGroup">
+            <label className="label">Email</label>
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-              onFocus={(e) => (e.target.style.borderColor = "#5c3d1e")}
-              onBlur={(e) => (e.target.style.borderColor = "#d9d9d9")}
+              className="input"
             />
           </div>
 
-          <div style={styles.formGroup}>
-            <label style={styles.label}>Password</label>
-            <div style={styles.passwordWrap}>
+          <div className="formGroup">
+            <label className="label">Password</label>
+            <div className="passwordWrap">
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{ ...styles.input, paddingRight: "44px" }}
-                onFocus={(e) => (e.target.style.borderColor = "#5c3d1e")}
-                onBlur={(e) => (e.target.style.borderColor = "#d9d9d9")}
+                className="input passwordInput"
               />
               <button
                 type="button"
-                style={styles.eyeBtn}
+                className="eyeBtn"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -94,44 +90,40 @@ export default function Login() {
                 )}
               </button>
             </div>
-            <div style={styles.passwordMeta}>
-              <span style={styles.hint}>Use 8 or more letters, and numbers</span>
-              <a href="#" style={styles.forgotLink}>
-                Forgot Password?
-              </a>
+            <div className="passwordMeta">
+              <span className="hint">Use 8 or more letters, and numbers</span>
+              <a href="#" className="forgotLink">Forgot Password?</a>
             </div>
           </div>
 
-          <button onClick={handleSubmit} style={styles.signInBtn}>
+          <button onClick={handleSubmit} className="signInBtn">
             Sign In
           </button>
 
-          <div style={styles.divider}>
-            <span style={styles.dividerLine} />
-            <span style={styles.dividerText}>Or</span>
-            <span style={styles.dividerLine} />
+          <div className="divider">
+            <span className="dividerLine" />
+            <span className="dividerText">Or</span>
+            <span className="dividerLine" />
           </div>
 
-          <button style={styles.socialBtn}>
+          <button className="socialBtn">
             <GoogleIcon />
             Sign in with Google
           </button>
-          <button style={{ ...styles.socialBtn, marginTop: "10px" }}>
+          <button className="socialBtn socialBtnSecond">
             <FacebookIcon />
             Sign in with Facebook
           </button>
 
-          <p style={styles.signupText}>
+          <p className="signupText">
             Don't you have an account?{" "}
-            <a href="#" style={styles.signupLink}>
-              Sign up
-            </a>
+            <a href="#" className="signupLink">Sign up</a>
           </p>
         </div>
 
         {/* Right: Artwork */}
-        <div style={styles.imageSection}>
-          <img src={flowerImage} alt="Floral artwork" style={styles.artwork} />
+        <div className="imageSection">
+          <img src={flowerImage} alt="Event picture" className="artwork" />
         </div>
       </div>
     </div>
@@ -159,197 +151,3 @@ function FacebookIcon() {
     </svg>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#f0efed",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "32px 16px",
-    fontFamily: "Georgia, 'Times New Roman', serif",
-  },
-  pageLabel: {
-    alignSelf: "flex-start",
-    marginLeft: "calc(50% - 500px)",
-    color: "#aaa",
-    fontSize: "13px",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    marginBottom: "12px",
-    letterSpacing: "0.02em",
-  },
-  card: {
-    display: "flex",
-    flexDirection: "row",
-    background: "#fff",
-    borderRadius: "16px",
-    overflow: "hidden",
-    width: "100%",
-    maxWidth: "1000px",
-    boxShadow: "0 4px 32px rgba(0,0,0,0.08)",
-    minHeight: "620px",
-  },
-  formSection: {
-    flex: 1,
-    padding: "56px 48px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  imageSection: {
-    width: "420px",
-    flexShrink: 0,
-    padding: "32px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    background: "#f7f5f2",
-  },
-  artwork: {
-    width: "100%",
-    height: "100%",
-    maxHeight: "640px",
-    objectFit: "cover",
-    borderRadius: "12px",
-  },
-  logoWrap: {
-    marginBottom: "16px",
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: "600",
-    color: "#1a1a1a",
-    margin: "0 0 6px 0",
-    textAlign: "center",
-    letterSpacing: "-0.01em",
-  },
-  subtitle: {
-    fontSize: "13px",
-    color: "#999",
-    margin: "0 0 28px 0",
-    textAlign: "center",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-  },
-  formGroup: {
-    width: "100%",
-    maxWidth: "320px",
-    marginBottom: "16px",
-  },
-  label: {
-    display: "block",
-    fontSize: "13px",
-    color: "#333",
-    marginBottom: "6px",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    textAlign: "left", 
-  },
-  input: {
-    width: "100%",
-    padding: "11px 14px",
-    border: "1.5px solid #d9d9d9",
-    borderRadius: "8px",
-    fontSize: "14px",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    color: "#333",
-    outline: "none",
-    boxSizing: "border-box",
-    transition: "border-color 0.2s",
-    background: "#fff",
-  },
-  passwordWrap: {
-    position: "relative",
-  },
-  eyeBtn: {
-    position: "absolute",
-    right: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    padding: "0",
-    display: "flex",
-    alignItems: "center",
-  },
-  passwordMeta: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "5px",
-  },
-  hint: {
-    fontSize: "11px",
-    color: "#bbb",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-  },
-  forgotLink: {
-    fontSize: "12px",
-    color: "#1a73e8",
-    textDecoration: "none",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-  },
-  signInBtn: {
-    width: "100%",
-    maxWidth: "320px",
-    padding: "13px",
-    background: "#5c3d1e",
-    color: "#fff",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    letterSpacing: "0.02em",
-    marginTop: "8px",
-    transition: "background 0.2s",
-  },
-  divider: {
-    display: "flex",
-    alignItems: "center",
-    width: "100%",
-    maxWidth: "320px",
-    margin: "20px 0",
-    gap: "10px",
-  },
-  dividerLine: {
-    flex: 1,
-    height: "1px",
-    background: "#e5e5e5",
-  },
-  dividerText: {
-    fontSize: "13px",
-    color: "#aaa",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-  },
-  socialBtn: {
-    width: "100%",
-    maxWidth: "320px",
-    padding: "11px",
-    background: "#f0f4fb",
-    color: "#333",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "14px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-    transition: "background 0.2s",
-  },
-  signupText: {
-    marginTop: "24px",
-    fontSize: "13px",
-    color: "#555",
-    fontFamily: "'Helvetica Neue', Arial, sans-serif",
-  },
-  signupLink: {
-    color: "#1a73e8",
-    textDecoration: "none",
-    fontWeight: "500",
-  },
-};
