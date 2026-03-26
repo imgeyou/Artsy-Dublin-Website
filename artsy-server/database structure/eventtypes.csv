@@ -2,3 +2,8 @@
 "KZFzniwnSyZfZ7v7na";"Arts & Theater"
 "KZFzniwnSyZfZ7v7nJ";"Music"
 "tmdbFilm";"Film Showing in Cinema(s)"
+
+INSERT INTO eventTypes (eventTypeId, name) VALUES
+('KZFzniwnSyZfZ7v7na', 'Arts & Theater'),
+('KZFzniwnSyZfZ7v7nJ', 'Music'),
+('tmdbFilm', 'Film Showing in Cinema(s)');

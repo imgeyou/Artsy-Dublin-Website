@@ -1,4 +1,4 @@
-ALTER TABLE `genres` (
+Create TABLE `genres` (
   `genreId` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `eventTypeId` varchar(255) NOT NULL,

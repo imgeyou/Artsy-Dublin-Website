@@ -18,3 +18,25 @@
 "KnvZfZ7vAvF";"Dance/Electronic";"KZFzniwnSyZfZ7v7nJ"
 "KnvZfZ7vAvv";"Alternative";"KZFzniwnSyZfZ7v7nJ"
 "KZazBEonSMnZfZ7v6dt";"Alternative Rock";"KZFzniwnSyZfZ7v7nJ"
+
+
+INSERT INTO genres (genreId, name, eventTypeId) VALUES
+('KnvZfZ7v7l1', 'Theatre', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7l6', 'Performance Art', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7lA', 'Music', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7lk', 'Opera', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7lv', 'Magic & Illusion', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7nE', 'Cultural', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7nI', 'Dance', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7v7nn', 'Fashion', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7vAe1', 'Comedy', 'KZFzniwnSyZfZ7v7na'),
+('KnvZfZ7vAeA', 'Rock', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAee', 'R&B', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAeJ', 'Classical', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAev', 'Pop', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAv6', 'Country', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAva', 'Folk', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAve', 'Ballads/Romantic', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAvF', 'Dance/Electronic', 'KZFzniwnSyZfZ7v7nJ'),
+('KnvZfZ7vAvv', 'Alternative', 'KZFzniwnSyZfZ7v7nJ'),
+('KZazBEonSMnZfZ7v6dt', 'Alternative Rock', 'KZFzniwnSyZfZ7v7nJ');
