@@ -84,7 +84,7 @@
 
     <script>
       const API_BASE = "http://localhost:3005";
-      const EVENT_ID = new URLSearchParams(window.location.search).get("eventId") ?? 4;
+      const EVENT_ID = new URLSearchParams(window.location.search).get("eventId") ?? 15;
       const container = document.getElementById("event-detail");
       container.innerHTML = "";
       const card = document.createElement("div");
@@ -99,7 +99,7 @@
 
           card.innerHTML = `
             <h3>${event.title}</h3>
-            <img src="${API_BASE}/${event.posterUrl}">
+            <img src="${event.posterUrl}" alt="event poster">
             <p>${event.createdAt}</p>
             <p>${event.description}</p>
             <div id="action-area"></div>`;
@@ -214,7 +214,7 @@
       }
 
       async function deleteAttendance(eventAttendId) {
-        const ok = await inlineConfirm("Delete attedance? All related review will also be deleted");
+        const ok = await inlineConfirm("Delete attendance? All related review will also be deleted");
       if (!ok) return;
         try {
           const res = await fetch(`${API_BASE}/posts/${eventAttendId}/attend`, { method: "DELETE" });

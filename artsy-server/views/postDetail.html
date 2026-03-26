@@ -246,7 +246,7 @@
       const event = eventRes.ok ? await eventRes.json() : null;
 
       const images = post.images?.length
-        ? post.images.map(url => `<img src="${API_BASE}/${url}">`).join("")
+        ? post.images.map(url => `<img src="${API_BASE}/${url.replace(/^\//, '')}">`).join("")
         : "";
 
       const ratingHtml = post.rating
@@ -254,7 +254,7 @@
         : "";
 
       const thumb = event?.posterUrl
-        ? `<img src="${API_BASE}/${event.posterUrl}" alt="event poster">`
+        ? `<img src="${event.posterUrl}" alt="event poster">`
         : "";
       const date = event?.createdAt ? `<p class="meta">${new Date(event.createdAt).toLocaleDateString()}</p>` : "";
       const desc = event?.description
@@ -415,7 +415,7 @@
       const imgContainer = div.querySelector(".comment-imgs");
       (c.images ?? []).forEach(url => {
         const img = document.createElement("img");
-        img.src = `${API_BASE}/${url}`;
+        img.src = `${API_BASE}/${url.replace(/^\//, '')}`;
         img.addEventListener("click", () => openFull(img.src));
         imgContainer.appendChild(img);
       });
