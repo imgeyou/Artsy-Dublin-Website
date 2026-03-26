@@ -17,13 +17,13 @@ app.use(fileUpload({
 );
 
 const eventsRoute = require("./routes/events");
-app.use("/events", eventsRoute);
+app.use("/api/events", eventsRoute);
 
 const usersRoute = require("./routes/users")
-app.use("/users", usersRoute);
+app.use("/api/users", usersRoute);
 
 const postsRoute = require("./routes/posts")
-app.use("/posts", postsRoute);
+app.use("/api/posts", postsRoute);
 
 app.listen(3005, () => {
     console.log("Server running on http://localhost:3005")

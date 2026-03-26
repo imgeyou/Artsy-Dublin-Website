@@ -1,4 +1,4 @@
-const BASE_URL = '/posts';
+const BASE_URL = '/api/posts';
 
 async function getPostsByEvent(eventId) {
   const res = await fetch(`${BASE_URL}/event/${eventId}`);
