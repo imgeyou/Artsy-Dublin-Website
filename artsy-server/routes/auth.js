@@ -15,7 +15,7 @@ exports.checkAuth = (req, res) => {
 
     res.json({
       isLoggedIn: true,
-      username: decoded.username,
+      username: decoded.userName,
     });
   });
 };
