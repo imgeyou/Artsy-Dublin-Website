@@ -74,7 +74,7 @@ export default function Login() {
           </div>
 
           <button onClick={handleSubmit} className="signInBtn">
-            Sign In
+            Log In
           </button>
 
           <div className="divider">

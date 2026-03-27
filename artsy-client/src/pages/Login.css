@@ -1,6 +1,7 @@
+@import "../index.css";
 .page {
     min-height: 100vh;
-    background: #f0efed;
+    background: var(--color-yellow);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -178,7 +179,7 @@
 .dividerLine {
     flex: 1;
     height: 1px;
-    background: #e5e5e5;
+    background:var(--color-yellow);
 }
 
 .dividerText {
