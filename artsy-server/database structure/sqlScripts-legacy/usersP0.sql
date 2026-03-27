@@ -33,6 +33,4 @@ CREATE TABLE `users` (
 
 -- use firebase to replace the passwordHash column
 ALTER TABLE users DROP COLUMN passwordHash;
-
-
 ALTER TABLE users ADD COLUMN firebaseUid VARCHAR(128);

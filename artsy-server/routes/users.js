@@ -9,7 +9,5 @@ router.get("/", usersController.getUsersPool);
 
 //router.delete('/:username',usersController.deleteUser);
 router.post("/register", usersController.createUser);
-//userlogin
-router.post("/login", usersController.loginUser);
 
 module.exports = router;
