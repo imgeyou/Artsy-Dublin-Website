@@ -1,6 +1,8 @@
+const express = require("express");
+const router = express.Router();
 const admin = require("firebase-admin");
 
-exports.checkAuth = async (req, res) => {
+router.get("/check-auth", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.json({ isLoggedIn: false });
 
@@ -10,4 +12,6 @@ exports.checkAuth = async (req, res) => {
   } catch {
     res.json({ isLoggedIn: false });
   }
-};
+});
+
+module.exports = router;

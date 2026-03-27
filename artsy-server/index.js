@@ -11,7 +11,7 @@ admin.initializeApp({
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
   }),
 );
 app.use(express.json());
@@ -21,6 +21,9 @@ app.use("/events", eventsRoute);
 
 const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
+
+const authRoute = require("./routes/auth");
+app.use("/api", authRoute);
 
 app.listen(3005, () => {
   console.log("Server running on http://localhost:3005");
