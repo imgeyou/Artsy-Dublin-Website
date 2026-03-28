@@ -12,7 +12,7 @@ const pool = mysql2.createPool(dbconfig).promise();
 
 // get all events
 async function get() {
-    const [results] = await pool.query(`SELECT * FROM ${dotenv.parsed.EVENTS_TABLE}`);
+    const [results] = await pool.query(`SELECT * FROM events`);
     return results;
 }
 
@@ -89,7 +89,7 @@ async function fetchLiveEventsAndPopulate(eventType) {
         } else {
             // new event, add to events table
             const [result] = await pool.query(
-                `INSERT IGNORE INTO ${dotenv.parsed.EVENTS_TABLE} 
+                `INSERT IGNORE INTO events 
                 (title, url, description, 
                 posterURL, startDateTime, 
                 venue, eventTypeId) 
