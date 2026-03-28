@@ -1,4 +1,5 @@
 3.28
+
 Migrated user authentication from JWT to Firebase
 
 Added Firebase Admin SDK integration in index.js
