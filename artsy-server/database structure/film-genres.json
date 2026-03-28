@@ -1,0 +1,97 @@
+[
+    {   
+        "genreId":28,
+        "eventTypeId": "tmdbFilm",
+        "name":"Action"
+    },
+    {   
+        "genreId":12,
+        "eventTypeId": "tmdbFilm",
+        "name":"Adventure"
+    },
+    {   
+        "genreId":16,
+        "eventTypeId": "tmdbFilm",
+        "name":"Animation"
+    },
+    {   
+        "genreId":35,
+        "eventTypeId": "tmdbFilm",
+        "name":"Comedy"
+    },
+    {   
+        "genreId":80,
+        "eventTypeId": "tmdbFilm",
+        "name":"Crime"
+    },
+    {   
+        "genreId":99,
+        "eventTypeId": "tmdbFilm",
+        "name":"Documentary"
+    },
+    {   
+        "genreId":18,
+        "eventTypeId": "tmdbFilm",
+        "name":"Drama"
+    },
+    {   
+        "genreId":10751,
+        "eventTypeId": "tmdbFilm",
+        "name":"Family"
+    },
+    {   
+        "genreId":14,
+        "eventTypeId": "tmdbFilm",
+        "name":"Fantasy"
+    },
+    {   
+        "genreId":36,
+        "eventTypeId": "tmdbFilm",
+        "name":"History"
+    },
+    {   
+        "genreId":27,
+        "eventTypeId": "tmdbFilm",
+        "name":"Horror"
+    },
+    {   
+        "genreId":10402,
+        "eventTypeId": "tmdbFilm",
+        "name":"Music"
+    },
+    {   
+        "genreId":9648,
+        "eventTypeId": "tmdbFilm",
+        "name":"Mystery"
+    },
+    {   
+        "genreId":10749,
+        "eventTypeId": "tmdbFilm",
+        "name":"Romance"
+    },
+    {   
+        "genreId":878,
+        "eventTypeId": "tmdbFilm",
+        "name":"Science Fiction"
+    },
+    {   
+        "genreId":10770,
+        "eventTypeId": "tmdbFilm",
+        "name":"TV Movie"
+    },
+    {   
+        "genreId":53,
+        "eventTypeId": "tmdbFilm",
+        "name":"Thriller"
+    },
+    {   
+        "genreId":10752,
+        "eventTypeId": "tmdbFilm",
+        "name":"War"
+    },
+    {
+        "genreId":37,
+        "eventTypeId": "tmdbFilm",
+        "name":"Western" 
+    }
+]

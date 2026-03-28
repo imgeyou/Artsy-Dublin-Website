@@ -1,7 +1,7 @@
 // this is where we handle all raw data relating to events, e.g. from api and/or db
 
 const path = require('path');
-const dotenv = require('dotenv').config({path: path.join(__dirname, '..', '.env')});
+const { default: slugify } = require("slugify");
 const axios = require('axios');
 
 // use mysql2 pool instead of node-querybuilder bc its very buggy with insert ignore into etc..
@@ -33,19 +33,57 @@ const tmdb_api = axios.create({
 });
 
 async function fetchFilmsAndPopulate() {
-    const response = await tmdb_api.get('/discover/movie', {
+   const films = await tmdb_api.get('/movie/now_playing', {
     params: {
         region: 'IE',
-        'release_date.gte': '2026-03-15',
-        'release_date.lte': '2026-03-25',
-        'with_release_type': '2|3' // theater code
+        language: 'en-IE'
     }
     });
 
-    response.data.results.map((film) => console.log(film.title + " was released this month. \n See all showtimes near you here: https://entertainment.ie/cinema/cinema-listings/dublin/all-venues/"+film.title.replace("'", "").replace(/\s/g, "-")));
-    // potentially add web scraping of ent.ie/cinema-listings
+    // films.data.results.map((film) => 
+    //     console.log(film.title + ` was released this month. \n See all showtimes near you here:` +  
+    //         `https://www.google.com/search?q=${film.title.replace("'", "").replace(/\s/g, "+")}+showtimes+Dublin`));
     
-    return response.data.results;
+    // potentially add web scraping of ent.ie/cinema-listings
+
+    // clean up the API response by getting data we need
+    let filmsData = films.data.results.map((film) => 
+    ({
+        title: film.original_title!==film.title ? `${film.title} (${film.original_title})` : film.title,
+        desc: film.overview,
+        url: `https://cinematimes.ie/dublin/movies/${slugify(film.title, { lower: true, strict: true })}`,
+        posterUrl: `https://image.tmdb.org/t/p/original/${film.poster_path }`,
+        genres: film.genre_ids
+    }))
+
+    for (let film of filmsData) {
+        // only add film if it isn't already in events table. not accomodating for repeats since we can't store showtimes.
+        const eventInDb = await getEventByTitle(film.title);
+        if (!eventInDb) {
+            const [result] = await pool.query(
+                `INSERT IGNORE INTO events 
+                (title, url, description, 
+                posterURL, eventTypeId) 
+                VALUES (?, ?, ?, ?, ?)`, 
+                [film.title, film.url, film.desc, film.posterUrl, "tmdbFilm"]
+            );
+
+            // get PK generated above to store in event tags table
+            const eventId = result.insertId;
+            
+            // loop thru current film's genres and add each genre to eventTags junction table for future look-up
+            for (let eventGenre of film.genres) {
+                await pool.query(
+                `INSERT IGNORE INTO eventtags
+                (eventTagsId, eventId, genreId) 
+                VALUES (?, ?, ?)`, 
+                [eventId+"-"+eventGenre, eventId, eventGenre]
+            );
+            }
+        }
+    }
+    
+    return filmsData;
 }
 
 async function fetchLiveEventsAndPopulate(eventType) {
@@ -77,7 +115,6 @@ async function fetchLiveEventsAndPopulate(eventType) {
     // populate into db, skipping repeats appropriately
     for (let event of eventsData) {
         const eventInDb = await getEventByTitle(event.title);
-        console.log(event.dateTime)
         if (eventInDb) {
             // if this event already exists in table, add it to repeats table
             await pool.query(
