@@ -223,6 +223,29 @@ async function getEventsByType(typeName) {
     return results;
 }
 
+// get all events in the db by genre
+async function getEventsByGenre(genreName) {
+    let id = await pool.query(
+        `SELECT genreId FROM artsy_dub.genres
+	    WHERE name = ?`, genreName);
+
+    if(id[0].length==0) return null;
+    id = id[0][0].genreId;
+
+    const [results] = await pool.query(
+    `SELECT e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId 
+        FROM events e
+        INNER JOIN eventtags t
+            ON e.eventId = t.eventId
+        LEFT JOIN genres g 
+            ON t.genreId = g.genreId
+            WHERE g.genreId = ?
+        GROUP BY 
+            e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId, g.genreId`, id);
+    return results;
+}
+
+
 // helper function to check if an event already exists in the db via its title
 async function getEventByTitle(title) {
     const [results] = await pool.query(
@@ -238,5 +261,6 @@ module.exports = {
     fetchFilmsAndPopulate,
     getEventById,
     getEventRepeatsById,
-    getEventsByType
+    getEventsByType,
+    getEventsByGenre
 };
