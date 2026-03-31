@@ -1,0 +1,25 @@
+{
+    "eventId":51, 
+    "title":"Waitress", 
+    "url":"https://www.ticketmaster.ie/waitress-dublin-19-05-2026/event/180063309122B196", 
+    "description":"Arts & Theatre, Musical",
+    "venue":"Bord Gais Energy Theatre", 
+    "startDateTime":"2026-05-19 18:30:00", 
+    "posterUrl":"https://s1.ticketm.net/dam/a/aee/8469e7ee-f8a4-4788-addf-7d2a138bdaee_RETINA_PORTRAIT_16_9.jpg", 
+    "eventTypeName":"Theatre",
+    "genres": ["Theatre"],
+    "eventRepeats": [
+        {
+            "date": "2026-05-20T12:30:00.000Z",
+            "venue": "Bord Gais Energy Theatre"
+        },
+        {
+            "date": "2026-05-20T17:30:00.000Z",
+            "venue": "Bord Gais Energy Theatre"
+        },
+        {
+            "date": "2026-05-21T12:30:00.000Z",
+            "venue": "Bord Gais Energy Theatre"
+        }
+    ]
+}
