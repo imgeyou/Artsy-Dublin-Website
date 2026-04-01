@@ -16,6 +16,9 @@ app.use(
 );
 app.use(express.json());
 
+const genresRouter = require("./routes/genres");
+app.use("/genres", genresRouter);
+
 const eventsRoute = require("./routes/events");
 app.use("/events", eventsRoute);
 
