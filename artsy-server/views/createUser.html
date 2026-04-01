@@ -301,23 +301,30 @@
         <div class="interests-col">
           <h3>Genre</h3>
           <div class="tags" id="genreTags">
-            <span class="tag" onclick="toggleTag(this, 'genre')">Film</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Music</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Theatre</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Arts</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Comedy</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Sports</span>
-            <span class="tag" onclick="toggleTag(this, 'genre')">Family</span>
+            <span class="tag" onclick="toggleTag(this)">Film</span>
+            <span class="tag" onclick="toggleTag(this)">Music</span>
+            <span class="tag" onclick="toggleTag(this)">Theatre</span>
+            <span class="tag" onclick="toggleTag(this)">Arts</span>
+            <span class="tag" onclick="toggleTag(this)">Comedy</span>
+            <span class="tag" onclick="toggleTag(this)">Sports</span>
+            <span class="tag" onclick="toggleTag(this)">Family</span>
           </div>
         </div>
 
-        <!-- Tag column (dynamic based on genre) -->
+        <!-- Tag column (independent) -->
         <div class="interests-col">
           <h3>Tag</h3>
           <div class="tags" id="eventTags">
-            <span style="color: #aaa; font-size: 0.85rem"
-              >Select a genre first</span
-            >
+            <span class="tag" onclick="toggleTag(this)">Horror</span>
+            <span class="tag" onclick="toggleTag(this)">Comedy</span>
+            <span class="tag" onclick="toggleTag(this)">Drama</span>
+            <span class="tag" onclick="toggleTag(this)">Rock</span>
+            <span class="tag" onclick="toggleTag(this)">Jazz</span>
+            <span class="tag" onclick="toggleTag(this)">Musical</span>
+            <span class="tag" onclick="toggleTag(this)">Painting</span>
+            <span class="tag" onclick="toggleTag(this)">Stand-up</span>
+            <span class="tag" onclick="toggleTag(this)">Rugby</span>
+            <span class="tag" onclick="toggleTag(this)">Kids</span>
           </div>
         </div>
       </div>
@@ -341,52 +348,8 @@
           }
         });
 
-      // Genre → Tags mapping (placeholder data)
-      const genreTagMap = {
-        Film: ["Horror", "Comedy", "Drama", "Documentary", "Animation"],
-        Music: ["Rock", "Jazz", "Classical", "Electronic", "Folk"],
-        Theatre: ["Musical", "Drama", "Opera", "Improv"],
-        Arts: ["Painting", "Sculpture", "Photography", "Digital Art"],
-        Comedy: ["Stand-up", "Sketch", "Improv"],
-        Sports: ["Football", "Rugby", "Tennis", "Athletics"],
-        Family: ["Kids", "Outdoor", "Workshop"],
-      };
-
-      let selectedGenres = new Set();
-
-      function toggleTag(el, type) {
+      function toggleTag(el) {
         el.classList.toggle("selected");
-
-        if (type === "genre") {
-          const genre = el.textContent.trim();
-          if (el.classList.contains("selected")) {
-            selectedGenres.add(genre);
-          } else {
-            selectedGenres.delete(genre);
-          }
-          updateEventTags();
-        }
-      }
-
-      function updateEventTags() {
-        const container = document.getElementById("eventTags");
-        if (selectedGenres.size === 0) {
-          container.innerHTML =
-            '<span style="color:#aaa; font-size:0.85rem;">Select a genre first</span>';
-          return;
-        }
-
-        const tags = new Set();
-        selectedGenres.forEach((g) => {
-          (genreTagMap[g] || []).forEach((t) => tags.add(t));
-        });
-
-        container.innerHTML = [...tags]
-          .map(
-            (t) =>
-              `<span class="tag" onclick="toggleTag(this, 'tag')">${t}</span>`,
-          )
-          .join("");
       }
     </script>
   </body>
