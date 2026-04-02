@@ -10,13 +10,20 @@ import Footer from "./components/layout/Footer"
 import mockEvents from "./mock/events";
 import EventCard from "./components/events/EventCard";
 import EventDetailPage from './pages/EventDetailPage'
+import FilterBar from "./components/events/FilterBar";
+import MarqueeText from "./components/layout/MarqueeText";
 
 import './index.css'
 import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(8);
 
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [activeFilters]);
   // const [events, setEvents] = useState([]);
 
   // useEffect(() => {
@@ -28,22 +35,56 @@ function HomePage() {
   //     })
   //     .catch(err => console.error(err));
   // }, []);
-  function getCardVariant(index) {
-    const variants = ["hero", "small", "small", "wide", "tall", "small"];
-    return variants[index % variants.length];
+
+  function getEventTags(event) {
+    if (event.eventTypeId === "tmdbFilm") return ["Film"];
+
+    return event.description
+      ? event.description.split(",").map(tag => tag.trim())
+      : [];
   }
+
+  // function getCardVariant(index) {
+  //   const variants = ["hero", "small", "small", "wide", "tall", "small"];
+  //   return variants[index % variants.length];
+  // }
+
+  const filteredEvents = mockEvents
+    .filter((event) => {
+      if (activeFilters.length === 0) return true;
+
+      const tags = getEventTags(event);
+      return activeFilters.some(filter => tags.includes(filter));
+    })
+    .sort((a, b) => {
+      const dateA = a.startDateTime
+        ? new Date(a.startDateTime.replace(" ", "T")).getTime()
+        : Infinity;
+
+      const dateB = b.startDateTime
+        ? new Date(b.startDateTime.replace(" ", "T")).getTime()
+        : Infinity;
+
+      return dateA - dateB;
+    });
 
   return (
     <div>
+      <Header />
       <div className="container">
 
-        <Header />
+
         <div className="bgl">
           <img src={bgl} alt="" />
         </div>
         {/* <h1>#Exhibtion</h1> */}
+
+        <FilterBar
+          activeFilters={activeFilters}
+          setActiveFilters={setActiveFilters}
+        />
         <div className="events_grid">
-          {mockEvents.map((event, index) => (
+          {filteredEvents.slice(0, visibleCount).map((event, index) => (
             <EventCard
               key={event.eventId}
               event={event}
@@ -51,6 +92,19 @@ function HomePage() {
             />
           ))}
         </div>
+        {visibleCount < filteredEvents.length && (
+          <div className="show-more-wrap">
+            <button
+              className="show-more-btn"
+              onClick={() => setVisibleCount(visibleCount + 8)}
+            >
+              Show More
+            </button>
+          </div>
+        )}
+
+        <MarqueeText />
+
         <CalendarSection events={mockEvents} />
         <Footer />
       </div>
