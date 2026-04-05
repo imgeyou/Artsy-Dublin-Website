@@ -30,19 +30,22 @@ class userController {
         interests,
       } = req.body;
 
-      // Validate required fields
       if (!userName || !email || !firebaseUid) {
         return res
           .status(400)
           .send("userName, email and firebaseUid are required");
       }
 
-      // Build avatar URL from uploaded file, or use default
       const avatarUrl = req.file
         ? `${req.protocol}://${req.get("host")}/uploads/avatars/${req.file.filename}`
         : null;
 
-      // Step 1: Create user in database
+      const interestsArray = interests
+        ? Array.isArray(interests)
+          ? interests
+          : JSON.parse(interests)
+        : [];
+
       const userId = await usersModel.createUser(
         userName,
         avatarUrl,
@@ -52,25 +55,16 @@ class userController {
         location,
         bio,
         gender,
+        interestsArray,
       );
 
       if (!userId) {
         return res.status(500).send("User not created");
       }
 
-      // Step 2: Save interests if provided
-      if (interests && interests.length > 0) {
-        const interestsArray = Array.isArray(interests)
-          ? interests
-          : JSON.parse(interests);
-        await usersModel.addUserInterests(userId, interestsArray);
-      }
-
-      res.status(201).json({
-        message: "User registered successfully",
-        userId,
-        avatarUrl,
-      });
+      res
+        .status(201)
+        .json({ message: "User registered successfully", userId, avatarUrl });
     } catch (error) {
       console.error("Register Error:", error);
       res.status(500).send("Internal Server Error");

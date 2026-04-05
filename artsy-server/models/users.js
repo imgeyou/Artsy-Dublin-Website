@@ -14,12 +14,17 @@ class usersModel {
     location,
     bio,
     gender,
+    interestsArray,
   ) {
+    const connection = await pool.getConnection();
     try {
+      await connection.beginTransaction();
+
+      // Step 1: Insert user
       const createdAt = new Date().toISOString().slice(0, 19).replace("T", " ");
       const QUERY = `INSERT INTO users (userName, avatarUrl, email, firebaseUid, birthday, location, bio, gender, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-      const [result] = await pool.query(QUERY, [
+      const [result] = await connection.query(QUERY, [
         userName,
         avatarUrl || null,
         email,
@@ -30,23 +35,26 @@ class usersModel {
         gender || null,
         createdAt,
       ]);
-      return result.insertId;
-    } catch (err) {
-      console.error("Register Insert Error: ", err);
-      throw err;
-    }
-  }
-  // add user interests into table
-  async addUserInterests(userId, genreIds) {
-    try {
-      const values = genreIds.map((genreId) => [userId, genreId]);
 
-      const QUERY = `INSERT INTO userInterests (userId, genreId) VALUES ?`;
+      const userId = result.insertId;
 
-      await pool.query(QUERY, [values]);
+      // Step 2: Insert interests if provided
+      if (interestsArray && interestsArray.length > 0) {
+        const values = interestsArray.map((genreId) => [userId, genreId]);
+        await connection.query(
+          `INSERT INTO userInterests (userId, genreId) VALUES ?`,
+          [values],
+        );
+      }
+
+      await connection.commit();
+      return userId;
     } catch (err) {
-      console.error("Add User Interests Error: ", err);
+      await connection.rollback();
+      console.error("Register Transaction Error: ", err);
       throw err;
+    } finally {
+      connection.release();
     }
   }
 
