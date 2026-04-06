@@ -1,3 +1,18 @@
+.home-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 60px;
+}
+
+.home-hero__title {
+    font-size: var(--fs-72);
+}
+
+.home-hero__subtitle {
+    font-size: var(--fs-24);
+}
+
 .events_grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -17,7 +32,8 @@
     border: 1px solid #8b6b4c;
     border-radius: 999px;
     background: transparent;
-    color: #8b6b4c;
+    background-color: #8b6b4c;
+    color: white;
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -25,8 +41,8 @@
 }
 
 .show-more-btn:hover {
-    background-color: #8b6b4c;
-    color: white;
+    background-color: #6e553c;
+
 }
 
 /* Marquee text */

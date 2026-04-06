@@ -18,7 +18,7 @@
     align-items: center;
     width: 100%;
     /* border-bottom: 1px solid var(--color-brown); */
-    background-color: #f7d9a8;
+    /* background-color: #f7d9a8; */
     padding: 0px 150px;
 }
 
@@ -37,6 +37,7 @@
     align-items: center;
     gap: 23px;
 }
+
 
 /* header search bar */
 .search-bar {
@@ -96,11 +97,29 @@
 
 .header__nav {
     display: flex;
-    gap: 23px;
+    gap: 35px;
 }
 
 .header__nav a {
     font-family: var(--font-display);
+    position: relative;
+}
+
+.header__nav a::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -12px;
+    width: 0;
+    height: 4px;
+    border-radius: 20px;
+    background-color: var(--color-brown);
+    transform: translateX(-50%);
+    transition: width 0.3s ease;
+}
+
+.header__nav a:hover::after {
+    width: 100%;
 }
 
 .header__user-btn {
@@ -138,7 +157,7 @@
     border: 1px solid #8b6b4c;
     border-radius: 999px;
     background: transparent;
-    color: #8b6b4c;
+    color: var(--color-brown);
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -146,13 +165,141 @@
 }
 
 .filter-btn:hover {
-    background-color: #8b6b4c;
+    background-color: var(--color-brown);
     color: #fff;
 }
 
 .filter-btn--active {
-    background-color: #8b6b4c;
+    background-color: var(--color-brown);
     color: #fff;
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+
+.filter-dropdown__btn {
+    min-width: 140px;
+    height: 48px;
+    padding: 0 20px;
+    border: 1px solid rgba(139, 107, 76, 0.25);
+    border-radius: 999px;
+    background: white;
+    color: #5b3a29;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+}
+
+.filter-dropdown__btn:hover {
+    border-color: rgba(139, 107, 76, 0.45);
+}
+
+.filter-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 220px;
+    padding: 18px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    z-index: 20;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #2b2b2b;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.filter-option:last-child {
+    margin-bottom: 0;
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 20;
+}
+
+.filter-dropdown {
+    position: relative;
+}
+
+.filter-dropdown__btn {
+    min-width: 170px;
+    height: 48px;
+    padding: 0 18px;
+    border: 1px solid rgba(139, 107, 76, 0.2);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 15px;
+    color: #5b3a29;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.filter-dropdown__btn:hover {
+    border-color: rgba(139, 107, 76, 0.45);
+}
+
+.filter-dropdown__icon {
+    transition: transform 0.25s ease;
+}
+
+.filter-dropdown__btn.is-open .filter-dropdown__icon {
+    transform: rotate(180deg);
+}
+
+.filter-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 220px;
+    padding: 18px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    z-index: 30;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #2b2b2b;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.filter-option:last-child {
+    margin-bottom: 0;
 }
 
 /* =========================
@@ -242,7 +389,7 @@
     border: 1px solid #8b6b4c;
     border-radius: 999px;
     background: transparent;
-    color: #8b6b4c;
+    color: var(--color-brown);
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -250,7 +397,7 @@
 }
 
 .btn:hover {
-    background-color: #8b6b4c;
+    background-color: var(--color-brown);
     color: white;
 }
 

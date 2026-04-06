@@ -88,3 +88,34 @@
     gap: 10px;
     justify-content: flex-end;
 }
+
+/* related-events */
+
+.related-events {
+    margin-top: 120px;
+    padding-top: 60px;
+    border-top: 1px solid rgba(139, 107, 76, 0.15);
+}
+
+.related-events__header {
+    margin-bottom: 32px;
+}
+
+.related-events__title {
+    font-size: 40px;
+    font-family: var(--font-display);
+    color: #2b2b2b;
+    margin: 0;
+}
+
+.related-events__subtitle {
+    margin-top: 8px;
+    font-size: 16px;
+    color: rgba(43, 43, 43, 0.7);
+}
+
+.related-events__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}

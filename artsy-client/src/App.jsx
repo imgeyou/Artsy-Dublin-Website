@@ -20,6 +20,9 @@ import './styles/pages/home.css'
 
 function HomePage() {
   const [activeFilters, setActiveFilters] = useState([]);
+  const [activeCategories, setActiveCategories] = useState([]);
+  const [activeDate, setActiveDate] = useState("Upcoming");
+  const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
   useEffect(() => {
@@ -45,28 +48,52 @@ function HomePage() {
       : [];
   }
 
-  // function getCardVariant(index) {
-  //   const variants = ["hero", "small", "small", "wide", "tall", "small"];
-  //   return variants[index % variants.length];
-  // }
+  const today = new Date();
 
   const filteredEvents = mockEvents
     .filter((event) => {
-      if (activeFilters.length === 0) return true;
+      const matchesCategory =
+        activeCategories.length === 0 ||
+        activeCategories.some(category => getEventTags(event).includes(category));
 
-      const tags = getEventTags(event);
-      return activeFilters.some(filter => tags.includes(filter));
+      let matchesDate = true;
+
+      if (event.startDateTime) {
+        const eventDate = new Date(event.startDateTime.replace(" ", "T"));
+
+        if (activeDate === "Upcoming") {
+          matchesDate = eventDate >= today;
+        }
+
+        if (activeDate === "This Week") {
+          const nextWeek = new Date();
+          nextWeek.setDate(today.getDate() + 7);
+          matchesDate = eventDate >= today && eventDate <= nextWeek;
+        }
+
+        if (activeDate === "This Month") {
+          matchesDate =
+            eventDate.getMonth() === today.getMonth() &&
+            eventDate.getFullYear() === today.getFullYear();
+        }
+      }
+
+      return matchesCategory && matchesDate;
     })
     .sort((a, b) => {
       const dateA = a.startDateTime
-        ? new Date(a.startDateTime.replace(" ", "T")).getTime()
-        : Infinity;
-
+        ? new Date(a.startDateTime.replace(" ", "T"))
+        : null;
       const dateB = b.startDateTime
-        ? new Date(b.startDateTime.replace(" ", "T")).getTime()
-        : Infinity;
+        ? new Date(b.startDateTime.replace(" ", "T"))
+        : null;
 
-      return dateA - dateB;
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+
+      return sortOrder === "Soonest"
+        ? dateA - dateB
+        : dateB - dateA;
     });
 
   return (
@@ -74,16 +101,29 @@ function HomePage() {
       <Header />
       <div className="container">
 
-
         <div className="bgl">
           <img src={bgl} alt="" />
         </div>
         {/* <h1>#Exhibtion</h1> */}
 
-        <FilterBar
-          activeFilters={activeFilters}
-          setActiveFilters={setActiveFilters}
-        />
+        <div className="home-hero">
+          <div className="home-hero__info"
+          ><h1 className="home-hero__title">What’s On</h1>
+            <p className="home-hero__subtitle">
+              Discover events, films, comedy and more across Dublin
+            </p>
+          </div>
+
+          <FilterBar
+            activeCategories={activeCategories}
+            setActiveCategories={setActiveCategories}
+            activeDate={activeDate}
+            setActiveDate={setActiveDate}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+          />
+        </div>
+
         <div className="events_grid">
           {filteredEvents.slice(0, visibleCount).map((event, index) => (
             <EventCard

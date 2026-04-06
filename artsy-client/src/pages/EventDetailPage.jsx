@@ -6,11 +6,17 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import bgl from '../assets/images/bgl.png'
 import hostAvatar from '../assets/images/avatar.jpeg'
+import EventCard from "../components/events/EventCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDays, faLocationDot } from "@fortawesome/free-solid-svg-icons";
-import { faBookmark as solidBookmark } from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowLeft,
+    faCalendarDays,
+    faLocationDot,
+    faBookmark as solidBookmark,
+} from "@fortawesome/free-solid-svg-icons";
+
 import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-icons";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+
 import '../index.css'
 import '../styles/pages/event-detail.css'
 
@@ -28,6 +34,25 @@ function EventDetailPage() {
     if (!event) {
         return <p>Event not found</p>;
     }
+
+    function getEventTags(event) {
+        if (event.eventTypeId === "tmdbFilm") return ["Film"];
+
+        return event.description
+            ? event.description.split(",").map(tag => tag.trim())
+            : [];
+    }
+
+    const currentTags = getEventTags(event);
+
+    const relatedEvents = mockEvents
+        .filter((item) => item.eventId !== event.eventId)
+        .filter((item) => {
+            const itemTags = getEventTags(item);
+            return itemTags.some(tag => currentTags.includes(tag));
+        })
+        .slice(0, 6);
+
 
     const formattedDate = event.startDateTime
         ? new Date(event.startDateTime)
@@ -118,6 +143,20 @@ function EventDetailPage() {
                         </div>
                     </div>
                 </main>
+                <section className="related-events">
+                    <div className="related-events__header">
+                        <h2 className="related-events__title">Related Events</h2>
+                        <p className="related-events__subtitle">
+                            You might also like these events
+                        </p>
+                    </div>
+
+                    <div className="related-events__grid">
+                        {relatedEvents.map((item) => (
+                            <EventCard key={item.eventId} event={item} />
+                        ))}
+                    </div>
+                </section>
             </div>
 
             <Footer />
