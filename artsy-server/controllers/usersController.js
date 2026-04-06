@@ -66,6 +66,15 @@ class userController {
         .status(201)
         .json({ message: "User registered successfully", userId, avatarUrl });
     } catch (error) {
+      if (error.code === "ER_DUP_ENTRY") {
+        if (error.sqlMessage.includes("userName")) {
+          return res.status(400).send("Username already exists");
+        }
+        if (error.sqlMessage.includes("email")) {
+          return res.status(400).send("Email already exists");
+        }
+        return res.status(400).send("User already exists");
+      }
       console.error("Register Error:", error);
       res.status(500).send("Internal Server Error");
     }
