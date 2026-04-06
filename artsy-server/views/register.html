@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Account – Artsy Dublin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f0e8;
+      --ink: #1a1209;
+      --muted: #7a6e5f;
+      --accent: #c94f2a;
+      --border: #d9d0c0;
+      --white: #fffdf8;
+      --radius: 10px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 32px rgba(26,18,9,0.07);
+    }
+
+    h1 {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 1.9rem;
+      line-height: 1.1;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.8rem;
+    }
+
+    /* Avatar */
+    .avatar-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .avatar-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: none;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 0.35rem 0.8rem;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .avatar-btn:hover { background: var(--accent); color: #fff; }
+
+    .avatar-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Form */
+    .form-group { margin-bottom: 1rem; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.65rem 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* Tags */
+    .section-label { font-size: 0.8rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.6rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.2rem; }
+
+    .tag {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      background: var(--bg);
+    }
+    .tag.selected { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 1.2rem;
+      transition: opacity 0.15s;
+    }
+    .submit-btn:hover { opacity: 0.88; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .login-link { text-align: center; font-size: 0.85rem; color: var(--muted); margin-top: 1rem; }
+    .login-link a { color: var(--accent); text-decoration: none; }
+
+    /* Status */
+    .status {
+      display: none;
+      padding: 0.7rem 0.9rem;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      margin-top: 0.8rem;
+      text-align: center;
+    }
+    .status.error { display: block; background: #fde8e3; color: #9b2c0f; border: 1px solid #f5c4b8; }
+    .status.success { display: block; background: #e3f5e8; color: #1a6630; border: 1px solid #b8e5c2; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Create your<br/><em>account</em></h1>
+    <p class="subtitle">Join Artsy Dublin and discover events around you.</p>
+
+    <!-- Avatar -->
+    <div class="avatar-row">
+      <img id="avatarPreview" class="avatar-preview" src="https://www.gravatar.com/avatar/?d=mp&s=80" alt="avatar"/>
+      <div>
+        <input type="file" id="avatarInput" accept="image/*" hidden/>
+        <button class="avatar-btn" onclick="document.getElementById('avatarInput').click()">Upload photo</button>
+        <p class="avatar-hint">Optional – defaults if skipped.</p>
+      </div>
+    </div>
+
+    <!-- Core fields -->
+    <div class="form-group">
+      <label>Username</label>
+      <input id="username" type="text" placeholder="e.g. artlover42"/>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••"/>
+    </div>
+
+    <!-- Optional fields -->
+    <div class="two-col">
+      <div class="form-group">
+        <label>Birthday</label>
+        <input id="birthday" type="date"/>
+      </div>
+      <div class="form-group">
+        <label>Gender</label>
+        <select id="gender">
+          <option value="">Select...</option>
+          <option>Male</option><option>Female</option>
+          <option>Non-binary</option><option>Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      <select id="location">
+        <option value="">Select...</option>
+        <option>Dublin</option><option>Cork</option>
+        <option>Galway</option><option>Limerick</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea id="bio" placeholder="Tell us a little about yourself..."></textarea>
+    </div>
+
+    <hr/>
+
+    <!-- Interests -->
+<div class="section-label">Film</div>
+<div class="tags">
+  <span class="tag" data-id="28" onclick="toggleTag(this)">Action</span>
+  <span class="tag" data-id="12" onclick="toggleTag(this)">Adventure</span>
+  <span class="tag" data-id="16" onclick="toggleTag(this)">Animation</span>
+  <span class="tag" data-id="35" onclick="toggleTag(this)">Comedy</span>
+  <span class="tag" data-id="80" onclick="toggleTag(this)">Crime</span>
+  <span class="tag" data-id="99" onclick="toggleTag(this)">Documentary</span>
+  <span class="tag" data-id="18" onclick="toggleTag(this)">Drama</span>
+  <span class="tag" data-id="14" onclick="toggleTag(this)">Fantasy</span>
+  <span class="tag" data-id="36" onclick="toggleTag(this)">History</span>
+  <span class="tag" data-id="27" onclick="toggleTag(this)">Horror</span>
+  <span class="tag" data-id="10402" onclick="toggleTag(this)">Music</span>
+  <span class="tag" data-id="9648" onclick="toggleTag(this)">Mystery</span>
+  <span class="tag" data-id="10749" onclick="toggleTag(this)">Romance</span>
+  <span class="tag" data-id="878" onclick="toggleTag(this)">Science-Fiction</span>
+  <span class="tag" data-id="53" onclick="toggleTag(this)">Thriller</span>
+  <span class="tag" data-id="10770" onclick="toggleTag(this)">TV-Movie</span>
+  <span class="tag" data-id="10752" onclick="toggleTag(this)">War</span>
+  <span class="tag" data-id="37" onclick="toggleTag(this)">Western</span>
+  <span class="tag" data-id="10751" onclick="toggleTag(this)">Family</span>
+</div>
+
+<div class="section-label">Arts & Theatre</div>
+<div class="tags">
+  <span class="tag" data-id="KnvZfZ7v7l1" onclick="toggleTag(this)">Theatre</span>
+  <span class="tag" data-id="KnvZfZ7v7l6" onclick="toggleTag(this)">Performance-Art</span>
+  <span class="tag" data-id="KnvZfZ7v7lA" onclick="toggleTag(this)">Music</span>
+  <span class="tag" data-id="KnvZfZ7v7lk" onclick="toggleTag(this)">Opera</span>
+  <span class="tag" data-id="KnvZfZ7v7lv" onclick="toggleTag(this)">Magic-&-Illusion</span>
+  <span class="tag" data-id="KnvZfZ7v7nE" onclick="toggleTag(this)">Cultural</span>
+  <span class="tag" data-id="KnvZfZ7v7nI" onclick="toggleTag(this)">Dance</span>
+  <span class="tag" data-id="KnvZfZ7v7nn" onclick="toggleTag(this)">Fashion</span>
+  <span class="tag" data-id="KnvZfZ7vAe1" onclick="toggleTag(this)">Comedy</span>
+</div>
+
+<div class="section-label">Music</div>
+<div class="tags">
+  <span class="tag" data-id="KnvZfZ7vAeA" onclick="toggleTag(this)">Rock</span>
+  <span class="tag" data-id="KnvZfZ7vAee" onclick="toggleTag(this)">R&B</span>
+  <span class="tag" data-id="KnvZfZ7vAeJ" onclick="toggleTag(this)">Classical</span>
+  <span class="tag" data-id="KnvZfZ7vAev" onclick="toggleTag(this)">Pop</span>
+  <span class="tag" data-id="KnvZfZ7vAv6" onclick="toggleTag(this)">Country</span>
+  <span class="tag" data-id="KnvZfZ7vAva" onclick="toggleTag(this)">Folk</span>
+  <span class="tag" data-id="KnvZfZ7vAve" onclick="toggleTag(this)">Ballads-Romantic</span>
+  <span class="tag" data-id="KnvZfZ7vAvF" onclick="toggleTag(this)">Dance-Electronic</span>
+  <span class="tag" data-id="KnvZfZ7vAvv" onclick="toggleTag(this)">Alternative</span>
+  <span class="tag" data-id="KZazBEonSMnZfZ7v6dt" onclick="toggleTag(this)">Alternative-Rock</span>
+</div>
+
+    <button class="submit-btn" id="submitBtn" onclick="handleRegister()">Create Account</button>
+    <div class="status" id="status"></div>
+    <p class="login-link">Already have an account? <a href="#">Sign in</a></p>
+  </div>
+
+  <script>
+    // Avatar preview
+    document.getElementById('avatarInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = ev => { document.getElementById('avatarPreview').src = ev.target.result; };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function toggleTag(el) { el.classList.toggle('selected'); }
+
+    function generateFirebaseUid() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from(crypto.getRandomValues(new Uint8Array(28)))
+        .map(b => chars[b % chars.length])
+        .join('');
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+    }
+
+    async function handleRegister() {
+      const userName    = document.getElementById('username').value.trim();
+      const email       = document.getElementById('email').value.trim();
+      const password    = document.getElementById('password').value;
+      const birthday    = document.getElementById('birthday').value;
+      const gender      = document.getElementById('gender').value;
+      const location    = document.getElementById('location').value;
+      const bio         = document.getElementById('bio').value.trim();
+      const avatarFile  = document.getElementById('avatarInput').files[0];
+      const interests = [...document.querySelectorAll('.tag.selected')].map(el => el.dataset.id);
+
+      if (!userName || !email || !password) {
+        showStatus('userName, email and password are required.', 'error');
+        return;
+      }
+
+      const firebaseUid = generateFirebaseUid();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account…';
+
+      // Use FormData so the avatar file is sent as multipart (req.file on the backend)
+      const fd = new FormData();
+      fd.append('userName', userName);
+      fd.append('email', email);
+      fd.append('firebaseUid', firebaseUid);
+      if (password)  fd.append('password', password);
+      if (birthday)  fd.append('birthday', birthday);
+      if (gender)    fd.append('gender', gender);
+      if (location)  fd.append('location', location);
+      if (bio)       fd.append('bio', bio);
+      // Send interests as a JSON string so the backend can JSON.parse it
+      fd.append('interests', JSON.stringify(interests));
+      if (avatarFile) fd.append('avatar', avatarFile);
+
+      try {
+        const res = await fetch('http://localhost:3005/users/register', {
+          method: 'POST',
+          body: fd   // no Content-Type header — browser sets multipart boundary automatically
+        });
+
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          showStatus(`Account created! userId: ${data.userId}`, 'success');
+        } else {
+          const text = await res.text();
+          showStatus(text || `Error ${res.status}`, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+        }
+      } catch (err) {
+        showStatus('Could not reach the server. Is it running?', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      }
+    }
+  </script>
+</body>
+</html>

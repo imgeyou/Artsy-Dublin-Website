@@ -38,13 +38,21 @@ class usersModel {
 
       const userId = result.insertId;
 
-      // Step 2: Insert interests if provided
+      // Step 2: Insert interests if provided, skipping those that don't exist in genres table
       if (interestsArray && interestsArray.length > 0) {
-        const values = interestsArray.map((genreId) => [userId, genreId]);
-        await connection.query(
-          `INSERT INTO userInterests (userId, genreId) VALUES ?`,
-          [values],
+        const [validGenres] = await connection.query(
+          `SELECT genreId FROM genres WHERE genreId IN (?)`,
+          [interestsArray]
         );
+
+        const validIds = validGenres.map(g => g.genreId);
+        if (validIds.length > 0) {
+          const values = validIds.map((genreId) => [userId, genreId]);
+          await connection.query(
+            `INSERT INTO userInterests (userId, genreId) VALUES ?`,
+            [values]
+          );
+        }
       }
 
       await connection.commit();
