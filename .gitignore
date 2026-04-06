@@ -17,4 +17,4 @@ eventsPO.sql
 serviceAccountKey.json
 
 #not adding the picture user upload into github
-uploads/
+public/uploads/

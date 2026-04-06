@@ -29,8 +29,8 @@ const authRoute = require("./routes/auth");
 app.use("/api", authRoute);
 
 //the images user used can be visit public
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static("public/uploads"));
 
 app.listen(3005, () => {
-    console.log("Server running on http://localhost:3005")
-} )
+  console.log("Server running on http://localhost:3005");
+});
