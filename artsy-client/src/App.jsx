@@ -1,34 +1,227 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+import Login from './pages/Login'
+
+import bgl from './assets/images/bgl.png'
+
+import Header from "./components/layout/Header"
+import Footer from "./components/layout/Footer"
+import mockEvents from "./mock/events";
+import EventCard from "./components/events/EventCard";
+import EventDetailPage from './pages/EventDetailPage'
+import FilterBar from "./components/events/FilterBar";
+import MarqueeText from "./components/layout/MarqueeText";
+import Register from "./pages/register";
+
+import './index.css'
+import './styles/component.css'
+import './styles/pages/home.css'
+
+function HomePage() {
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [activeCategories, setActiveCategories] = useState([]);
+  const [activeDate, setActiveDate] = useState("Upcoming");
+  const [sortOrder, setSortOrder] = useState("Soonest");
+  const [visibleCount, setVisibleCount] = useState(8);
+
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [activeFilters]);
+  // const [events, setEvents] = useState([]);
+
+  // useEffect(() => {
+  //   fetch("http://localhost:3005/events")
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       console.log(data);
+  //       setEvents(data);
+  //     })
+  //     .catch(err => console.error(err));
+  // }, []);
+
+  function getEventTags(event) {
+    if (event.eventTypeId === "tmdbFilm") return ["Film"];
+
+    return event.description
+      ? event.description.split(",").map(tag => tag.trim())
+      : [];
+  }
+
+  const today = new Date();
+
+  const filteredEvents = mockEvents
+    .filter((event) => {
+      const matchesCategory =
+        activeCategories.length === 0 ||
+        activeCategories.some(category => getEventTags(event).includes(category));
+
+      let matchesDate = true;
+
+      if (event.startDateTime) {
+        const eventDate = new Date(event.startDateTime.replace(" ", "T"));
+
+        if (activeDate === "Upcoming") {
+          matchesDate = eventDate >= today;
+        }
+
+        if (activeDate === "This Week") {
+          const nextWeek = new Date();
+          nextWeek.setDate(today.getDate() + 7);
+          matchesDate = eventDate >= today && eventDate <= nextWeek;
+        }
+
+        if (activeDate === "This Month") {
+          matchesDate =
+            eventDate.getMonth() === today.getMonth() &&
+            eventDate.getFullYear() === today.getFullYear();
+        }
+      }
+
+      return matchesCategory && matchesDate;
+    })
+    .sort((a, b) => {
+      const dateA = a.startDateTime
+        ? new Date(a.startDateTime.replace(" ", "T"))
+        : null;
+      const dateB = b.startDateTime
+        ? new Date(b.startDateTime.replace(" ", "T"))
+        : null;
+
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+
+      return sortOrder === "Soonest"
+        ? dateA - dateB
+        : dateB - dateA;
+    });
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+    <div>
+      <Header />
+      <div className="container">
+
+        <div className="bgl">
+          <img src={bgl} alt="" />
+        </div>
+        {/* <h1>#Exhibtion</h1> */}
+
+        <div className="home-hero">
+          <div className="home-hero__info"
+          ><h1 className="home-hero__title">What’s On</h1>
+            <p className="home-hero__subtitle">
+              Discover events, films, comedy and more across Dublin
+            </p>
+          </div>
+
+          <FilterBar
+            activeCategories={activeCategories}
+            setActiveCategories={setActiveCategories}
+            activeDate={activeDate}
+            setActiveDate={setActiveDate}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+          />
+        </div>
+
+        <div className="events_grid">
+          {filteredEvents.slice(0, visibleCount).map((event, index) => (
+            <EventCard
+              key={event.eventId}
+              event={event}
+            // variant={getCardVariant(index)}
+            />
+          ))}
+        </div>
+        {visibleCount < filteredEvents.length && (
+          <div className="show-more-wrap">
+            <button
+              className="show-more-btn"
+              onClick={() => setVisibleCount(visibleCount + 8)}
+            >
+              Show More
+            </button>
+          </div>
+        )}
+
+        <MarqueeText />
+
+        <CalendarSection events={mockEvents} />
+        <Footer />
+      </div>
+
+    </div>
+  );
+}
+
+
+function CalendarSection({ events }) {
+  return (
+    <section className="calendar">
+
+      {/* Top Header */}
+      <div className="calendar__header">
+        <h2 className="calendar__title">Calendar</h2>
+        <a href="#" className="calendar__link">
+          ALL CREATED EVENTS →
         </a>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+
+      {/* Today */}
+      <div className="calendar__group">
+        <div className="calendar__group-header">
+          <h3>Today</h3>
+          <span>↑</span>
+        </div>
+
+        <div className="calendar__grid">
+          {events.slice(0, 3).map(event => (
+            <EventCard key={event.eventId} event={event} />
+          ))}
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {/* Tomorrow */}
+      <div className="calendar__group">
+        <div className="calendar__group-header">
+          <h3>Tomorrow</h3>
+          <span>↑</span>
+        </div>
+
+        <div className="calendar__grid">
+          {events.slice(3, 6).map(event => (
+            <EventCard key={event.eventId} event={event} />
+          ))}
+        </div>
+      </div>
+
+      {/* Collapsed sections */}
+      <div className="calendar__collapsed">
+        <div className="calendar__collapsed-row">
+          <span>This week</span>
+          <span>↓</span>
+        </div>
+
+        <div className="calendar__collapsed-row">
+          <span>Next week</span>
+          <span>↓</span>
+        </div>
+      </div>
+
+    </section>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

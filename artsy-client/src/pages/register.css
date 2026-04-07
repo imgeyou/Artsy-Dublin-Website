@@ -1,0 +1,328 @@
+@import "../index.css";
+
+.page {
+    min-height: 100vh;
+    background: var(--color-yellow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    font-family: Georgia, 'Times New Roman', serif;
+    overflow-y: auto;
+}
+
+.pageLabel {
+    align-self: flex-start;
+    margin-left: calc(50% - 500px);
+    color: #aaa;
+    font-size: 13px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+}
+
+.card {
+    display: flex;
+    flex-direction: row;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 1100px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+    min-height: 620px;
+}
+
+/* ── Left: Form ── */
+.formSection {
+    flex: 1;
+    padding: 48px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+
+.logoImg {
+    margin-bottom: 16px;
+}
+
+.logoImg img {
+    max-width: 128px;
+}
+
+.title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 6px 0;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: #999;
+    margin: 0 0 24px 0;
+    text-align: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Name row ── */
+.nameRow {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.nameRow .formGroup {
+    flex: 1;
+}
+
+/* ── Form groups ── */
+.formGroup {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 16px;
+}
+
+.label {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 6px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-align: left;
+}
+
+.input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid #d9d9d9;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #333;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    background: #fff;
+}
+
+.input:focus {
+    border-color: #5c3d1e;
+}
+
+/* ── Password ── */
+.passwordWrap {
+    position: relative;
+}
+
+.passwordInput {
+    padding-right: 42px;
+}
+
+.eyeBtn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.hint {
+    font-size: 11px;
+    color: #bbb;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin-top: 5px;
+    display: block;
+}
+
+/* ── Interests ── */
+.interestSection {
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 16px;
+}
+
+.interestLabel {
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 10px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-align: left;
+}
+
+.interestGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: left;
+}
+
+.interestBtn {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px 6px 12px;
+    border-radius: 999px;
+    border: 1.5px solid #d9d9d9;
+    background: #fff;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    white-space: nowrap;
+    justify-content: center;
+    text-align: center;
+}
+
+.interestBtn:hover {
+    border-color: #5c3d1e;
+    color: #5c3d1e;
+    background: #fdf6ee;
+}
+
+.interestBtn.selected {
+    border-color: #5c3d1e;
+    background: #5c3d1e;
+    color: #fff;
+    font-weight: 600;
+}
+
+.interestIcon {
+    font-size: 14px;
+    line-height: 1;
+    text-align: center;
+}
+
+/* ── Sign Up button ── */
+.signUpBtn {
+    width: 100%;
+    max-width: 320px;
+    padding: 13px;
+    background: #5c3d1e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+    transition: background 0.2s;
+}
+
+.signUpBtn:hover {
+    background: #7a5230;
+}
+
+/* ── Divider ── */
+.divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 320px;
+    margin: 20px 0;
+    gap: 10px;
+}
+
+.dividerLine {
+    flex: 1;
+    height: 1px;
+    background: var(--color-yellow);
+}
+
+.dividerText {
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Social buttons ── */
+.socialBtn {
+    width: 100%;
+    max-width: 320px;
+    padding: 11px;
+    margin: 4px 0;
+    background: #f0f4fb;
+    color: #333;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    transition: background 0.2s;
+}
+
+.socialBtn:hover {
+    background: #e3eaf7;
+}
+
+/* ── Login link ── */
+.loginText {
+    margin-top: 24px;
+    font-size: 13px;
+    color: #555;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-align: center;
+}
+
+.loginLink {
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.loginLink:hover {
+    text-decoration: underline;
+}
+
+/* ── Right: Image panel ── */
+.imageSection {
+    width: 500px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7f5f2;
+    overflow: hidden;
+}
+
+.artwork {
+    width: 100%;
+    height: 100%;
+    max-height: 1200px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+    .imageSection {
+        display: none;
+    }
+    .formSection {
+        padding: 32px 24px;
+    }
+    .nameRow {
+        flex-direction: column;
+        gap: 0;
+    }
+    .pageLabel {
+        margin-left: 0;
+    }
+}

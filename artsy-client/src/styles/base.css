@@ -1,0 +1,142 @@
+/* Remove default margin and padding from common HTML elements */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* =========================
+   Helvetica Font
+========================= */
+
+@font-face {
+    font-family: "Helvetica";
+    src: url("../assets/fonts/Helvetica/HelveticaNeueMedium.otf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================
+   Playfair Font
+========================= */
+
+@font-face {
+    font-family: "Playfair";
+    src: url("../assets/fonts/PlayfairDisplay-VariableFont_wght.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+
+/* =========================
+  Inter Font
+========================= */
+
+@font-face {
+    font-family: "Inter";
+    src: url("../assets/fonts/Inter-VariableFont_opsz\,wght.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================
+   Typography/Color System
+========================= */
+
+:root {
+    /* Layout System */
+    --layout-width: 1440px;
+    --nav-width: 978px;
+    --hero-text-width: 921px;
+
+    /* Font Families */
+    --font-display: "Helvetica", sans-serif;
+    --font-body: "Helvetica", sans-serif;
+
+    /* Font Sizes */
+    --fs-16: 1rem;
+    --fs-18: 1.1rem;
+    --fs-20: 1.25rem;
+    --fs-24: 1.5rem;
+    --fs-32: 2rem;
+    --fs-40: 2.5rem;
+    --fs-48: 3rem;
+    --fs-56: 3.5rem;
+    --fs-72: 4.5rem;
+
+    /* Line Heights */
+    --lh-normal: 1.2;
+
+    /* Primary */
+    --color-yellow: #FBF4EA;
+    --color-green: #10755A;
+    --color-brown: #5A3713;
+    --color-light-blue-green: #21ADA2;
+
+    /* Dark tones */
+    --color-dark-blue: #013043;
+    --color-black: #0C0C20;
+    --color-footer-text-hover: #6D758F;
+
+    /* Light tones */
+    --color-rice-yellow: #FBF4EA;
+    --color-white: #F6FAF9;
+
+    /* Neutral */
+    --color-grey: #C6C6CB;
+
+    /* Footer */
+    --color-grey-400: #B4B9C9;
+    --color-grey-500: #8F8F8F;
+    --color-grey-600: #6D758F;
+
+}
+
+/* Set global font size, line height, and font family for the webpage */
+/* Base typography for body text */
+
+h1,
+h2 {
+    font-family: var(--font-display);
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--fs-16);
+    line-height: var(--lh-normal);
+    color: var(--color-brown);
+    background-color: var(--color-rice-yellow);
+}
+
+/* Remove default list styles */
+ul,
+ol {
+    list-style: none;
+}
+
+/* Remove default italic style */
+em,
+i {
+    font-style: normal;
+}
+
+/* Remove default underline from anchor tags and set default text color */
+a {
+    text-decoration: none;
+    color: var(--color-brown);
+}
+
+/* Set vertical alignment of images to middle and remove default bottom spacing */
+img {
+    vertical-align: middle;
+}
+
+/* Remove default input styles */
+input {
+    /* border: none; */
+    outline: none;
+    color: var(--color-black);
+}
