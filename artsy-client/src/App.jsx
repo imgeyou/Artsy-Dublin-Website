@@ -19,16 +19,15 @@ import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
-  const [activeFilters, setActiveFilters] = useState([]);
+  const [events, setEvents] = useState(mockEvents);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [activeCategories, setActiveCategories] = useState([]);
   const [activeDate, setActiveDate] = useState("Upcoming");
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
-  useEffect(() => {
-    setVisibleCount(8);
-  }, [activeFilters]);
-  // const [events, setEvents] = useState([]);
 
   // useEffect(() => {
   //   fetch("http://localhost:3005/events")
@@ -39,6 +38,35 @@ function HomePage() {
   //     })
   //     .catch(err => console.error(err));
   // }, []);
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [activeCategories, activeDate, sortOrder]);
+
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch("http://localhost:3005/events");
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data = await res.json();
+        setEvents(data);
+      } catch (err) {
+        console.error("Error loading events:", err);
+        setError("Could not load live events. Showing mock data instead.");
+        setEvents(mockEvents); // fallback
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEvents();
+  }, []);
 
   function getEventTags(event) {
     if (event.eventTypeId === "tmdbFilm") return ["Film"];
@@ -50,7 +78,7 @@ function HomePage() {
 
   const today = new Date();
 
-  const filteredEvents = mockEvents
+  const filteredEvents = events
     .filter((event) => {
       const matchesCategory =
         activeCategories.length === 0 ||
@@ -124,8 +152,14 @@ function HomePage() {
           />
         </div>
 
+        {loading && <p className="status-message">Loading events...</p>}
+        {error && <p className="status-message error">{error}</p>}
+        {filteredEvents.length === 0 && !loading && (
+          <p className="status-message">No matching events found.</p>
+        )}
+
         <div className="events_grid">
-          {filteredEvents.slice(0, visibleCount).map((event, index) => (
+          {filteredEvents.slice(0, visibleCount).map((event) => (
             <EventCard
               key={event.eventId}
               event={event}
@@ -146,7 +180,7 @@ function HomePage() {
 
         <MarqueeText />
 
-        <CalendarSection events={mockEvents} />
+        <CalendarSection events={events} />
         <Footer />
       </div>
 
@@ -154,8 +188,9 @@ function HomePage() {
   );
 }
 
-
 function CalendarSection({ events }) {
+  const datedEvents = events.filter(event => event.startDateTime);
+
   return (
     <section className="calendar">
 
@@ -175,7 +210,7 @@ function CalendarSection({ events }) {
         </div>
 
         <div className="calendar__grid">
-          {events.slice(0, 3).map(event => (
+          {datedEvents.slice(0, 3).map(event => (
             <EventCard key={event.eventId} event={event} />
           ))}
         </div>
@@ -189,7 +224,7 @@ function CalendarSection({ events }) {
         </div>
 
         <div className="calendar__grid">
-          {events.slice(3, 6).map(event => (
+          {datedEvents.slice(3, 6).map(event => (
             <EventCard key={event.eventId} event={event} />
           ))}
         </div>
