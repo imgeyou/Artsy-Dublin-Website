@@ -8,7 +8,9 @@ export default defineConfig({
     proxy: {
       "/users": "http://localhost:3005",
       "/events": "http://localhost:3005",
+      "/genres": "http://localhost:3005",
       "/posts": "http://localhost:3005",
+      "/api": "http://localhost:3005",
     },
   },
-})
+});
