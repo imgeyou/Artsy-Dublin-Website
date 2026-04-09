@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountKey.json");
 
@@ -12,8 +13,10 @@ admin.initializeApp({
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://127.0.0.1:5500"],
+    credentials: true,
   }),
 );
+app.use(cookieParser());
 app.use(express.json());
 
 const genresRouter = require("./routes/genres");
