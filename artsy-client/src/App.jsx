@@ -252,9 +252,19 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={
+          <div className="auth-layout">
+            <div className="auth-bg-blur" aria-hidden="true"><HomePage /></div>
+            <Login />
+          </div>
+        } />
         <Route path="/events/:id" element={<EventDetailPage />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={
+          <div className="auth-layout">
+            <div className="auth-bg-blur" aria-hidden="true"><HomePage /></div>
+            <Register />
+          </div>
+        } />
       </Routes>
     </BrowserRouter>
   )

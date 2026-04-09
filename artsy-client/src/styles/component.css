@@ -1,3 +1,33 @@
+/* Auth layout: blurred homepage background */
+.auth-layout {
+    position: relative;
+    min-height: 100vh;
+}
+
+.auth-layout::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(251, 244, 234, 0.35);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.auth-bg-blur {
+    position: fixed;
+    inset: 0;
+    filter: blur(14px);
+    transform: scale(1.08);
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.auth-bg-blur > * {
+    pointer-events: none;
+    user-select: none;
+}
+
 /* components */
 .container {
     max-width: 1440px;
