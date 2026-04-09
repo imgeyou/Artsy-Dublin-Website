@@ -117,16 +117,6 @@ export default function Register() {
                 className="input"
               />
             </div>
-            {/* <div className="formGroup">
-              <label className="label">Last Name</label>
-              <input
-                type="text"
-                placeholder="Last name"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="input"
-              />
-            </div> */}
           </div>
 
           {/* Email */}
