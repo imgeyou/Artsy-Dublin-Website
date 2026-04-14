@@ -1,101 +1,91 @@
-
-// 1.findOrCreateConversation -get or create a conversation between two users
-// B. getConversationsForUser   — inbox: all conversations with preview + unread count
-// C. getMessagesByConversation — full message history (verifies participant first)
-// D. saveMessage               — insert a message and bump lastMessageAt
-// E. markConversationRead      — mark all incoming messages as read
-// F. deleteConversation        — hard-delete messages then conversation (participant only)
-// G. isParticipant             — auth helper: is this user in this conversation?
-// H. getConversationParticipants — return userAId/userBId for socket routing
-
 const mysql2 = require("mysql2");
-const dbconfig = require("../utils/dbconfig");
-const pool = mysql2.createPool(dbconfig).promise();
+const dbconfig = require("../utils/dbconfig") ;
+const pool= mysql2.createPool(dbconfig).promise();
 
 class MessagesModel {
-  // Enforce consistent ordering so (3,7) and (7,3) always map to the same row.
+  // Enforce consistent ordering 
   _orderedPair(idA, idB) {
-    return idA < idB ? [idA, idB] : [idB, idA];
+   return idA < idB ? [idA, idB] : [idB, idA];
   }
 
-  // A. Return existing conversationId, or create one and return its new id.
+  // 1.get or create a conversation between two users, Return existing conversationId or create one and return its new id
   async findOrCreateConversation(userAId, userBId) {
-    const [a, b] = this._orderedPair(userAId, userBId);
-    try {
-      const [existing] = await pool.query(
-        `SELECT conversationId FROM conversations WHERE userAId = ? AND userBId = ?`,
-        [a, b],
-      );
-      if (existing.length > 0) return existing[0].conversationId;
+   const [a, b] = this._orderedPair(userAId, userBId) ;
+   try {
+     const [existing] = await pool.query(
+       `SELECT conversationId FROM conversations WHERE userAId = ? AND userBId = ?`, [a,  b],
+     );
 
-      const [result] = await pool.query(
-        `INSERT INTO conversations (userAId, userBId) VALUES (?, ?)`,
-        [a, b],
-      );
-      return result.insertId;
-    } catch (err) {
-      console.error("findOrCreateConversation Error:", err);
-      throw err;
-    }
+     if (existing.length > 0) return existing[0].conversationId;
+
+     const [result] = await pool.query(
+       `INSERT INTO conversations (userAId, userBId) VALUES (?, ?)`,
+       [a, b],
+     );
+     return result.insertId;
+    } catch  (err) {
+     console.error("findOrCreateConversation Error:", err);
+     throw err;
+   }
   }
 
-  // B. Inbox: all conversations for a user, sorted newest first.
-  //    Each row includes the other user's info, last message preview, and unread count.
+  // 2. Each row includes the other user's info, last message preview, unread count
   async getConversationsForUser(userId) {
-    try {
-      const [rows] = await pool.query(
-        `SELECT
+   try {
+     const [rows] = await pool.query(
+       `SELECT
            c.conversationId,
            c.lastMessageAt,
-           IF(c.userAId = ?, c.userBId, c.userAId)   AS otherUserId,
-           u.userName                                 AS otherUserName,
-           u.avatarUrl                                AS otherUserAvatar,
+           IF(c.userAId = ?, c.userBId, c.userAId) AS otherUserId,
+           u.userName  AS otherUserName,
+           u.avatarUrl  AS otherUserAvatar,
            (SELECT content
-              FROM messages
+             FROM messages
              WHERE conversationId = c.conversationId
              ORDER BY createdAt DESC
-             LIMIT 1)                                 AS lastMessage,
+             LIMIT 1)  AS lastMessage,
            (SELECT COUNT(*)
               FROM messages
              WHERE conversationId = c.conversationId
                AND senderId != ?
-               AND isRead = 0)                        AS unreadCount
-         FROM conversations c
+               AND isRead = 0) AS unreadCount
+         FROM conversations  c
          JOIN users u ON u.userId = IF(c.userAId = ?, c.userBId, c.userAId)
          WHERE c.userAId = ? OR c.userBId = ?
          ORDER BY c.lastMessageAt DESC`,
-        [userId, userId, userId, userId, userId],
+       [userId, userId, userId, userId, userId],
       );
-      return rows;
-    } catch (err) {
-      console.error("getConversationsForUser Error:", err);
-      throw err;
+
+     return rows;
+    } catch (err){
+     console.error("getConversationsForUser Error:",  err);
+     throw err;
     }
   }
 
-  // C. Full message history for a conversation. Returns null if not a participant.
+  // 3 -full message history (verify participant first)
   async getMessagesByConversation(conversationId, requestingUserId) {
-    try {
-      const allowed = await this.isParticipant(conversationId, requestingUserId);
-      if (!allowed) return null;
+   try {
+     const allowed =await this.isParticipant(conversationId, requestingUserId);
+     if (!allowed) return null;
 
-      const [messages] = await pool.query(
-        `SELECT m.messageId, m.senderId, m.content, m.isRead, m.createdAt,
-                u.userName AS senderName, u.avatarUrl AS senderAvatar
+     const [messages]= await pool.query(
+       `SELECT m.messageId, m.senderId, m.content, m.isRead, m.createdAt,
+           u.userName AS senderName, u.avatarUrl AS senderAvatar
            FROM messages m
            JOIN users u ON u.userId = m.senderId
           WHERE m.conversationId = ?
           ORDER BY m.createdAt ASC`,
-        [conversationId],
-      );
-      return messages;
-    } catch (err) {
-      console.error("getMessagesByConversation Error:", err);
-      throw err;
+       [conversationId] ,
+     );
+     return messages;
+    } catch (err){
+     console.error("getMessagesByConversation Error:", err);
+     throw err;
     }
   }
 
-  // D. Insert a message row and update the conversation's lastMessageAt timestamp.
+  // 4.insert a message in tables, lastMessageAt to keep inbox chats in correct order from newest to older
   async saveMessage(conversationId, senderId, content) {
     const connection = await pool.getConnection();
     try {
@@ -122,7 +112,7 @@ class MessagesModel {
     }
   }
 
-  // E. Mark all unread messages in a conversation as read (only messages from the other user).
+  // 5. Mark all unread messages in a conversation as read (only messages from the other user)
   async markConversationRead(conversationId, userId) {
     try {
       await pool.query(
@@ -137,7 +127,7 @@ class MessagesModel {
     }
   }
 
-  // F. Delete all messages then the conversation row. Returns false if not a participant.
+  // 6. Delete all messages then the conversation row. Returns false if not a participant.
   async deleteConversation(conversationId, userId) {
     const allowed = await this.isParticipant(conversationId, userId);
     if (!allowed) return false;
@@ -158,7 +148,7 @@ class MessagesModel {
     }
   }
 
-  // G. Check whether a user is a participant in a conversation.
+  // 7. Check whether a user is a participant in a conversation, auth helper
   async isParticipant(conversationId, userId) {
     try {
       const [rows] = await pool.query(
@@ -174,7 +164,7 @@ class MessagesModel {
     }
   }
 
-  // H. Return userAId and userBId so the socket handler knows who to notify.
+  // 8. Return userAId and userBId so the socket handler knows who to notify
   async getConversationParticipants(conversationId) {
     try {
       const [rows] = await pool.query(
@@ -188,5 +178,7 @@ class MessagesModel {
     }
   }
 }
+
+
 
 module.exports = new MessagesModel();
