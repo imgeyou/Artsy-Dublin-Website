@@ -1,102 +1,101 @@
-// Inbox — shows all conversations for the logged-in user.
-// Conversations are ordered newest-first.
-// Each row shows the other user's name/avatar, a last-message preview,
-// an unread badge when there are unread messages, and a delete button.
-// A "Find Users" section at the bottom lists all registered users so you
-// can navigate to their profile and start a new conversation from there.
+// Inbox shows all conversations for the logged-in user, newest convos come first
+// Each row shows the other user's name/avatar, last message preview, unread badge,delete button
+//  'Find Users' section at the bottom lists all registered users so user can navigate to their profile and start chatting
 
-import { useEffect, useState, useCallback } from "react";
+import  { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import socket from "../utils/socket";
+import socket  from "../utils/socket" ;
 
 export default function Inbox() {
   const { dbUser, firebaseUser } = useAuth();
-  const navigate = useNavigate();
+ const navigate = useNavigate();
 
-  const [conversations, setConversations] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+ const [conversations, setConversations] = useState([]);
+ const [users, setUsers] = useState([]);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState(null);
 
-  const loadInbox = useCallback(async () => {
-    try {
-      const res = await fetch("/messages/conversations", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to load conversations");
-      const data = await res.json();
-      setConversations(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+ const loadInbox = useCallback(async () => {
+   try {
+     const res = await fetch("/messages/conversations",  { credentials: "include" });
+     if (!res.ok) throw new Error("Failed to load conversations");
+     const data = await res.json();
+
+     setConversations(data);
+    }catch (err) {
+     setError(err.message);
+
+    }finally {
+     setLoading(false);
     }
   }, []);
 
   const loadUsers = useCallback(async () => {
-    try {
-      const res = await fetch("/users/", { credentials: "include" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setUsers(data);
+   try {
+     const res = await fetch("/users/", { credentials: "include" });
+     if (!res.ok) return;
+     const data = await res.json();
+     setUsers(data);
     } catch {
-      // users list is a nice-to-have; ignore failures
+      // users list is nice to have, ignore failures
     }
   }, []);
 
   useEffect(() => {
-    if (!firebaseUser) return;
-    loadInbox();
-    loadUsers();
-  }, [firebaseUser, loadInbox, loadUsers]);
+   if (!firebaseUser) return;
+   loadInbox();
+   loadUsers();
+  },   [firebaseUser, loadInbox, loadUsers]);
 
-  // Update the inbox preview in real time when a new message arrives.
+  // Update inbox preview in real time when new message arrives
   useEffect(() => {
-    function onNewMessage(msg) {
-      setConversations((prev) => {
-        const existing = prev.find((c) => c.conversationId === msg.conversationId);
+   function onNewMessage(msg) {
+     setConversations((prev) => {
+       const existing = prev.find((c) => c.conversationId === msg.conversationId);
         if (existing) {
           // Move conversation to top and update preview.
-          const updated = {
+       const updated = {
             ...existing,
-            lastMessage: msg.content,
-            lastMessageAt: msg.createdAt,
-            unreadCount:
-              msg.senderId !== dbUser?.userId
-                ? (existing.unreadCount || 0) + 1
-                : existing.unreadCount,
-          };
-          return [updated, ...prev.filter((c) => c.conversationId !== msg.conversationId)];
-        }
-        // New conversation not yet in the list — reload the full inbox.
-        loadInbox();
-        return prev;
-      });
+           lastMessage: msg.content,
+           lastMessageAt: msg.createdAt,
+           unreadCount:
+             msg.senderId !== dbUser?.userId
+               ? (existing.unreadCount || 0) + 1
+               : existing.unreadCount,
+         };
+         return [updated, ...prev.filter((c) => c.conversationId !== msg.conversationId)] ;
+       }
+        // New conversation not yet in the list -> reload  full inbox
+       loadInbox();
+       return prev;
+     });
     }
+   socket.on("new_message", onNewMessage);
+   return () => socket.off("new_message", onNewMessage);
+  },  [dbUser, loadInbox]);
 
-    socket.on("new_message", onNewMessage);
-    return () => socket.off("new_message", onNewMessage);
-  }, [dbUser, loadInbox]);
-
-  async function handleDelete(conversationId) {
-    if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
-    try {
-      const res = await fetch(`/messages/conversations/${conversationId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Could not delete conversation");
-      setConversations((prev) => prev.filter((c) => c.conversationId !== conversationId));
+ async function handleDelete(conversationId) {
+   if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
+   try {
+     const res = await fetch(`/messages/conversations/${conversationId}`, {
+       method: "DELETE",
+       credentials: "include",
+     });
+     if (!res.ok) throw new Error("Could not delete conversation");
+    setConversations((prev) => prev.filter((c) => c.conversationId !== conversationId));
     } catch (err) {
-      alert(err.message);
+     alert(err.message);
     }
   }
 
-  if (firebaseUser === undefined) return <div style={styles.page}><p>Loading...</p></div>;
-  if (!firebaseUser) {
-    navigate("/login");
-    return null;
+ if (firebaseUser === undefined) return <div style={styles.page}><p> Loading... </p></div> ;
+ if (!firebaseUser) {
+   navigate("/login");
+   return null;
   }
-
+  
+//frontend team - REDO please---------------
   return (
     <div style={styles.page}>
       <div style={styles.header}>
@@ -178,14 +177,14 @@ export default function Inbox() {
 }
 
 const styles = {
-  page:      { maxWidth: 600, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" },
-  header:    { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
-  title:     { margin: 0, fontSize: 26 },
-  homeLink:  { color: "#555", textDecoration: "none", fontSize: 14 },
-  error:     { color: "red" },
-  empty:     { color: "#888" },
-  list:      { listStyle: "none", padding: 0, margin: 0 },
-  item:      {
+  page:  { maxWidth: 600, margin: "40px auto", padding: "0 16px", fontFamily: "sans-serif" },
+  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
+  title:{ margin: 0, fontSize: 26 },
+  homeLink: { color: "#555", textDecoration: "none", fontSize: 14 },
+  error:{ color: "red" },
+  empty:  { color: "#888" },
+  list:  { listStyle: "none", padding: 0, margin: 0 },
+  item:  {
     display: "flex",
     alignItems: "center",
     borderBottom: "1px solid #eee",
@@ -201,8 +200,8 @@ const styles = {
     gap: 12,
     minWidth: 0,
   },
-  avatarWrap:    { position: "relative", flexShrink: 0 },
-  avatar:        { width: 48, height: 48, borderRadius: "50%", objectFit: "cover" },
+  avatarWrap: { position: "relative", flexShrink: 0 },
+  avatar: { width: 48, height: 48, borderRadius: "50%", objectFit: "cover" },
   avatarPlaceholder: {
     width: 48, height: 48, borderRadius: "50%",
     background: "#bbb", display: "flex", alignItems: "center",
@@ -216,18 +215,18 @@ const styles = {
   },
   convInfo:  { display: "flex", flexDirection: "column", minWidth: 0, flex: 1 },
   convName:  { fontWeight: 600, fontSize: 15, marginBottom: 2 },
-  preview:   { color: "#888", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
+  preview: { color: "#888", fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
   timestamp: { fontSize: 12, color: "#aaa", flexShrink: 0, marginLeft: 8 },
   deleteBtn: {
     background: "none", border: "none", cursor: "pointer",
     color: "#ccc", fontSize: 16, padding: "4px 8px",
     flexShrink: 0,
   },
-  divider:   { margin: "32px 0 24px", borderColor: "#eee" },
-  subtitle:  { fontSize: 18, marginBottom: 12 },
+  divider: { margin: "32px 0 24px", borderColor: "#eee" },
+  subtitle: { fontSize: 18, marginBottom: 12 },
   usersList: { listStyle: "none", padding: 0, margin: 0, display: "flex", flexWrap: "wrap", gap: 12 },
-  userItem:  {},
-  userLink:  {
+  userItem: {},
+  userLink: {
     display: "flex", alignItems: "center", gap: 8,
     textDecoration: "none", color: "inherit",
     border: "1px solid #ddd", borderRadius: 8,

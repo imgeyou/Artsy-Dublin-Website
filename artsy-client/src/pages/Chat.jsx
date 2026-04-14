@@ -1,11 +1,7 @@
-// Chat — real-time one-to-one conversation view.
-// Accessible at /messages/:conversationId.
-//
-// On mount: fetches the message history via REST (which also marks messages as
-// read), then emits "mark_read" via socket so the other user's inbox badge clears.
-// New messages arrive via the "new_message" socket event — no polling needed.
-// Sending a message emits "send_message" via socket; the server saves it to DB
-// and echoes it back to both participants through their private rooms.
+// real-time one-to-one conversation 
+// fetches the message history via REST (also marks messages as read), then emits mark_read via socket so the other user inbox badge clears
+// New message arrive via the new_message socket event 
+// Sending a message emits send_message via socket ->>the server saves it to db and echoes it back to both participants through private rooms
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
@@ -13,10 +9,10 @@ import { useAuth } from "../context/AuthContext";
 import socket from "../utils/socket";
 
 export default function Chat() {
-  const { conversationId } = useParams();
+  const { conversationId } = useParams() ;
   const convId = parseInt(conversationId, 10);
   const { dbUser, firebaseUser } = useAuth();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
 
   const [messages, setMessages] = useState([]);
   const [otherUser, setOtherUser] = useState(null);
@@ -27,24 +23,31 @@ export default function Chat() {
 
   const bottomRef = useRef(null);
 
-  // Fetch message history and mark the conversation as read.
+  // Fetch message history and mark the conversation as read
   const loadMessages = useCallback(async () => {
-    try {
-      const res = await fetch(`/messages/conversations/${convId}`, {
-        credentials: "include",
+   try {
+     const res = await fetch(`/messages/conversations/${convId}`, {
+       credentials: "include",
       });
-      if (res.status === 403) throw new Error("You are not part of this conversation");
-      if (!res.ok) throw new Error("Failed to load messages");
-      const data = await res.json();
-      setMessages(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [convId]);
 
-  // Fetch the other participant's info to show their name in the header.
+     if (res.status === 403) throw new Error("You are not part of this conversation");
+
+     if (!res.ok) throw new Error("Failed to load messages");
+
+     const data = await res.json();
+
+     setMessages(data);
+
+    } catch (err) {
+     setError(err.message);
+
+    }finally {
+     setLoading(false);
+    }
+
+  },   [convId]);
+
+  //   fetch the other participant's info to show their name in the header
   const loadOtherUser = useCallback(async () => {
     try {
       const res = await fetch("/messages/conversations", { credentials: "include" });
@@ -53,73 +56,76 @@ export default function Chat() {
       const conv = convs.find((c) => c.conversationId === convId);
       if (conv) setOtherUser({ userName: conv.otherUserName, avatarUrl: conv.otherUserAvatar, userId: conv.otherUserId });
     } catch {
-      // header info is nice-to-have; silently skip
+      // header info is nice to have, failure here does not affect messaging
     }
   }, [convId]);
 
   useEffect(() => {
-    if (!firebaseUser) return;
-    loadMessages();
-    loadOtherUser();
-  }, [firebaseUser, loadMessages, loadOtherUser]);
+   if (!firebaseUser) return;
+   loadMessages();
+   loadOtherUser();
+  },  [firebaseUser, loadMessages, loadOtherUser]);
 
-  // Tell the server (and the other user) that messages have been read.
+  // Tell the server and other user that message is read
   useEffect(() => {
-    if (!dbUser) return;
-    socket.emit("mark_read", { conversationId: convId });
-  }, [convId, dbUser]);
+   if (!dbUser) return;
+   socket.emit("mark_read", { conversationId: convId });
+  }, [convId,  dbUser]);
 
-  // Listen for incoming messages in real time.
-  useEffect(() => {
-    function onNewMessage(msg) {
-      if (msg.conversationId !== convId) return;
-      setMessages((prev) => {
-        // Deduplicate: the sender already appended optimistically in handleSend.
-        const alreadyPresent = prev.some((m) => m.messageId === msg.messageId);
-        if (alreadyPresent) return prev;
-        return [...prev, msg];
+  // Listen for incoming messages in real time
+ useEffect(() => {
+   function onNewMessage(msg) {
+     if (msg.conversationId !== convId) return;
+     setMessages((prev) => {
+        
+       const alreadyPresent = prev.some((m) => m.messageId === msg.messageId);
+       if (alreadyPresent) return prev;
+       return [...prev, msg];
       });
-      // Mark as read immediately since this chat is open.
-      socket.emit("mark_read", { conversationId: convId });
+      // Mark as read when chats open
+     socket.emit("mark_read", { conversationId: convId });
     }
 
-    function onMessageError({ message }) {
-      setSendError(message);
+   function onMessageError({ message })   {
+     setSendError(message);
+
     }
 
-    socket.on("new_message", onNewMessage);
-    socket.on("message_error", onMessageError);
-    return () => {
-      socket.off("new_message", onNewMessage);
-      socket.off("message_error", onMessageError);
+   socket.on("new_message", onNewMessage);
+   socket.on("message_error", onMessageError);
+   return () => {
+     socket.off("new_message", onNewMessage);
+     socket.off("message_error", onMessageError) ;
     };
+
   }, [convId]);
 
-  // Scroll to the latest message whenever the list changes.
+  //   to the latest message whenever list changes
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  },  [messages]);
 
-  function handleSend(e) {
-    e.preventDefault();
-    setSendError(null);
-    const text = inputText.trim();
-    if (!text) return;
-    if (text.length > 2000) {
-      setSendError("Message too long (max 2000 characters)");
-      return;
-    }
+ function handleSend(e) {
+   e.preventDefault();
+   setSendError(null);
+   const text = inputText.trim();
+   if (!text) return;
+   if (text.length > 2000) {
+     setSendError("Message too long (max 2000 characters)");
+     return;
+   }
     socket.emit("send_message", { conversationId: convId, content: text });
-    setInputText("");
+   setInputText("");
   }
 
-  if (firebaseUser === undefined) return <div style={styles.page}><p>Loading...</p></div>;
-  if (!firebaseUser) { navigate("/login"); return null; }
-  if (error) return <div style={styles.page}><p style={styles.error}>{error}</p></div>;
+ if (firebaseUser === undefined) return <div style={styles.page}><p> Loading... </p> </div>;
+ if (!firebaseUser)   { navigate("/login"); return null; }
+ if (error) return  <div style={styles.page}> <p style={styles.error}>{error}</p> </div>;
 
+  //fronted team -REDO please!!!!---------------------
   return (
     <div style={styles.page}>
-      {/* ── Header ── */}
+      {/* Header */}
       <div style={styles.header}>
         <Link to="/messages" style={styles.back}>← Inbox</Link>
         {otherUser && (
@@ -132,7 +138,7 @@ export default function Chat() {
         )}
       </div>
 
-      {/* ── Message list ── */}
+      {/* Message list */}
       <div style={styles.messageList}>
         {loading && <p style={styles.hint}>Loading messages…</p>}
         {!loading && messages.length === 0 && (
@@ -155,7 +161,7 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Input ── */}
+      {/* Input  */}
       <form onSubmit={handleSend} style={styles.form}>
         {sendError && <p style={styles.sendError}>{sendError}</p>}
         <input
@@ -192,8 +198,8 @@ const styles = {
     borderBottom: "1px solid #eee",
     background: "#fff",
   },
-  back:         { color: "#555", textDecoration: "none", fontSize: 14 },
-  otherUser:    { display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", fontWeight: 600 },
+  back:  { color: "#555", textDecoration: "none", fontSize: 14 },
+  otherUser: { display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", fontWeight: 600 },
   headerAvatar: { width: 36, height: 36, borderRadius: "50%", objectFit: "cover" },
   messageList: {
     flex: 1,

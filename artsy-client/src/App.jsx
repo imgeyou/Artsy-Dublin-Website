@@ -29,8 +29,7 @@ function HomePage() {
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
-  // Reset the visible count every time the category selection changes.
-  // Done here in the handler rather than a useEffect to avoid a cascading render.
+
   function handleCategoryChange(newCategories) {
     setActiveCategories(newCategories);
     setVisibleCount(8);

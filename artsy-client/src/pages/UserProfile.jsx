@@ -1,63 +1,63 @@
-// UserProfile — public profile page for any user.
-// Accessible at /users/:username.
-// Shows the user's avatar, name and bio, plus a "Send Message" button that
-// opens (or creates) a direct conversation with that user.
+// UserProfile is public profile page for any user
+// Access at /users/:username
+// Shows the user's avatar, name, bio, send message btn, opens (or creates) a direct conversation with that user
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function UserProfile() {
-  const { username } = useParams();
-  const { dbUser } = useAuth();
-  const navigate = useNavigate();
-
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [starting, setStarting] = useState(false);
+ const { username } = useParams();
+ const { dbUser } =  useAuth();
+ const navigate = useNavigate();
+ const  [profile, setProfile] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [error, setError]  = useState(null);
+ const [starting, setStarting] = useState(false) ;
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch(`/users/${username}`, { credentials: "include" })
+   setLoading(true);
+   setError(null);
+   fetch(`/users/${username}`, { credentials: "include" })
       .then((res) => {
-        if (!res.ok) throw new Error("User not found");
-        return res.json();
-      })
-      .then((data) => setProfile(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [username]);
+       if (!res.ok) throw new Error("User not found");
+       return res.json();
+     })
+     .then((data) => setProfile(data))
+     .catch((err) => setError(err.message))
+     .finally(() => setLoading(false));
+  },  [username]);
 
   async function handleSendMessage() {
-    if (!dbUser) return navigate("/login");
-    setStarting(true);
-    try {
-      const res = await fetch("/messages/conversations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ targetUserId: profile.userId }),
-      });
-      if (!res.ok) {
-        const body = await res.json();
-        throw new Error(body.error || "Could not start conversation");
+   if (!dbUser) return navigate("/login");
+   setStarting(true);
+   try{
+     const res = await fetch("/messages/conversations", {
+       method: "POST",
+       headers: { "Content-Type": "application/json" },
+       credentials: "include",
+       body: JSON.stringify({ targetUserId: profile.userId }),
+    });
+     if (!res.ok) {
+       const body = await res.json();
+       throw new Error(body.error || "Could not start conversation");
       }
-      const { conversationId } = await res.json();
-      navigate(`/messages/${conversationId}`);
+
+     const { conversationId } = await res.json();
+     navigate(`/messages/${conversationId}`);
     } catch (err) {
-      alert(err.message);
+     alert(err.message);
     } finally {
-      setStarting(false);
+     setStarting(false);
     }
   }
 
-  if (loading) return <div style={styles.page}><p>Loading...</p></div>;
-  if (error)   return <div style={styles.page}><p style={styles.error}>{error}</p></div>;
+  if (loading) return <div style={styles.page}><p> Loading... </p></div>;
+  if (error) return <div style={styles.page}><p style={styles.error}>{error}</p></div>;
 
   const isOwnProfile = dbUser?.userId === profile.userId;
-
+  
+//frontend team REDO please-----------------------------------------
   return (
     <div style={styles.page}>
       <Link to="/messages" style={styles.backLink}>← Back to messages</Link>

@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     refreshAuth();
-    // Disconnect cleanly when the browser tab closes.
+    
     return () => socket.disconnect();
   }, [refreshAuth]);
 
