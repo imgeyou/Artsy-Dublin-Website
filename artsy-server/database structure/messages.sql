@@ -1,6 +1,4 @@
-------MESSAGING--------------------------------------------------------------
--- One row per unique user pair. userAId is always the smaller userId to
--- enforce a natural unique constraint (no duplicate reversed pairs).
+
 CREATE TABLE `conversations` (
   `conversationId` int NOT NULL AUTO_INCREMENT,
   `userAId`  int NOT NULL,
@@ -13,7 +11,7 @@ CREATE TABLE `conversations` (
   CONSTRAINT `conv_ibfk_2` FOREIGN KEY (`userBId`) REFERENCES `users` (`userId`)
 );
 
--- Individual text messages belonging to a conversation.
+-- Individual text messages belonging to a conversation
 CREATE TABLE `messages` (
   `messageId`  int NOT NULL AUTO_INCREMENT,
   `conversationId` int NOT NULL,
