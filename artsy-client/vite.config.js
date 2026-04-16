@@ -6,11 +6,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/users": "http://localhost:3005",
-      "/events": "http://localhost:3005",
-      "/genres": "http://localhost:3005",
-      "/posts": "http://localhost:3005",
-      "/api": "http://localhost:3005",
+      "/users": "https://2526-cs7025-group2.scss.tcd.ie/",
+      "/genres": "https://2526-cs7025-group2.scss.tcd.ie/",
+      "/api": "https://2526-cs7025-group2.scss.tcd.ie/",
     },
   },
 });
