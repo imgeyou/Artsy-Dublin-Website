@@ -17,6 +17,7 @@ import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import TeamPage from "./pages/TeamPage"
 import Me from "./pages/Me";
+import ProfilePage from "./pages/ProfilePage";
 
 import './index.css'
 import './styles/component.css'
@@ -290,6 +291,7 @@ function App() {
         <Route path="/team" element={<TeamPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/me" element={<Me />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/posts" element={<PostsPage />} />
       </Routes>
