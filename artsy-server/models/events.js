@@ -81,6 +81,28 @@ async function fetchFilmsAndPopulate() {
     return filmsData;
 }
 
+function getNextMonthsDate() {
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); // January =  0
+    let yyyy = today.getFullYear();
+
+    // if it's decemeber, then Year++ and Month = 0
+    // correct date format req.s that months are like 01,02...etc
+    if (mm == 11) {
+        yyyy++;
+        mm = '00';
+    } else if (mm < 10) {
+        mm++;
+        mm = '0' + mm;
+    } else {
+        mm++;
+    }
+        
+    let updateDate = yyyy + '-' + mm + '-' + dd + "T00:00:00Z";
+    return updateDate;
+}
+
 async function fetchLiveEventsAndPopulate(typeName) {
     // fetch events from api
     // TODO: error detection for incorrect eventType
@@ -96,11 +118,13 @@ async function fetchLiveEventsAndPopulate(typeName) {
         return;
     }
 
+    let updateDate = getNextMonthsDate();
+
     const theatreEvents = await ticketmaster_api.get('events', {
         params: {
             countryCode: 'IE',
             segmentId: eventTypeId, 
-            startDateTime: '2026-05-10T19:00:00Z', // get user's current date and set end to a month later
+            endDateTime: updateDate, // get user's current date and set end to a month later
             sort: 'date,asc'
         }
     });
