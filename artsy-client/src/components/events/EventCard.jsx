@@ -44,7 +44,7 @@ function EventCard({ event, variant = "small" }) {
                 <div className="event-card__content">
                     <p className="event-card__category">
                         {event.description
-                            ? event.description.slice(0, 30)
+                            ? event.description.replace(/,\s*/g, " | ")
                             : "Arts & Culture"}
                     </p>
 
