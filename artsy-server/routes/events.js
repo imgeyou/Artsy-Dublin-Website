@@ -9,7 +9,7 @@ router.get("/", controller.get);
 router.get("/:typename", controller.getEventsByType); // typenames: "Arts-&-Theater", "Music", "Film-Showing"
 router.get("/genre/:genrename", controller.getEventsByGenre); // genrenames, e.g.: "Alternative-Rock", "Theatre", "Adventure"
 
-// UPDATE EVENTS
+// UPDATE EVENTS - called monthly via node-cron in index.js
 router.get("/update/:typename", controller.updateByType); // typenames: "Arts-&-Theater", "Music" (ticketmaster) "Film-Showing" (tmdb)
 
 // GET SINGLE EVENT DATA
