@@ -153,7 +153,7 @@ function HomePage() {
       <div className="container">
 
         <div className="bgl">
-          <img src={bgl} alt="" />
+          <img src={bgl} alt="bgl" />
         </div>
         {/* <h1>#Exhibtion</h1> */}
 

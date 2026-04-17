@@ -133,76 +133,137 @@ function EventDetailPage() {
                     <img src={bgl} alt="" />
                 </div>
 
-                <main className="event-detail">
-                    <div className="event-detail_image-wrap">
-                        <img
-                            src={event.posterUrl || "https://via.placeholder.com/600x800?text=No+Image"}
-                            alt={event.title}
-                            className="event-detail_image"
-                        />
-                    </div>
+                <main className="event-hero">
+                    <aside className="event-hero__rail">
+                        <span className="event-hero__rail-text">WELCOME TO EVENT</span>
+                    </aside>
 
-                    <div className="event-detail_content">
-                        <div className="event-header">
-                            <div className="event-header_top">
-                                <p className="event-detail_category">
-                                    {event.description || "Arts & Culture"}
-                                </p>
+                    <section className="event-hero__banner">
+                        <img
+                            src={event.posterUrl || "https://via.placeholder.com/1200x700?text=No+Image"}
+                            alt={event.title}
+                            className="event-hero__image"
+                        />
+
+                        <div className="event-hero__overlay"></div>
+
+                        <div className="event-hero__content">
+                            <div className="event-hero__topline">
+                                {event.eventTypeName && (
+                                    <p className="event-hero__type">{event.eventTypeName}</p>
+                                )}
+
+                                {event.genres && event.genres.length > 0 && (
+                                    <div className="event-hero__genres">
+                                        {event.genres.map((genre) => (
+                                            <span key={genre} className="event-hero__genre-tag">
+                                                {genre}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <h1 className="event-hero__title">{event.title}</h1>
+
+                            <p className="event-hero__date">
+                                {formattedDate}
+                            </p>
+
+                            <div className="event-hero__buttons">
+                                {event.url ? (
+                                    <a
+                                        href={event.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-primary"
+                                    >
+                                        Get Tickets
+                                    </a>
+                                ) : (
+                                    <button className="btn btn-primary" disabled>
+                                        Tickets Unavailable
+                                    </button>
+                                )}
+
                                 <button
                                     className={`btn-secondary btn-save-detail ${saved ? "is-saved" : ""}`}
                                     onClick={() => setSaved(!saved)}
                                 >
                                     <FontAwesomeIcon icon={saved ? solidBookmark : regularBookmark} />
-                                    {/* <span>{saved ? "Saved" : "Save Event"}</span> */}
                                 </button>
                             </div>
-                            <h1 className="event-detail_title">{event.title}</h1>
-                            <div className="event-host">
-                                <div className="event-host__avatar">
-                                    <img src={hostAvatar} alt="host" />
-                                    <span className="event-host__name">Hosted by Brian</span>
-                                </div>
+                        </div>
 
-                                <button className="btn btn-follow">Follow</button>
+                        <div className="event-hero__info-card">
+                            <div className="event-hero__info-item">
+                                <span className="event-hero__info-label">Venue</span>
+                                <p>{event.venue || "Venue TBA"}</p>
                             </div>
 
+                            <div className="event-hero__info-item">
+                                <span className="event-hero__info-label">Category</span>
+                                <p>{event.eventTypeName || "Event"}</p>
+                            </div>
+
+                            <div className="event-hero__info-item">
+                                <span className="event-hero__info-label">Date</span>
+                                <p>{formattedDate}</p>
+                            </div>
                         </div>
-                        <div className="event-info">
-                            <h2 className="event-detail_subtitle">Event Details</h2>
+                    </section>
+                </main>
+
+                <section className="event-body">
+                    <div className="event-body__main">
+                        <p className="event-body__eyebrow">WELCOME</p>
+                        <h2 className="event-body__title">About this event</h2>
+                        <p className="event-body__description">
+                            {event.description || "More event details coming soon."}
+                        </p>
+
+                        {/* <div className="event-host">
+                            <div className="event-host__avatar">
+                                <img src={hostAvatar} alt="host" />
+                                <span className="event-host__name">Hosted by Brian</span>
+                            </div>
+                            <button className="btn btn-follow">Follow</button>
+                        </div> */}
+                    </div>
+
+                    <aside className="event-body__side">
+                        <div className="event-body__meta-card">
+                            <h3>Event Details</h3>
+
                             <div className="event-detail_meta-item">
                                 <FontAwesomeIcon icon={faCalendarDays} className="event-detail_icon" />
                                 <p className="event-detail_time">{formattedDate}</p>
                             </div>
-                            {/* <p className="event-detail_time">{formattedDate}</p> */}
+
                             <div className="event-detail_meta-item">
                                 <FontAwesomeIcon icon={faLocationDot} className="event-detail_icon" />
                                 <p className="event-detail_venue">{event.venue || "Venue TBA"}</p>
                             </div>
-
-                            <p className="event-detail_description">
-                                {event.description || "More event details coming soon."}
-                            </p>
                         </div>
-                        <div className="event-actions">
-                            {event.url ? (
-                                <a
-                                    href={event.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn btn-primary"
-                                >
-                                    Get Tickets
-                                </a>
-                            ) : (
-                                <button className="btn btn-primary" disabled>
-                                    Tickets Unavailable
-                                </button>
-                            )}
 
-                            <button className="btn btn-outline">Log attendance</button>
-                        </div>
-                    </div>
-                </main>
+                        {event.venue && event.venue !== "Various Venues" && (
+                            <div className="event-body__map-card">
+                                <h3>Location</h3>
+                                <iframe
+                                    title="Event location map"
+                                    width="100%"
+                                    height="260"
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    allowFullScreen
+                                    src={`https://www.google.com/maps?q=${encodeURIComponent(
+                                        `${event.venue}, Dublin`
+                                    )}&output=embed`}
+                                />
+                            </div>
+                        )}
+                    </aside>
+                </section>
                 <section className="related-events">
                     <div className="related-events__header">
                         <h2 className="related-events__title">Related Events</h2>
