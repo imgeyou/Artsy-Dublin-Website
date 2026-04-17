@@ -26,7 +26,8 @@ class postsModel {
 
             const [results] = await que.query(`
                 SELECT posts.postId, posts.content, posts.createdAt, users.username,
-                       events.eventId, events.title, eventAttended.rating,
+                       events.eventId, events.title, events.venue, events.startDateTime, events.posterUrl,
+                       eventAttended.rating,
                        posts.likeCount, posts.commentCount
                 FROM posts
                 JOIN postType ON posts.type = postType.typeId
@@ -234,12 +235,18 @@ class postsModel {
                 [userId, eventAttendId, eventId, content]
             );
 
-            //increment reviewCount in TABLE events
+            //increment reviewCount in TABLE events and users
             await que.query(
-                `UPDATE events 
-                SET reviewCount = reviewCount + 1, updatedAt = NOW() 
+                `UPDATE events
+                SET reviewCount = reviewCount + 1, updatedAt = NOW()
                 WHERE eventId = ?`,
                 [eventId]
+            );
+            await que.query(
+                `UPDATE users
+                SET reviewCount = reviewCount + 1
+                WHERE userId = ?`,
+                [userId]
             );
 
             //get postId for the newly created post
@@ -460,12 +467,18 @@ class postsModel {
 
             // alter counts
             if (post[0].type === 1) {
-                // diary post: decrement event's reviewCount
+                // diary post: decrement event's and user's reviewCount
                 await que.query(
-                    `UPDATE events 
-                    SET reviewCount = GREATEST(reviewCount - 1, 0), updatedAt = NOW() 
+                    `UPDATE events
+                    SET reviewCount = GREATEST(reviewCount - 1, 0), updatedAt = NOW()
                     WHERE eventId = ?
                     `,[post[0].eventId]
+                );
+                await que.query(
+                    `UPDATE users
+                    SET reviewCount = GREATEST(reviewCount - 1, 0)
+                    WHERE userId = ?
+                    `,[post[0].userId]
                 );
             } else if (post[0].postParentId) {
                 // comment: decrement direct parentPost's commentCount
@@ -492,8 +505,8 @@ class postsModel {
             que = await pool.getConnection();
             // get eventId before deleting
             const [attendance] = await que.query(
-                `SELECT eventId 
-                FROM eventattended 
+                `SELECT eventId, userId
+                FROM eventattended
                 WHERE eventAttendId = ?
                 `,[eventAttendId]
             );
@@ -501,6 +514,7 @@ class postsModel {
             if (!attendance[0]) throw new Error('record-not-found');
 
             const eventId = attendance[0].eventId;
+            const userId = attendance[0].userId;
 
             // soft-delete any posts linked to this attendance
             const [linkedPosts] = await que.query(
@@ -518,12 +532,18 @@ class postsModel {
                     WHERE eventAttendId = ?
                     `,[eventAttendId]
                 );
-                // alter counts: decrement event's reviewCount
+                // alter counts: decrement event's and user's reviewCount
                 await que.query(
-                    `UPDATE events 
-                    SET reviewCount = GREATEST(reviewCount - ?, 0), updatedAt = NOW() 
+                    `UPDATE events
+                    SET reviewCount = GREATEST(reviewCount - ?, 0), updatedAt = NOW()
                     WHERE eventId = ?
                     `,[linkedPosts.length, eventId]
+                );
+                await que.query(
+                    `UPDATE users
+                    SET reviewCount = GREATEST(reviewCount - ?, 0)
+                    WHERE userId = ?
+                    `,[linkedPosts.length, userId]
                 );
             }
 
