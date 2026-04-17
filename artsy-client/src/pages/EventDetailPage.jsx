@@ -38,7 +38,7 @@ function EventDetailPage() {
         async function loadEvent() {
             try {
                 setLoading(true);
-                setError("");
+                setError(null);
 
                 const res = await fetch(`/ad-events/event/${id}`);
                 console.log("detail response status:", res.status);
@@ -49,6 +49,7 @@ function EventDetailPage() {
 
                 const data = await res.json();
                 console.log("detail fetched data:", data);
+
                 const normalizedEvent = {
                     eventId: data.eventId ?? Number(id),
                     title: data.title ?? "",
@@ -59,13 +60,13 @@ function EventDetailPage() {
                     posterUrl: data.posterUrl ?? data.posterURL ?? "",
                     eventTypeId: data.eventTypeId ?? "",
                     eventTypeName: data.eventTypeName ?? "",
+                    genres: data.genres ?? [],
                     eventRepeats: data.eventRepeats ?? [],
                     attendance: data.attendance ?? null,
                 };
 
                 setEvent(normalizedEvent);
 
-                // 暫時先用 mockEvents 算 related，之後再改成 live data
                 const related = mockEvents
                     .filter((item) => item.eventId !== normalizedEvent.eventId)
                     .filter((item) => item.eventTypeId === normalizedEvent.eventTypeId)
@@ -74,7 +75,24 @@ function EventDetailPage() {
                 setRelatedEvents(related);
             } catch (err) {
                 console.error("Error loading event:", err);
-                setError("Could not load event details.");
+
+                const foundEvent = mockEvents.find(
+                    (item) => item.eventId === Number(id)
+                );
+
+                if (foundEvent) {
+                    setEvent(foundEvent);
+
+                    const related = mockEvents
+                        .filter((item) => item.eventId !== foundEvent.eventId)
+                        .filter((item) => item.eventTypeId === foundEvent.eventTypeId)
+                        .slice(0, 6);
+
+                    setRelatedEvents(related);
+                    setError(null);
+                } else {
+                    setError("Could not load event details.");
+                }
             } finally {
                 setLoading(false);
             }

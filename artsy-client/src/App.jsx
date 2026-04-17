@@ -7,7 +7,7 @@ import bgl from './assets/images/bgl.png'
 
 import Header from "./components/layout/Header"
 import Footer from "./components/layout/Footer"
-// import mockEvents from "./mock/events";
+import mockEvents from "./mock/events";
 import EventCard from "./components/events/EventCard";
 import EventDetailPage from './pages/EventDetailPage'
 import PostDetailPage from "./pages/PostDetailPage";
@@ -17,14 +17,13 @@ import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import TeamPage from "./pages/TeamPage"
 import Me from "./pages/Me";
-import ProfilePage from "./pages/ProfilePage";
 
 import './index.css'
 import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState([mockEvents]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,16 +32,6 @@ function HomePage() {
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
-
-  // useEffect(() => {
-  //   fetch("http://localhost:3005/events")
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       console.log(data);
-  //       setEvents(data);
-  //     })
-  //     .catch(err => console.error(err));
-  // }, []);
   useEffect(() => {
     setVisibleCount(8);
   }, [activeCategories, activeDate, sortOrder]);
@@ -82,7 +71,7 @@ function HomePage() {
       } catch (err) {
         console.error("Error loading events:", err);
         setError("Could not load live events. Showing mock data instead.");
-        setEvents([]);
+        setEvents(mockEvents);
       } finally {
         setLoading(false);
       }
@@ -153,7 +142,7 @@ function HomePage() {
       <div className="container">
 
         <div className="bgl">
-          <img src={bgl} alt="bgl" />
+          <img src={bgl} alt="" />
         </div>
         {/* <h1>#Exhibtion</h1> */}
 
@@ -291,7 +280,6 @@ function App() {
         <Route path="/team" element={<TeamPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/me" element={<Me />} />
-        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/posts" element={<PostsPage />} />
       </Routes>
