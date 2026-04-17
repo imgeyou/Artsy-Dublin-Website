@@ -18,7 +18,7 @@ export default function Inbox() {
 
  const loadInbox = useCallback(async () => {
    try {
-     const res = await fetch("/messages/conversations",  { credentials: "include" });
+     const res = await fetch("/ad-messages/conversations",  { credentials: "include" });
      if (!res.ok) throw new Error("Failed to load conversations");
      const data = await res.json();
 
@@ -78,7 +78,7 @@ export default function Inbox() {
  async function handleDelete(conversationId) {
    if (!window.confirm("Delete this conversation? This cannot be undone.")) return;
    try {
-     const res = await fetch(`/messages/conversations/${conversationId}`, {
+     const res = await fetch(`/ad-messages/conversations/${conversationId}`, {
        method: "DELETE",
        credentials: "include",
      });

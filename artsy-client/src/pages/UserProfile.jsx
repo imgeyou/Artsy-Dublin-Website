@@ -32,7 +32,7 @@ export default function UserProfile() {
    if (!dbUser) return navigate("/login");
    setStarting(true);
    try{
-     const res = await fetch("/messages/conversations", {
+     const res = await fetch("/ad-messages/conversations", {
        method: "POST",
        headers: { "Content-Type": "application/json" },
        credentials: "include",
