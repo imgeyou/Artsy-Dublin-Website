@@ -39,10 +39,10 @@ const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
 
 const authRoute = require("./routes/auth");
-app.use("/api", authRoute);
+app.use("/ad-auth", authRoute);
 
 const messagesRoute = require("./routes/messages");
-app.use("/messages", messagesRoute);
+app.use("/ad-messages", messagesRoute);
 
 // Static uploads served from public/uploads
 app.use("/uploads", express.static("public/uploads"));

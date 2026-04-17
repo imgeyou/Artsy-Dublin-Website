@@ -85,13 +85,15 @@ export default function Register() {
       formData.append("gender", gender);
       formData.append("birthday", birthday);
       formData.append("interests", JSON.stringify([...selected]));
-      if (avatarFile) formData.append("avatar", avatarFile);
+      // if (avatarFile) formData.append("avatar", avatarFile);
       // console.log(formData);
 
+      console.log("registering...");
       const res = await fetch("/ad-users/register", {
         method: "POST",
         body: formData,
       });
+      console.log("register response:", res.status);
 
       if (!res.ok) {
         const msg = await res.text();
@@ -105,6 +107,7 @@ export default function Register() {
       dbRegistered = true;
 
       const csrfRes = await fetch("/ad-auth/csrf-token", { credentials: "include" });
+      console.log("csrf response:", csrfRes.status);
       const { csrfToken } = await csrfRes.json();
       const freshToken = await user.getIdToken();
       const sessionRes = await fetch("/ad-auth/sessionLogin", {
@@ -113,7 +116,7 @@ export default function Register() {
         credentials: "include",
         body: JSON.stringify({ idToken: freshToken, csrfToken }),
       });
-      if (!sessionRes.ok) throw new Error("session_failed");
+      if (!sessionRes.ok) throw new Error(sessionRes.status);
 
       await refreshAuth();
       navigate("/");

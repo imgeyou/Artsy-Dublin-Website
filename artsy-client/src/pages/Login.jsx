@@ -51,7 +51,7 @@ export default function Login() {
         credentials: "include",
         body: JSON.stringify({ idToken, csrfToken }),
       });
-      if (!sessionRes.ok) throw new Error("session_failed");
+      if (!sessionRes.ok) throw new Error(sessionRes.status);
 
       await refreshAuth(); //update session cookie
       navigate("/"); //to homepage after login

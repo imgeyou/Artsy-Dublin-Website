@@ -16,9 +16,10 @@ import FilterBar from "./components/events/FilterBar";
 import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import TeamPage from "./pages/TeamPage"
-import Chat from "./pages/Chat"
 import Inbox from "./pages/Inbox"
 import Me from "./pages/Me";
+import Chat from "./pages/Chat";
+import UserProfile from "./pages/UserProfile";
 
 import './index.css'
 import './styles/component.css'
@@ -286,9 +287,7 @@ function App() {
         <Route path="/posts" element={<PostsPage />} />
         <Route path="/messages" element={<Inbox />} />
         <Route path="/messages/:conversationId" element={<Chat />} />
-        {/* <Route path="/profile " element={<Me />} /> */}
-        {/* <Route path="/messages" element={<Inbox />} /> */}
-
+        <Route path="/users/:username" element={<UserProfile />} />
       </Routes>
     </BrowserRouter>
   );
