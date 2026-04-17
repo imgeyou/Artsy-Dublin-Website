@@ -15,14 +15,6 @@ import PostImageRow from "./PostImageRow";
 import { formatDate } from "../../utils/postHelpers";
 import "../../styles/pages/post-detail.css";
 
-function fileToBase64(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-    });
-}
-
 // --------------- CommentForm 
 function CommentForm({
     onSubmit,
@@ -58,8 +50,7 @@ function CommentForm({
 
         setSubmitting(true);
         try {
-            const base64Images = await Promise.all(images.map(fileToBase64));
-            await onSubmit({ content: trimmed, images: base64Images });
+            await onSubmit({ content: trimmed, images }); 
 
             setText("");
             previews.forEach((p) => URL.revokeObjectURL(p));

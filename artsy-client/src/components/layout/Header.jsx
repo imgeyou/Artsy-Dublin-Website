@@ -44,10 +44,7 @@ function Header({ searchTerm = "", setSearchTerm = () => { } }) {
         setMobileNavOpen(false);
 
         try {
-            await fetch("/api/sessionLogout", {
-                method: "POST",
-                credentials: "include",
-            });
+            await fetch("/ad-auth/sessionLogout", { method: "POST", credentials: "include" });
         } catch {
             // ignore
         }
@@ -124,7 +121,7 @@ function Header({ searchTerm = "", setSearchTerm = () => { } }) {
                         {menuOpen && (
                             <div className="header__dropdown">
                                 <Link
-                                    to="/profile"
+                                    to="/me"
                                     className="header__dropdown-item"
                                     onClick={() => {
                                         setMenuOpen(false);

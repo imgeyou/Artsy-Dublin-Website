@@ -111,7 +111,10 @@ function PostDetailPage() {
 
     async function handleLikeToggle() {
         try {
-            const res = await fetch(`/ad-posts/${id}/like`, { method: "POST" });
+            const res = await fetch(`/ad-posts/${id}/like`, { 
+                method: "POST" ,
+                credentials: "include",
+            });
             if (!res.ok) return;
             const { liked: likeStatus, likeCount: newCount } = await res.json();
             setLiked(likeStatus);
@@ -174,30 +177,23 @@ function PostDetailPage() {
     }
 
     async function handleCommentSubmit({ content, images }) {
-        try {
-            const res = await fetch(`/ad-posts/${id}/comments`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content, images }),
-            });
+    const form = new FormData();
+    form.append('content', content);
+    images.forEach(img => form.append('images', img)); // raw File objects, not base64
 
-            if (!res.ok) return;
-
-            const newComment = await res.json();
-
-            setComments((prev) => [...prev, newComment]);
-            setPost((prev) =>
-                prev ? { ...prev, commentCount: (prev.commentCount ?? 0) + 1 } : prev
-            );
-        } catch {}
-    }
-
+    const res = await fetch(`/ad-posts/comment/${id}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: form
+    });
+}
     async function handleAddReply(parentId, { content, images }) {
         try {
             const res = await fetch(`/ad-posts/${id}/comments/${parentId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ content, images }),
+                credentials: "include",
             });
 
             if (!res.ok) return;

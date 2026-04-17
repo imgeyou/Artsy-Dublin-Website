@@ -6,6 +6,7 @@ const usersController = require("../controllers/usersController");
 const upload = require("../utils/upload");
 
 router.get("/", usersController.getUsersPool);
+router.get("/top-reviewers", usersController.getTopReviewers);
 router.get("/:username", usersController.getUserByName);
 router.get("/:username/attended-events", usersController.getUserAttendedEvents);
 router.get("/:username/stats", usersController.getUserStats);

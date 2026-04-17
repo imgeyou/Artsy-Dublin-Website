@@ -156,7 +156,25 @@ class usersModel {
     }
   }
 
-  // G. get user Journal
+  // G. get top reviewers
+  async getTopReviewers(limit = 5) {
+    try {
+      const [results] = await pool.query(
+        `SELECT userName, avatarUrl, reviewCount
+         FROM users
+         WHERE reviewCount > 0
+         ORDER BY reviewCount DESC
+         LIMIT ?`,
+        [limit],
+      );
+      return results;
+    } catch (err) {
+      console.error("getTopReviewers Error: ", err);
+      throw err;
+    }
+  }
+
+  // H. get user Journal
   async getUserJournal(userName, sort) {
     const sortOptions = {
       newest: "p.createdAt DESC",

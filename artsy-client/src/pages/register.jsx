@@ -33,7 +33,7 @@ export default function Register() {
   const [genres, setGenres]             = useState([]);
 
   useEffect(() => {
-    fetch("/genres")
+    fetch("/ad-genres")
       .then((r) => r.json())
       .then((data) => setGenres(data))
       .catch(() => {});
@@ -57,18 +57,18 @@ export default function Register() {
   const handleSubmit = async () => {
     setError("");
 
-    if (!avatarFile) {
-      setError("Please upload a profile photo.");
-      return;
-    }
-    if (!gender) {
-      setError("Please select your gender.");
-      return;
-    }
-    if (!birthday) {
-      setError("Please enter your date of birth.");
-      return;
-    }
+    // if (!avatarFile) {
+    //   setError("Please upload a profile photo.");
+    //   return;
+    // }
+    // if (!gender) {
+    //   setError("Please select your gender.");
+    //   return;
+    // }
+    // if (!birthday) {
+    //   setError("Please enter your date of birth.");
+    //   return;
+    // }
 
     await setPersistence(auth, inMemoryPersistence);
     let firebaseUser = null;
@@ -85,18 +85,21 @@ export default function Register() {
       formData.append("gender", gender);
       formData.append("birthday", birthday);
       formData.append("interests", JSON.stringify([...selected]));
-      formData.append("avatar", avatarFile);
+      // if (avatarFile) formData.append("avatar", avatarFile);
+      // console.log(formData);
 
+      console.log("registering...");
       const res = await fetch("/ad-users/register", {
         method: "POST",
         body: formData,
       });
+      console.log("register response:", res.status);
 
       if (!res.ok) {
         const msg = await res.text();
         // If server returned an HTML error page, show a clean message
         if (msg.trim().startsWith("<")) {
-          throw new Error("Registration failed. The server may not support avatar upload yet. Please try again later.");
+          throw new Error(msg);
         }
         throw new Error(msg);
       }
@@ -104,6 +107,7 @@ export default function Register() {
       dbRegistered = true;
 
       const csrfRes = await fetch("/ad-auth/csrf-token", { credentials: "include" });
+      console.log("csrf response:", csrfRes.status);
       const { csrfToken } = await csrfRes.json();
       const freshToken = await user.getIdToken();
       const sessionRes = await fetch("/ad-auth/sessionLogin", {
@@ -112,7 +116,7 @@ export default function Register() {
         credentials: "include",
         body: JSON.stringify({ idToken: freshToken, csrfToken }),
       });
-      if (!sessionRes.ok) throw new Error("session_failed");
+      if (!sessionRes.ok) throw new Error(sessionRes.status);
 
       await refreshAuth();
       navigate("/");

@@ -105,7 +105,19 @@ class userController {
     }
   }
 
-  // F. Journal Entries
+  // F. Top Reviewers
+  async getTopReviewers(req, res) {
+    try {
+      const limit = parseInt(req.query.limit) || 5;
+      const reviewers = await usersModel.getTopReviewers(limit);
+      res.json(reviewers);
+    } catch (error) {
+      console.error("getTopReviewers Error:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
+  // G. Journal Entries
   async getUserJournal(req, res) {
     try {
       const sort = req.query.sort || "newest";
