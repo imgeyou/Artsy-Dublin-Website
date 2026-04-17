@@ -26,7 +26,7 @@ function Header() {
     const handleLogout = async () => {
         setMenuOpen(false);
         try {
-            await fetch("/api/sessionLogout", { method: "POST", credentials: "include" });
+            await fetch("/ad-auth/sessionLogout", { method: "POST", credentials: "include" });
         } catch {
             // ignore network errors, still clear local state
         }
