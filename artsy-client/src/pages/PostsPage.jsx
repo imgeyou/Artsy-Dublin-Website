@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 
 //import backend api
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+//const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 //import icon
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -53,7 +53,7 @@ function PostsPage() {
 
         async function fetchPosts() {
             try {
-                const res = await fetch(`${API_BASE_URL}/posts`);
+                const res = await fetch(`/ad-posts`);
                 setPosts(await parseResponse(res));
             } catch (err) {
                 setPostsError(err.message);
@@ -65,7 +65,7 @@ function PostsPage() {
         async function fetchReviewers() {
             try {
                 const res = await fetch(
-                    `${API_BASE_URL}/users/top-reviewers?limit=${topReviewerLimit}`
+                    `/ad-users/top-reviewers?limit=${topReviewerLimit}`
                 );
                 setTopReviewers(await parseResponse(res));
             } catch (err) {

@@ -31,8 +31,8 @@ function EventDetailPage() {
     const [error, setError] = useState(null);
     const { id } = useParams();
 
-    const API_BASE_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:3005";
+    // const API_BASE_URL =
+    //     import.meta.env.VITE_API_URL || "http://localhost:3005";
 
     useEffect(() => {
         async function loadEvent() {
@@ -40,7 +40,7 @@ function EventDetailPage() {
                 setLoading(true);
                 setError("");
 
-                const res = await fetch(`${API_BASE_URL}/events/event/${id}`);
+                const res = await fetch(`/ad-events/event/${id}`);
                 console.log("detail response status:", res.status);
 
                 if (!res.ok) {
@@ -81,7 +81,7 @@ function EventDetailPage() {
         }
 
         loadEvent();
-    }, [id, API_BASE_URL]);
+    }, [id, "TEST"]);
 
     if (loading) {
         return <p className="status-message">Loading event...</p>;

@@ -1,5 +1,8 @@
 import {createContext, useContext, useEffect, useState, useCallback,} from "react";
 
+//import backend api
+//const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -10,8 +13,9 @@ export function AuthProvider({ children }) {
 
   //refresh authentication info in cookie
   const refreshAuth = useCallback(async () => {
+    console.log("checking session");
     try {
-      const res = await fetch("/api/check-auth", { credentials: "include" });
+      const res = await fetch(`/api/check-auth`, { credentials: "include" });
       if (res.ok) {
         const user = await res.json();
         setFirebaseUser({
@@ -23,9 +27,11 @@ export function AuthProvider({ children }) {
           userName: user.userName,
           avatarUrl: user.avatarUrl,
         });
+        console.log("OK");
       } else {
         setFirebaseUser(null);
         setDbUser(null);
+        console.log("NOT OK");
       }
     } catch {
       setFirebaseUser(null);

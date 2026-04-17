@@ -6,6 +6,9 @@ import '../styles/pages/Login.css';
 import loginImg from "../assets/images/login.png";
 import logoImg from "../assets/images/logo.png";
 
+//import backend api
+//const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 import {
   signInWithEmailAndPassword,
   setPersistence,
@@ -28,7 +31,7 @@ export default function Login() {
       await setPersistence(auth, inMemoryPersistence);
 
       // 1. get CSRF token from server
-      const csrfRes = await fetch("/api/csrf-token", {
+      const csrfRes = await fetch(`/ad-auth/csrf-token`, {
         credentials: "include",
       });
       const { csrfToken } = await csrfRes.json();
@@ -42,7 +45,7 @@ export default function Login() {
       const idToken = await userCredential.user.getIdToken();
 
       // 3. exchange ID token for a session cookie (lifesapn longer)
-      const sessionRes = await fetch("/api/sessionLogin", {
+      const sessionRes = await fetch(`/ad-auth/sessionLogin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

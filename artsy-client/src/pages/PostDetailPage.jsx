@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 //import backend api
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+//const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 //import icon
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -82,14 +82,14 @@ function PostDetailPage() {
         //if no err, fetch post + reviewedEvent
         async function fetchPost() {
             try {
-                const res = await fetch(`${API_BASE_URL}/posts/${id}`);
+                const res = await fetch(`/ad-posts/${id}`);
                 const data = await parseResponse(res);
                 setPost(data);
                 setLikeCount(data.likeCount ?? 0);
                 setComments(data.comments ?? []);
 
                 if (data.eventId) {
-                    const eventRes = await fetch(`${API_BASE_URL}/events/event/${data.eventId}`);
+                    const eventRes = await fetch(`/ad-events/event/${data.eventId}`);
                     if (eventRes.ok) setEvent(await eventRes.json());
                 }
             } catch (err) {
@@ -111,7 +111,7 @@ function PostDetailPage() {
 
     async function handleLikeToggle() {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${id}/like`, { method: "POST" });
+            const res = await fetch(`/ad-posts/${id}/like`, { method: "POST" });
             if (!res.ok) return;
             const { liked: likeStatus, likeCount: newCount } = await res.json();
             setLiked(likeStatus);
@@ -124,7 +124,7 @@ function PostDetailPage() {
     // edit/delete the main post
     async function handlePostEdit() {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${id}`, {
+            const res = await fetch(`/ad-posts/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ content: postEditText }),
@@ -139,7 +139,7 @@ function PostDetailPage() {
 
     async function handlePostDelete() {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${id}`, { method: "DELETE" });
+            const res = await fetch(`/ad-posts/${id}`, { method: "DELETE" });
             if (!res.ok) return;
             navigate("/posts");
         } catch {
@@ -150,7 +150,7 @@ function PostDetailPage() {
     // edit/delete a comment or reply
     async function handleEditComment(postId, content) {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+            const res = await fetch(`/ad-posts/${postId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ content }),
@@ -164,7 +164,7 @@ function PostDetailPage() {
 
     async function handleDeleteComment(postId) {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${postId}`, { method: "DELETE" });
+            const res = await fetch(`/ad-posts/${postId}`, { method: "DELETE" });
             if (!res.ok) return;
             setComments((prev) => removeComment(prev, postId));
             setPost((prev) => prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount ?? 1) - 1) } : prev);
@@ -173,25 +173,18 @@ function PostDetailPage() {
         }
     }
 
-    async function handleCommentSubmit({
-        content,
-        images,
-        setComments,
-        setPost,
-        id,
-        API_BASE_URL,
-    }) {
+    async function handleCommentSubmit({ content, images }) {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${id}/comments`, {
+            const res = await fetch(`/ad-posts/${id}/comments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ content, images }),
             });
-    
+
             if (!res.ok) return;
-    
+
             const newComment = await res.json();
-    
+
             setComments((prev) => [...prev, newComment]);
             setPost((prev) =>
                 prev ? { ...prev, commentCount: (prev.commentCount ?? 0) + 1 } : prev
@@ -199,32 +192,22 @@ function PostDetailPage() {
         } catch {}
     }
 
-    async function handleAddReply({
-        parentId,
-        content,
-        images,
-        setComments,
-        id,
-        API_BASE_URL,
-    }) {
+    async function handleAddReply(parentId, { content, images }) {
         try {
-            const res = await fetch(`${API_BASE_URL}/posts/${id}/comments/${parentId}`, {
+            const res = await fetch(`/ad-posts/${id}/comments/${parentId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ content, images }),
             });
-    
+
             if (!res.ok) return;
-    
+
             const newReply = await res.json();
-    
+
             function insertReply(comments) {
                 return comments.map((c) => {
                     if (c.postId === parentId) {
-                        return {
-                            ...c,
-                            replies: [...(c.replies || []), newReply],
-                        };
+                        return { ...c, replies: [...(c.replies || []), newReply] };
                     }
                     if (c.replies?.length) {
                         return { ...c, replies: insertReply(c.replies) };
@@ -232,7 +215,7 @@ function PostDetailPage() {
                     return c;
                 });
             }
-    
+
             setComments((prev) => insertReply(prev));
         } catch {}
     }

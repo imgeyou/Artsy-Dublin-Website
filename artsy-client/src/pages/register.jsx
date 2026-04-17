@@ -87,7 +87,7 @@ export default function Register() {
       formData.append("interests", JSON.stringify([...selected]));
       formData.append("avatar", avatarFile);
 
-      const res = await fetch("/users/register", {
+      const res = await fetch("/ad-users/register", {
         method: "POST",
         body: formData,
       });
@@ -103,10 +103,10 @@ export default function Register() {
 
       dbRegistered = true;
 
-      const csrfRes = await fetch("/api/csrf-token", { credentials: "include" });
+      const csrfRes = await fetch("/ad-auth/csrf-token", { credentials: "include" });
       const { csrfToken } = await csrfRes.json();
       const freshToken = await user.getIdToken();
-      const sessionRes = await fetch("/api/sessionLogin", {
+      const sessionRes = await fetch("/ad-auth/sessionLogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
