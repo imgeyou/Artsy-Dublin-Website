@@ -19,8 +19,56 @@ import { faBookmark as regularBookmark } from "@fortawesome/free-regular-svg-ico
 
 import '../index.css'
 import '../styles/pages/event-detail.css'
+import { useAuth } from "../context/AuthContext";
 
+function getFallbackTags(item) {
+    if (!item?.description) return [];
 
+    if (item.eventTypeId === "tmdbFilm") return ["Film"];
+
+    return item.description
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+}
+
+function getRelatedEvents(currentEvent, allEvents) {
+    if (!currentEvent) return [];
+
+    const currentGenres =
+        currentEvent.genres && currentEvent.genres.length > 0
+            ? currentEvent.genres
+            : getFallbackTags(currentEvent);
+
+    return allEvents
+        .filter((item) => item.eventId !== currentEvent.eventId)
+        .filter((item) => item.eventTypeId === currentEvent.eventTypeId)
+        .map((item) => {
+            const itemGenres =
+                item.genres && item.genres.length > 0
+                    ? item.genres
+                    : getFallbackTags(item);
+
+            const sharedGenres = itemGenres.filter((genre) =>
+                currentGenres.includes(genre)
+            );
+
+            let score = 0;
+
+            // 同類型基本分
+            score += 2;
+
+            // genre / tag 一樣加分
+            score += sharedGenres.length * 3;
+
+            // 有日期的活動稍微優先
+            if (item.startDateTime) score += 1;
+
+            return { ...item, _score: score };
+        })
+        .sort((a, b) => b._score - a._score)
+        .slice(0, 6);
+}
 
 function EventDetailPage() {
     const navigate = useNavigate();
@@ -30,7 +78,8 @@ function EventDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { id } = useParams();
-
+    const { dbUser } = useAuth();
+    console.log("dbUser:", dbUser);
     // const API_BASE_URL =
     //     import.meta.env.VITE_API_URL || "http://localhost:3005";
 
@@ -67,10 +116,7 @@ function EventDetailPage() {
 
                 setEvent(normalizedEvent);
 
-                const related = mockEvents
-                    .filter((item) => item.eventId !== normalizedEvent.eventId)
-                    .filter((item) => item.eventTypeId === normalizedEvent.eventTypeId)
-                    .slice(0, 6);
+                const related = getRelatedEvents(normalizedEvent, mockEvents);
 
                 setRelatedEvents(related);
             } catch (err) {
@@ -162,7 +208,7 @@ function EventDetailPage() {
                             alt={event.title}
                             className="event-hero__image"
                         />
-
+                        <div className="event-hero__gloss"></div>
                         <div className="event-hero__overlay"></div>
 
                         <div className="event-hero__content">
@@ -184,9 +230,11 @@ function EventDetailPage() {
 
                             <h1 className="event-hero__title">{event.title}</h1>
 
-                            <p className="event-hero__date">
-                                {formattedDate}
-                            </p>
+                            <div className="event-hero__stats">
+                                <span>{event.saveCount ?? 0} saved</span>
+                                <span>{event.attendCount ?? 0} attending</span>
+                            </div>
+
 
                             <div className="event-hero__buttons">
                                 {event.url ? (

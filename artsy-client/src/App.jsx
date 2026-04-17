@@ -31,10 +31,11 @@ function HomePage() {
   const [activeDate, setActiveDate] = useState("Upcoming");
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     setVisibleCount(8);
-  }, [activeCategories, activeDate, sortOrder]);
+  }, [activeCategories, activeDate, sortOrder, searchTerm]);
 
   // const API_BASE_URL =
   //   import.meta.env.VITE_API_URL;
@@ -94,7 +95,7 @@ function HomePage() {
     .filter((event) => {
       const matchesCategory =
         activeCategories.length === 0 ||
-        activeCategories.some(category => getEventTags(event).includes(category));
+        activeCategories.includes(getEventTypeLabel(event.eventTypeId));
 
       let matchesDate = true;
 
@@ -118,7 +119,15 @@ function HomePage() {
         }
       }
 
-      return matchesCategory && matchesDate;
+      const search = searchTerm.trim().toLowerCase();
+
+      const matchesSearch =
+        search === "" ||
+        event.title?.toLowerCase().includes(search) ||
+        event.venue?.toLowerCase().includes(search) ||
+        event.description?.toLowerCase().includes(search);
+
+      return matchesCategory && matchesDate && matchesSearch;
     })
     .sort((a, b) => {
       const dateA = a.startDateTime
@@ -138,12 +147,13 @@ function HomePage() {
 
   return (
     <div>
-      <Header />
+      <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <div className="section-bg-text">Artsy<br></br>Dublin</div>
       <div className="container">
 
-        <div className="bgl">
+        {/* <div className="bgl">
           <img src={bgl} alt="" />
-        </div>
+        </div> */}
         {/* <h1>#Exhibtion</h1> */}
 
         <div className="home-hero">
@@ -201,12 +211,91 @@ function HomePage() {
 }
 
 function CalendarSection({ events }) {
-  const datedEvents = events.filter(event => event.startDateTime);
+  function isSameDay(dateA, dateB) {
+    return (
+      dateA.getFullYear() === dateB.getFullYear() &&
+      dateA.getMonth() === dateB.getMonth() &&
+      dateA.getDate() === dateB.getDate()
+    );
+  }
+
+  function getStartOfWeek(date) {
+    const d = new Date(date);
+    const day = d.getDay(); // 0 = Sunday, 1 = Monday...
+    const diff = day === 0 ? -6 : 1 - day; // 以 Monday 當一週開始
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function getEndOfWeek(date) {
+    const start = getStartOfWeek(date);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+    return end;
+  }
+  const [openThisWeek, setOpenThisWeek] = useState(false);
+  const [openNextWeek, setOpenNextWeek] = useState(false);
+
+  const now = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(now.getDate() + 1);
+
+  const startOfThisWeek = getStartOfWeek(now);
+  const endOfThisWeek = getEndOfWeek(now);
+
+  const startOfNextWeek = new Date(startOfThisWeek);
+  startOfNextWeek.setDate(startOfThisWeek.getDate() + 7);
+  startOfNextWeek.setHours(0, 0, 0, 0);
+
+  const endOfNextWeek = new Date(startOfNextWeek);
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
+  endOfNextWeek.setHours(23, 59, 59, 999);
+
+  const datedEvents = events
+    .filter((event) => event.startDateTime)
+    .map((event) => ({
+      ...event,
+      parsedDate: new Date(event.startDateTime),
+    }))
+    .sort((a, b) => a.parsedDate - b.parsedDate);
+
+  const todayEvents = datedEvents.filter((event) =>
+    isSameDay(event.parsedDate, now)
+  );
+
+  const tomorrowEvents = datedEvents.filter((event) =>
+    isSameDay(event.parsedDate, tomorrow)
+  );
+
+  const thisWeekEvents = datedEvents.filter((event) => {
+    return (
+      event.parsedDate >= startOfThisWeek &&
+      event.parsedDate <= endOfThisWeek &&
+      !isSameDay(event.parsedDate, now) &&
+      !isSameDay(event.parsedDate, tomorrow)
+    );
+  });
+
+  const nextWeekEvents = datedEvents.filter((event) => {
+    return (
+      event.parsedDate >= startOfNextWeek &&
+      event.parsedDate <= endOfNextWeek
+    );
+  });
+
+
+  const hasCalendarEvents =
+    todayEvents.length > 0 ||
+    tomorrowEvents.length > 0 ||
+    thisWeekEvents.length > 0 ||
+    nextWeekEvents.length > 0;
+
+  const upcomingEvents = datedEvents.slice(0, 6);
 
   return (
     <section className="calendar">
-
-      {/* Top Header */}
       <div className="calendar__header">
         <h2 className="calendar__title">Calendar</h2>
         <a href="#" className="calendar__link">
@@ -214,47 +303,111 @@ function CalendarSection({ events }) {
         </a>
       </div>
 
-      {/* Today */}
-      <div className="calendar__group">
-        <div className="calendar__group-header">
-          <h3>Today</h3>
-          <span>↑</span>
-        </div>
+      {!hasCalendarEvents && (
+        <div className="calendar__fallback">
+          <div className="calendar__group-header">
+            <h3>Upcoming Events</h3>
+            <span>↑</span>
+          </div>
 
-        <div className="calendar__grid">
-          {datedEvents.slice(0, 3).map(event => (
-            <EventCard key={event.eventId} event={event} />
-          ))}
+          <div className="calendar__grid">
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event) => (
+                <EventCard
+                  key={event.eventId ?? event.title}
+                  event={event}
+                />
+              ))
+            ) : (
+              <p>No upcoming events available.</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Tomorrow */}
-      <div className="calendar__group">
-        <div className="calendar__group-header">
-          <h3>Tomorrow</h3>
-          <span>↑</span>
-        </div>
+      {hasCalendarEvents && (
+        <>
+          <div className="calendar__group">
+            <div className="calendar__group-header">
+              <h3>Today</h3>
+              <span>{todayEvents.length > 0 ? "↑" : "—"}</span>
+            </div>
 
-        <div className="calendar__grid">
-          {datedEvents.slice(3, 6).map(event => (
-            <EventCard key={event.eventId} event={event} />
-          ))}
-        </div>
-      </div>
+            <div className="calendar__grid">
+              {todayEvents.length > 0 ? (
+                todayEvents.map((event) => (
+                  <EventCard key={event.eventId ?? event.title} event={event} />
+                ))
+              ) : (
+                <p>No events today.</p>
+              )}
+            </div>
+          </div>
 
-      {/* Collapsed sections */}
-      <div className="calendar__collapsed">
-        <div className="calendar__collapsed-row">
-          <span>This week</span>
-          <span>↓</span>
-        </div>
+          <div className="calendar__group">
+            <div className="calendar__group-header">
+              <h3>Tomorrow</h3>
+              <span>{tomorrowEvents.length > 0 ? "↑" : "—"}</span>
+            </div>
 
-        <div className="calendar__collapsed-row">
-          <span>Next week</span>
-          <span>↓</span>
-        </div>
-      </div>
+            <div className="calendar__grid">
+              {tomorrowEvents.length > 0 ? (
+                tomorrowEvents.map((event) => (
+                  <EventCard key={event.eventId ?? event.title} event={event} />
+                ))
+              ) : (
+                <p>No events tomorrow.</p>
+              )}
+            </div>
+          </div>
 
+          <div className="calendar__collapsed">
+            <button
+              type="button"
+              className="calendar__collapsed-row"
+              onClick={() => setOpenThisWeek(!openThisWeek)}
+              aria-expanded={openThisWeek}
+            >
+              <span>This week</span>
+              <span>{openThisWeek ? "↑" : "↓"}</span>
+            </button>
+
+            {openThisWeek && (
+              <div className="calendar__grid">
+                {thisWeekEvents.length > 0 ? (
+                  thisWeekEvents.map((event) => (
+                    <EventCard key={event.eventId ?? event.title} event={event} />
+                  ))
+                ) : (
+                  <p>No more events this week.</p>
+                )}
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="calendar__collapsed-row"
+              onClick={() => setOpenNextWeek(!openNextWeek)}
+              aria-expanded={openNextWeek}
+            >
+              <span>Next week</span>
+              <span>{openNextWeek ? "↑" : "↓"}</span>
+            </button>
+
+            {openNextWeek && (
+              <div className="calendar__grid">
+                {nextWeekEvents.length > 0 ? (
+                  nextWeekEvents.map((event) => (
+                    <EventCard key={event.eventId ?? event.title} event={event} />
+                  ))
+                ) : (
+                  <p>No events next week.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </section>
   );
 }
