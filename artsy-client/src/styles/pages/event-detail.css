@@ -146,6 +146,7 @@
 .event-hero__banner {
     position: relative;
     min-height: 720px;
+    height: 720px;
     overflow: hidden;
     border-radius: 0 0 24px 24px;
 }
