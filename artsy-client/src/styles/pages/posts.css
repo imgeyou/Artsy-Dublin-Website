@@ -53,7 +53,7 @@
     flex-direction: column;
 }
 
-/* ── Sidebar (popular reviewers) ── */
+/* ----- Sidebar (popular reviewers) ---- */
 
 .posts-sidebar {
     position: sticky;

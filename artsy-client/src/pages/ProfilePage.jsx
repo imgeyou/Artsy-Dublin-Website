@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import bgl from "../assets/images/bgl.png";
 import "./ProfilePage.css";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3005";
+const API = import.meta.env.VITE_API_URL;
 
 function SkeletonGrid() {
   return (
