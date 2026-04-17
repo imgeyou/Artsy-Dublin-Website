@@ -17,6 +17,9 @@ import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import TeamPage from "./pages/TeamPage"
 import Me from "./pages/Me";
+import Inbox from "./pages/Inbox";
+import Chat from "./pages/Chat";
+import UserProfile from "./pages/UserProfile";
 
 import './index.css'
 import './styles/component.css'
@@ -282,6 +285,9 @@ function App() {
         <Route path="/me" element={<Me />} />
         <Route path="/posts/:id" element={<PostDetailPage />} />
         <Route path="/posts" element={<PostsPage />} />
+        <Route path="/messages" element={<Inbox />} />
+        <Route path="/messages/:conversationId" element={<Chat />} />
+        <Route path="/users/:username" element={<UserProfile />} />
       </Routes>
     </BrowserRouter>
   );
