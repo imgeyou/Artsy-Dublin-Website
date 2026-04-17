@@ -26,7 +26,7 @@ export default function Chat() {
   // Fetch message history and mark the conversation as read
   const loadMessages = useCallback(async () => {
    try {
-     const res = await fetch(`/messages/conversations/${convId}`, {
+     const res = await fetch(`/ad-messages/conversations/${convId}`, {
        credentials: "include",
       });
 
@@ -50,7 +50,7 @@ export default function Chat() {
   //   fetch the other participant's info to show their name in the header
   const loadOtherUser = useCallback(async () => {
     try {
-      const res = await fetch("/messages/conversations", { credentials: "include" });
+      const res = await fetch("/ad-messages/conversations", { credentials: "include" });
       if (!res.ok) return;
       const convs = await res.json();
       const conv = convs.find((c) => c.conversationId === convId);

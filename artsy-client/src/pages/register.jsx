@@ -86,6 +86,7 @@ export default function Register() {
       formData.append("birthday", birthday);
       formData.append("interests", JSON.stringify([...selected]));
       if (avatarFile) formData.append("avatar", avatarFile);
+      // console.log(formData);
 
       const res = await fetch("/ad-users/register", {
         method: "POST",

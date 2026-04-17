@@ -33,7 +33,7 @@ export default function Inbox() {
 
   const loadUsers = useCallback(async () => {
    try {
-     const res = await fetch("/users/", { credentials: "include" });
+     const res = await fetch("/ad-users/", { credentials: "include" });
      if (!res.ok) return;
      const data = await res.json();
      setUsers(data);
