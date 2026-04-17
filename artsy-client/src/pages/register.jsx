@@ -33,7 +33,7 @@ export default function Register() {
   const [genres, setGenres]             = useState([]);
 
   useEffect(() => {
-    fetch("/genres")
+    fetch("/ad-genres")
       .then((r) => r.json())
       .then((data) => setGenres(data))
       .catch(() => {});
@@ -57,18 +57,18 @@ export default function Register() {
   const handleSubmit = async () => {
     setError("");
 
-    if (!avatarFile) {
-      setError("Please upload a profile photo.");
-      return;
-    }
-    if (!gender) {
-      setError("Please select your gender.");
-      return;
-    }
-    if (!birthday) {
-      setError("Please enter your date of birth.");
-      return;
-    }
+    // if (!avatarFile) {
+    //   setError("Please upload a profile photo.");
+    //   return;
+    // }
+    // if (!gender) {
+    //   setError("Please select your gender.");
+    //   return;
+    // }
+    // if (!birthday) {
+    //   setError("Please enter your date of birth.");
+    //   return;
+    // }
 
     await setPersistence(auth, inMemoryPersistence);
     let firebaseUser = null;
@@ -85,7 +85,7 @@ export default function Register() {
       formData.append("gender", gender);
       formData.append("birthday", birthday);
       formData.append("interests", JSON.stringify([...selected]));
-      formData.append("avatar", avatarFile);
+      if (avatarFile) formData.append("avatar", avatarFile);
 
       const res = await fetch("/ad-users/register", {
         method: "POST",
@@ -96,7 +96,7 @@ export default function Register() {
         const msg = await res.text();
         // If server returned an HTML error page, show a clean message
         if (msg.trim().startsWith("<")) {
-          throw new Error("Registration failed. The server may not support avatar upload yet. Please try again later.");
+          throw new Error(msg);
         }
         throw new Error(msg);
       }
