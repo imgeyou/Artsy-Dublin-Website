@@ -81,7 +81,7 @@ function Header() {
                         {menuOpen && (
                             <div className="header__dropdown">
                                 <Link
-                                    to="/profile"
+                                    to="/me"
                                     className="header__dropdown-item"
                                     onClick={() => setMenuOpen(false)}
                                 >

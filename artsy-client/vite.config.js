@@ -11,8 +11,12 @@ export default defineConfig({
     //   "/api": "https://2526-cs7025-group2.scss.tcd.ie/",
     // }
     proxy: {
-      "^/ad-": "http://localhost:3005",
-      "/users": "http://localhost:3005",
+      "^/ad-": 
+      // {
+        // target: 
+        "https://2526-cs7025-group2.scss.tcd.ie/",
+        // changeOrigin: true,
+      // }
     },
   },
 });

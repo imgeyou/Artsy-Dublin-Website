@@ -16,6 +16,8 @@ import FilterBar from "./components/events/FilterBar";
 import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import TeamPage from "./pages/TeamPage"
+import Chat from "./pages/Chat"
+import Inbox from "./pages/Inbox"
 import Me from "./pages/Me";
 import Inbox from "./pages/Inbox";
 import Chat from "./pages/Chat";
