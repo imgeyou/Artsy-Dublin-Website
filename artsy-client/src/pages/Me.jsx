@@ -8,6 +8,7 @@ export default function Me() {
   const { firebaseUser, dbUser } = useAuth();
   const navigate = useNavigate();
 
+  console.log(firebaseUser);
   if (firebaseUser === undefined) return <p>Loading...</p>;
   if (!firebaseUser) {
     navigate("/login");
@@ -15,7 +16,7 @@ export default function Me() {
   }
 
   const handleLogout = async () => {
-    await fetch("/api/sessionLogout", { method: "POST", credentials: "include" });
+    await fetch("/ad-auth/sessionLogout", { method: "POST", credentials: "include" });
     await signOut(auth);
     socket.disconnect(); // drop the authenticated socket so the next user starts fresh
     navigate("/login");

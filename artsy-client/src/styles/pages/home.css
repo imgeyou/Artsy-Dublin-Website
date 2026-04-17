@@ -90,7 +90,8 @@
 .calendar__grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 40px;
+    /* gap: 10px; */
+    border-top: 1px solid #bdbdbd;
 }
 
 .calendar__group-header {
@@ -123,6 +124,12 @@
 
 .calendar__grid>* {
     position: relative;
+    padding: 18px 18px 22px;
+    border-left: 1px solid #bdbdbd;
+}
+
+.calendar__grid .event-card:first-child {
+    border: none;
 }
 
 .calendar__grid>*:not(:last-child)::after {

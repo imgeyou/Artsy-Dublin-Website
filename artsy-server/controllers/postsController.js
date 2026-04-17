@@ -140,8 +140,8 @@ class postsController{
     async likeToggle(req, res){
         try {
             const userId = 1; // TODO: replace with req.session.userId
-            const liked = await postsModel.likeToggle(req.params.postId, userId);
-            res.json({ liked }); // true = liked, false = unliked
+            const { liked, likeCount } = await postsModel.likeToggle(req.params.postId, userId);
+            res.json({ liked, likeCount });
         } catch (err) {
             console.error(err);
             res.status(500).json({ error: 'Server error' });

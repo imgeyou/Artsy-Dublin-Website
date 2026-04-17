@@ -323,13 +323,11 @@ class postsModel {
 
                 //decrement likeCount in TABLE posts
                 await que.query(
-                    `UPDATE posts 
-                    SET likeCount = likeCount - 1, updatedAt = NOW() 
+                    `UPDATE posts
+                    SET likeCount = likeCount - 1, updatedAt = NOW()
                     WHERE postId = ?
                     `,[likePostId]
                 );
-
-                return false; //unlike
 
             } else {
                 await que.query(
@@ -339,14 +337,19 @@ class postsModel {
 
                 //increment likeCount in TABLE posts
                 await que.query(
-                    `UPDATE posts 
-                    SET likeCount = likeCount + 1, updatedAt = NOW() 
+                    `UPDATE posts
+                    SET likeCount = likeCount + 1, updatedAt = NOW()
                     WHERE postId = ?
                     `,[likePostId]
                 );
-
-                return true; //like
             }
+
+            // fetch the updated count from DB (source of truth)
+            const [[{ likeCount }]] = await que.query(
+                `SELECT likeCount FROM posts WHERE postId = ?`,
+                [likePostId]
+            );
+            return { liked: !result.length, likeCount };
         } catch (err) {
             console.error("Query Error: " + err);
             throw err;

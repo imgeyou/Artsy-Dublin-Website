@@ -1,0 +1,53 @@
+.login-prompt-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-prompt {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    min-width: 260px;
+    max-width: 340px;
+    box-shadow: 0 8px 32px rgba(43, 43, 43, 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+}
+
+.login-prompt__message {
+    font-family: var(--font-display);
+    font-size: var(--fs-18);
+    color: #2b2b2b;
+    margin: 0;
+}
+
+.login-prompt__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.login-prompt__close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: rgba(43, 43, 43, 0.4);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+}
+
+.login-prompt__close:hover {
+    color: rgba(43, 43, 43, 0.8);
+}

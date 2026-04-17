@@ -1,0 +1,137 @@
+/* Post Card */
+
+.post-card {
+    border-bottom: 1px solid rgba(90, 55, 19, 0.1);
+    padding: 20px 0;
+    background: var(--color-rice-yellow);
+    /* border-radius: 22px; */
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(12, 12, 32, 0.08);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+.post-card:hover {
+    box-shadow: 0 18px 38px rgba(12, 12, 32, 0.12);
+}
+
+.post-card:last-child {
+    border-bottom: none;
+}
+
+.post-card__link {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    color: inherit;
+}
+
+/* Poster */
+.post-card__poster-wrap {
+    width: 150px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.post-card__poster {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+.post-card__poster-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #e8e0d5;
+}
+
+/* Content */
+.post-card__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+/* Title */
+.post-card__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.post-card__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-brown);
+    line-height: 1.2;
+}
+
+.post-card__year {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-grey-600);
+}
+
+/* Meta row: stars + watched by + date + comments */
+.post-card__meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 13px;
+}
+
+.post-card__stars {
+    display: flex;
+    gap: 2px;
+    color: var(--color-green);
+    font-size: 12px;
+}
+
+.post-card__watched {
+    color: var(--color-grey-600);
+}
+
+.post-card__username {
+    color: var(--color-green);
+    font-weight: 600;
+}
+
+.post-card__date {
+    color: var(--color-grey-500);
+}
+
+.post-card__comment-count {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-grey-500);
+}
+
+/* Review text */
+.post-card__text {
+    font-size: 14px;
+    color: var(--color-dark-blue);
+    line-height: 1.55;
+    font-style: italic;
+    opacity: 0.8;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Footer */
+.post-card__footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--color-grey-500);
+}
+
+.post-card__footer-count {
+    margin-left: auto;
+}

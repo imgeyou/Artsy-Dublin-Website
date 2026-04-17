@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from './pages/Login'
 
@@ -10,41 +10,75 @@ import Footer from "./components/layout/Footer"
 import mockEvents from "./mock/events";
 import EventCard from "./components/events/EventCard";
 import EventDetailPage from './pages/EventDetailPage'
+import PostDetailPage from "./pages/PostDetailPage";
+import PostsPage from "./pages/PostsPage";
 import FilterBar from "./components/events/FilterBar";
 import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
+import TeamPage from "./pages/TeamPage"
 import Me from "./pages/Me";
-import Inbox from "./pages/Inbox";
-import Chat from "./pages/Chat";
-import UserProfile from "./pages/UserProfile";
-
 
 import './index.css'
 import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
+  const [events, setEvents] = useState([mockEvents]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [activeCategories, setActiveCategories] = useState([]);
   const [activeDate, setActiveDate] = useState("Upcoming");
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
-
-  function handleCategoryChange(newCategories) {
-    setActiveCategories(newCategories);
+  useEffect(() => {
     setVisibleCount(8);
-  }
-  // const [events, setEvents] = useState([]);
+  }, [activeCategories, activeDate, sortOrder]);
 
-  // useEffect(() => {
-  //   fetch("http://localhost:3005/events")
-  //     .then(res => res.json())
-  //     .then(data => {
-  //       console.log(data);
-  //       setEvents(data);
-  //     })
-  //     .catch(err => console.error(err));
-  // }, []);
+  // const API_BASE_URL =
+  //   import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch(`/ad-events`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data = await res.json();
+
+        const normalizedEvents = data.map((event, index) => ({
+          eventId: event.eventId ?? index,
+          title: event.title ?? "",
+          url: event.url ?? "",
+          description: event.description ?? "",
+          venue: event.venue ?? "",
+          startDateTime: event.startDateTime ?? "",
+          posterUrl: event.posterUrl ?? event.posterURL ?? "",
+          attendCount: event.attendCount ?? 0,
+          reviewCount: event.reviewCount ?? 0,
+          saveCount: event.saveCount ?? 0,
+          eventTypeId: event.eventTypeId ?? ""
+        }));
+
+        setEvents(normalizedEvents);
+      } catch (err) {
+        console.error("Error loading events:", err);
+        setError("Could not load live events. Showing mock data instead.");
+        setEvents(mockEvents);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEvents();
+  }, []);
 
   function getEventTags(event) {
     if (event.eventTypeId === "tmdbFilm") return ["Film"];
@@ -56,7 +90,7 @@ function HomePage() {
 
   const today = new Date();
 
-  const filteredEvents = mockEvents
+  const filteredEvents = events
     .filter((event) => {
       const matchesCategory =
         activeCategories.length === 0 ||
@@ -122,13 +156,19 @@ function HomePage() {
 
           <FilterBar
             activeCategories={activeCategories}
-            setActiveCategories={handleCategoryChange}
+            setActiveCategories={setActiveCategories}
             activeDate={activeDate}
             setActiveDate={setActiveDate}
             sortOrder={sortOrder}
             setSortOrder={setSortOrder}
           />
         </div>
+
+        {loading && <p className="status-message">Loading events...</p>}
+        {error && <p className="status-message error">{error}</p>}
+        {filteredEvents.length === 0 && !loading && (
+          <p className="status-message">No matching events found.</p>
+        )}
 
         <div className="events_grid">
           {filteredEvents.slice(0, visibleCount).map((event) => (
@@ -152,7 +192,7 @@ function HomePage() {
 
         <MarqueeText />
 
-        <CalendarSection events={mockEvents} />
+        <CalendarSection events={events} />
         <Footer />
       </div>
 
@@ -160,8 +200,9 @@ function HomePage() {
   );
 }
 
-
 function CalendarSection({ events }) {
+  const datedEvents = events.filter(event => event.startDateTime);
+
   return (
     <section className="calendar">
 
@@ -181,7 +222,7 @@ function CalendarSection({ events }) {
         </div>
 
         <div className="calendar__grid">
-          {events.slice(0, 3).map(event => (
+          {datedEvents.slice(0, 3).map(event => (
             <EventCard key={event.eventId} event={event} />
           ))}
         </div>
@@ -195,7 +236,7 @@ function CalendarSection({ events }) {
         </div>
 
         <div className="calendar__grid">
-          {events.slice(3, 6).map(event => (
+          {datedEvents.slice(3, 6).map(event => (
             <EventCard key={event.eventId} event={event} />
           ))}
         </div>
@@ -223,16 +264,27 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={
+          <div className="auth-layout">
+            <div className="auth-bg-blur" aria-hidden="true"><HomePage /></div>
+            <Login />
+          </div>
+        } />
         <Route path="/events/:id" element={<EventDetailPage />} />
+        <Route path="/register" element={
+          <div className="auth-layout">
+            <div className="auth-bg-blur" aria-hidden="true"><HomePage /></div>
+            <Register />
+          </div>
+        } />
+        <Route path="/team" element={<TeamPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/me" element={<Me />} />
-        <Route path="/messages" element={<Inbox />} />
-        <Route path="/messages/:conversationId" element={<Chat />} />
-        <Route path="/users/:username" element={<UserProfile />} />
+        <Route path="/posts/:id" element={<PostDetailPage />} />
+        <Route path="/posts" element={<PostsPage />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App

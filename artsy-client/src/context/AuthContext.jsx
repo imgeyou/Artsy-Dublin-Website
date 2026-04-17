@@ -1,50 +1,47 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
-import socket from "../utils/socket";
+import {createContext, useContext, useEffect, useState, useCallback,} from "react";
+
+//import backend api
+//const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  // undefined = still loading; null = not logged in; object = logged in
-  const [firebaseUser, setFirebaseUser] = useState(undefined);
+  //user data from firebase
+  const [firebaseUser, setFirebaseUser] = useState(undefined); // undefined = loading
+  //user data from database
   const [dbUser, setDbUser] = useState(null);
 
+  //refresh authentication info in cookie
   const refreshAuth = useCallback(async () => {
+    console.log("checking session");
     try {
-      const res = await fetch("/api/check-auth", { credentials: "include" });
+      const res = await fetch(`/ad-auth/check-auth`, { credentials: "include" });
       if (res.ok) {
         const user = await res.json();
-        setFirebaseUser({ uid: user.uid, email: user.email });
+        setFirebaseUser({
+          uid: user.uid,
+          email: user.email,
+        });
         setDbUser({
           userId: user.userId,
           userName: user.userName,
           avatarUrl: user.avatarUrl,
         });
-        // Always disconnect first so stale socket from  previous user session is never reused. Then reconnect so the server re runs auth middleware
-        // with the current session cookie
-        socket.disconnect();
-        socket.connect();
+        console.log("OK");
       } else {
         setFirebaseUser(null);
         setDbUser(null);
-        socket.disconnect();
+        console.log("NOT OK");
       }
     } catch {
       setFirebaseUser(null);
       setDbUser(null);
-      socket.disconnect();
     }
   }, []);
 
+  // On page load, check if a valid session cookie exists
   useEffect(() => {
     refreshAuth();
-    
-    return () => socket.disconnect();
   }, [refreshAuth]);
 
   return (
