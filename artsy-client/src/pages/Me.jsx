@@ -2,6 +2,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
+import socket from "../utils/socket";
 
 export default function Me() {
   const { firebaseUser, dbUser } = useAuth();
@@ -16,6 +17,7 @@ export default function Me() {
   const handleLogout = async () => {
     await fetch("/api/sessionLogout", { method: "POST", credentials: "include" });
     await signOut(auth);
+    socket.disconnect(); // drop the authenticated socket so the next user starts fresh
     navigate("/login");
   };
 

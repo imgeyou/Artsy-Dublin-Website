@@ -11,6 +11,7 @@ export default defineConfig({
       "/genres": "http://localhost:3005",
       "/posts": "http://localhost:3005",
       "/api": "http://localhost:3005",
+      "/messages/conversations": "http://localhost:3005",
     },
   },
 });

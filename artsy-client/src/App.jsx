@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Login from './pages/Login'
 
@@ -14,6 +14,9 @@ import FilterBar from "./components/events/FilterBar";
 import MarqueeText from "./components/layout/MarqueeText";
 import Register from "./pages/register";
 import Me from "./pages/Me";
+import Inbox from "./pages/Inbox";
+import Chat from "./pages/Chat";
+import UserProfile from "./pages/UserProfile";
 
 
 import './index.css'
@@ -21,15 +24,16 @@ import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
-  const [activeFilters, setActiveFilters] = useState([]);
   const [activeCategories, setActiveCategories] = useState([]);
   const [activeDate, setActiveDate] = useState("Upcoming");
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
 
-  useEffect(() => {
+
+  function handleCategoryChange(newCategories) {
+    setActiveCategories(newCategories);
     setVisibleCount(8);
-  }, [activeFilters]);
+  }
   // const [events, setEvents] = useState([]);
 
   // useEffect(() => {
@@ -118,7 +122,7 @@ function HomePage() {
 
           <FilterBar
             activeCategories={activeCategories}
-            setActiveCategories={setActiveCategories}
+            setActiveCategories={handleCategoryChange}
             activeDate={activeDate}
             setActiveDate={setActiveDate}
             sortOrder={sortOrder}
@@ -127,7 +131,7 @@ function HomePage() {
         </div>
 
         <div className="events_grid">
-          {filteredEvents.slice(0, visibleCount).map((event, index) => (
+          {filteredEvents.slice(0, visibleCount).map((event) => (
             <EventCard
               key={event.eventId}
               event={event}
@@ -223,6 +227,9 @@ function App() {
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/me" element={<Me />} />
+        <Route path="/messages" element={<Inbox />} />
+        <Route path="/messages/:conversationId" element={<Chat />} />
+        <Route path="/users/:username" element={<UserProfile />} />
       </Routes>
     </BrowserRouter>
   )

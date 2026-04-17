@@ -1,15 +1,19 @@
+import { Link } from 'react-router-dom'
 import logo from '../../assets/images/logo.png'
 import '../../index.css'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from '../../context/AuthContext';
 
 function Header() {
+    const { dbUser } = useAuth();
+
     return (
         <header className="header">
-            <a href="/" className="header_logo">
+            <Link to="/" className="header_logo">
                 <img src={logo} alt="Artsy Dublin logo" />
-            </a>
+            </Link>
 
             <div className="header-inner">
                 <div className="search-bar">
@@ -26,12 +30,14 @@ function Header() {
                 <nav className="header__nav">
                     <a href="#">ALL EVENTS</a>
                     <a href="#">COMMUNITY</a>
-                    <a href="#">MESSAGE</a>
+                    {dbUser && (
+                        <Link to="/messages">MESSAGES</Link>
+                    )}
                 </nav>
 
-                <button className="header__user-btn">
+                <Link to={dbUser ? "/me" : "/login"} className="header__user-btn">
                     <FontAwesomeIcon icon={faCircleUser} />
-                </button>
+                </Link>
             </div>
         </header>
     )

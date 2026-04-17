@@ -1,31 +1,41 @@
-<h1>Artsy Dublin</h1>
+run npm install in both folders to pick up the two new packages:
 
-_<h3>Find artsy events near you, tailored for you! Only in Dublin.</h3>_
+cd artsy-server -> npm install
 
-_Website is a work in progress..._
+cd artsy-client -> npm install
 
-<h4>THE TEAM</h4>
-Backend team: Ge, Sengul, Krystyna, Astrid <br>
-Frontend team: Emma, Brian
+npm run dev on client and server
 
-[3.28] - Astrid
+login to these or create your own to check chatting pupa@gmail.com - pswrd: pupalupa 
+sisi@gmail.com - pswrd: sisisi
 
-Migrated user authentication from JWT to Firebase
+http://localhost:5173/login to login 
+OR http://localhost:5173/register 
 
-Added Firebase Admin SDK integration in index.js
+then go to messages section and start testing
 
-Replaced passwordHash with firebaseUid in users table and model
 
-Added GET /users/:username endpoint to fetch user profile
+5 
 
-Added GET /users/:username/posts endpoint for user diary posts
+ 
 
-Added GET /users/:username/attended-events endpoint for attended events
+Messaging System 
 
-Added GET /users/:username/stats endpoint for review statistics
+ 
+1. Send message to other people  
 
-Added GET /users/:username/journal endpoint for journal entries with sort support
+A message button in other user's profile 
 
-Added GET /api/check-auth endpoint for Firebase token verification
+User cannot send images/video, it is only text available.  
 
-Removed JWT login route and bcrypt password handling
+
+
+2. Message Management 
+
+Inbox shows conversations list (newest first). Each shows: other user's name/picture, last message preview, unread badge, timestamp.  
+
+If chat opened and messages seen it is marked as read. If no – it is unread and appropriate symbol is present marking as unread 
+
+User can delete conversation (confirmation required). 
+
+ 

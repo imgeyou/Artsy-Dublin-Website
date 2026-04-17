@@ -1,4 +1,3 @@
-
 ------USERS---------------------------------------------------------------
 CREATE TABLE `userlocation` (
   `locationId` int NOT NULL,
@@ -123,73 +122,34 @@ CREATE TABLE `postlikes` (
   CONSTRAINT `postlikes_ibfk_2` FOREIGN KEY (`postId`) REFERENCES `posts` (`postId`)
 );
 -- user firebase id to replace password hash
-ALTER TABLE users 
+ALTER TABLE users
   ADD COLUMN `firebaseUid` varchar(255) DEFAULT NULL,
   DROP COLUMN `passwordHash`;
 
-----------MESSAGES---------------------------------------------------
--- Chat type lookup table
-CREATE TABLE `chatType` (
-  `chatTypeId` int NOT NULL,
-  `chatTypeName` varchar(20) NOT NULL,
-  PRIMARY KEY (`chatTypeId`)
+------MESSAGING--------------------------------------------------------------
+CREATE TABLE `conversations` (
+  `conversationId` int NOT NULL AUTO_INCREMENT,
+  `userAId`  int NOT NULL,
+  `userBId`  int NOT NULL,
+  `lastMessageAt`  timestamp NULL DEFAULT NULL,
+  `createdAt`  timestamp NULL DEFAULT (now()),
+  PRIMARY KEY (`conversationId`),
+  UNIQUE KEY `unique_pair` (`userAId`, `userBId`),
+  CONSTRAINT `conv_ibfk_1` FOREIGN KEY (`userAId`) REFERENCES `users` (`userId`),
+  CONSTRAINT `conv_ibfk_2` FOREIGN KEY (`userBId`) REFERENCES `users` (`userId`)
 );
 
--- Main chats table
-CREATE TABLE `chats` (
-  `chatId` int NOT NULL AUTO_INCREMENT,
-  `chatTypeId` int NOT NULL,
-  `eventId` int DEFAULT NULL,
-  `chatName` varchar(100) DEFAULT NULL,
-  `createdAt` timestamp NULL DEFAULT (now()),
-  `updatedAt` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`chatId`),
-  KEY `chatTypeId` (`chatTypeId`),
-  KEY `eventId` (`eventId`),
-  CONSTRAINT `chats_ibfk_1` FOREIGN KEY (`chatTypeId`) REFERENCES `chatType` (`chatTypeId`),
-  CONSTRAINT `chats_ibfk_2` FOREIGN KEY (`eventId`) REFERENCES `events` (`eventId`)
-);
-
--- Who is in each chat
-CREATE TABLE `chatParticipants` (
-  `chatId` int NOT NULL,
-  `userId` int NOT NULL,
-  `joinedAt` timestamp NULL DEFAULT (now()),
-  `leftAt` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`chatId`, `userId`),
-  KEY `userId` (`userId`),
-  CONSTRAINT `chatParticipants_ibfk_1` FOREIGN KEY (`chatId`) REFERENCES `chats` (`chatId`),
-  CONSTRAINT `chatParticipants_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `users` (`userId`)
-);
-
--- Messages within chats (text only, no images)
-CREATE TABLE `chatMessages` (
-  `messageId` int NOT NULL AUTO_INCREMENT,
-  `chatId` int NOT NULL,
-  `senderId` int NOT NULL,
+-- Individual text messages belonging to a conversation.
+CREATE TABLE `messages` (
+  `messageId`  int NOT NULL AUTO_INCREMENT,
+  `conversationId` int NOT NULL,
+  `senderId`  int NOT NULL,
   `content` text NOT NULL,
   `isRead` tinyint(1) DEFAULT '0',
-  `isDeleted` tinyint(1) DEFAULT '0',
-  `sentAt` timestamp NULL DEFAULT (now()),
+  `createdAt` timestamp NULL DEFAULT (now()),
   PRIMARY KEY (`messageId`),
-  KEY `chatId` (`chatId`),
-  KEY `senderId` (`senderId`),
-  CONSTRAINT `chatMessages_ibfk_1` FOREIGN KEY (`chatId`) REFERENCES `chats` (`chatId`),
-  CONSTRAINT `chatMessages_ibfk_2` FOREIGN KEY (`senderId`) REFERENCES `users` (`userId`)
+  KEY `idx_conv` (`conversationId`),
+  KEY `idx_sender` (`senderId`),
+  CONSTRAINT `msg_ibfk_1` FOREIGN KEY (`conversationId`) REFERENCES `conversations` (`conversationId`),
+  CONSTRAINT `msg_ibfk_2` FOREIGN KEY (`senderId`)  REFERENCES `users` (`userId`)
 );
-
--- Block feature (5.4)
-CREATE TABLE `blockedUsers` (
-  `blockerId` int NOT NULL,
-  `blockedId` int NOT NULL,
-  `blockedAt` timestamp NULL DEFAULT (now()),
-  PRIMARY KEY (`blockerId`, `blockedId`),
-  KEY `blockedId` (`blockedId`),
-  CONSTRAINT `blockedUsers_ibfk_1` FOREIGN KEY (`blockerId`) REFERENCES `users` (`userId`),
-  CONSTRAINT `blockedUsers_ibfk_2` FOREIGN KEY (`blockedId`) REFERENCES `users` (`userId`)
-);
-
---  chat types
-INSERT INTO `chatType` (`chatTypeId`, `chatTypeName`) VALUES
-(1, 'one-to-one'),
-(2, 'group');
