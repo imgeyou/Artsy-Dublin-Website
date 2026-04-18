@@ -9,6 +9,7 @@ import {
     faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
+import AnimatedTextLink from "../ui/AnimatedTextLink";
 import { useAuth } from "../../context/AuthContext";
 
 function Header({ searchTerm = "", setSearchTerm = () => { } }) {
@@ -91,10 +92,10 @@ function Header({ searchTerm = "", setSearchTerm = () => { } }) {
                 </div>
 
                 <nav className="header__nav">
-                    <Link to="/events" onClick={closeMobileMenu}>ALL EVENTS</Link>
-                    <Link to="/posts" onClick={closeMobileMenu}>COMMUNITY</Link>
-                    <Link to="/messages" onClick={closeMobileMenu}>MESSAGE</Link>
-                    <Link to="/team" onClick={closeMobileMenu}>TEAM</Link>
+                    <AnimatedTextLink to="/" text="ALL EVENTS" />
+                    <AnimatedTextLink to="/posts" text="COMMUNITY" />
+                    <AnimatedTextLink to="/messages" text="MESSAGE" />
+                    <AnimatedTextLink to="/team" text="TEAM" />
                 </nav>
 
                 {dbUser ? (

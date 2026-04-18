@@ -111,8 +111,8 @@ function PostDetailPage() {
 
     async function handleLikeToggle() {
         try {
-            const res = await fetch(`/ad-posts/${id}/like`, { 
-                method: "POST" ,
+            const res = await fetch(`/ad-posts/${id}/like`, {
+                method: "POST",
                 credentials: "include",
             });
             if (!res.ok) return;
@@ -177,16 +177,16 @@ function PostDetailPage() {
     }
 
     async function handleCommentSubmit({ content, images }) {
-    const form = new FormData();
-    form.append('content', content);
-    images.forEach(img => form.append('images', img)); // raw File objects, not base64
+        const form = new FormData();
+        form.append('content', content);
+        images.forEach(img => form.append('images', img)); // raw File objects, not base64
 
-    const res = await fetch(`/ad-posts/comment/${id}`, {
-        method: 'POST',
-        credentials: 'include',
-        body: form
-    });
-}
+        const res = await fetch(`/ad-posts/comment/${id}`, {
+            method: 'POST',
+            credentials: 'include',
+            body: form
+        });
+    }
     async function handleAddReply(parentId, { content, images }) {
         try {
             const res = await fetch(`/ad-posts/${id}/comments/${parentId}`, {
@@ -213,9 +213,9 @@ function PostDetailPage() {
             }
 
             setComments((prev) => insertReply(prev));
-        } catch {}
+        } catch { }
     }
-    
+
 
     // ========================== render page
     if (loading) {
@@ -255,7 +255,8 @@ function PostDetailPage() {
                     <span>All Posts</span>
                 </button>
 
-                <div className="bgl"><img src={bgl} alt="" /></div>
+                <div className="section-bg-text">Artsy<br></br>Dublin</div>
+
 
                 {/* ---- Main two-column layout ---- */}
                 <main className="post-detail">

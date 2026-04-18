@@ -130,12 +130,79 @@
     gap: 24px;
 }
 
+
+.event-detail-page--hero .header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    padding: 24px 48px;
+    background: transparent;
+}
+
+.event-detail-page--hero .header__nav a {
+    color: white;
+}
+
+.event-detail-page--hero .header__nav a::after {
+    background-color: white;
+}
+
+.event-detail-page--hero .search-bar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.event-detail-page--hero .search-bar__input {
+    color: white;
+}
+
+.event-detail-page--hero .search-bar__input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.event-detail-page--hero .search-bar__button {
+    color: white;
+}
+
+.event-detail-page--hero .header__user-btn {
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+}
+
+.event-detail-page--hero .header__user-initials {
+    color: white;
+}
+
+.event-detail-page--hero .header__nav a,
+.event-detail-page--hero .header__nav .animated-link,
+.event-detail-page--hero .header__nav .animated-link__char {
+    color: white;
+}
+
+.event-detail-page--hero .header__nav a::after {
+    display: none;
+}
+
+.event-detail-page--hero .header__nav .animated-link:hover .animated-link__char,
+.event-detail-page--hero .header__nav .slot-link:hover .slot-link__char,
+.event-detail-page--hero .header__nav .slot-link:hover .slot-link__char-slot {
+    color: white;
+    transform: none;
+}
+
+.event-detail-page--hero .header__nav .slot-link__char--default,
+.event-detail-page--hero .header__nav .slot-link__char--accent {
+    color: white;
+}
+
 .event-hero {
-    display: grid;
-    grid-template-columns: 72px 1fr;
-    gap: 0;
-    margin-top: 24px;
-    min-height: 720px;
+    position: relative;
+    width: 100%;
+
+    margin-top: 0;
+    display: block;
+
 }
 
 .event-hero__rail {
@@ -143,6 +210,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    display: none;
 }
 
 .event-hero__rail-text {
@@ -155,10 +223,11 @@
 
 .event-hero__banner {
     position: relative;
-    min-height: 720px;
-    height: 720px;
+    width: 100%;
+    min-height: 100vh;
+    height: 100vh;
     overflow: hidden;
-    border-radius: 0 0 24px 24px;
+    border-radius: 0;
     background: #111;
 }
 
@@ -230,11 +299,11 @@
 
 .event-hero__content {
     position: absolute;
-    left: 48px;
-    bottom: 48px;
+    left: 6vw;
+    bottom: 12vh;
     z-index: 3;
     max-width: 720px;
-    color: #fff;
+    color: white;
 }
 
 @keyframes glossySweep {
@@ -335,11 +404,11 @@
     position: absolute;
     right: 0;
     bottom: 0;
-    z-index: 2;
+    z-index: 3;
     display: grid;
-    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
     background: #f4b400;
-    min-width: 460px;
+    min-width: 520px;
 }
 
 .event-hero__info-item {
