@@ -13,7 +13,7 @@ function FilterBar({
     const [openDropdown, setOpenDropdown] = useState(null);
     const filterRef = useRef(null);
 
-    const categories = ["Music", "Comedy", "Podcast", "Film"];
+    const categories = ["Music", "Arts & Theatre", "Film"];
     const dates = ["Upcoming", "This Week", "This Month"];
     const sorts = ["Soonest", "Latest"];
 

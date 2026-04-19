@@ -7,6 +7,8 @@ import Footer from "../components/layout/Footer";
 import bgl from '../assets/images/bgl.png'
 import hostAvatar from '../assets/images/avatar.jpeg'
 import EventCard from "../components/events/EventCard";
+import SaveEventButton from '../components/ui/SaveEventButton'
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faArrowLeft,
@@ -89,7 +91,67 @@ function EventDetailPage() {
     console.log("dbUser:", dbUser);
     // const API_BASE_URL =
     //     import.meta.env.VITE_API_URL || "http://localhost:3005";
+    function getBreadcrumbText(event) {
+        const parts = ["All Events"];
 
+        if (event?.eventTypeName) {
+            parts.push(event.eventTypeName);
+        }
+
+        if (event?.genres && event.genres.length > 0) {
+            parts.push(event.genres[0]);
+        }
+
+        return parts.join(" / ");
+    }
+    async function handleToggleSave() {
+        console.log("save clicked");
+
+        if (!dbUser?.userId) {
+            console.log("no valid dbUser");
+            navigate("/login");
+            return;
+        }
+
+        if (!event?.eventId) {
+            console.log("no eventId");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/ad-posts/${event.eventId}/save`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await res.json();
+            console.log("save status:", res.status);
+            console.log("save response:", data);
+
+            if (!res.ok) {
+                throw new Error(`Save failed`);
+            }
+
+            if (data.message === "No session") {
+                throw new Error("No session");
+            }
+
+            if (data.saved) {
+                setSaved(true);
+                setEvent((prev) => ({
+                    ...prev,
+                    saveCount: (prev?.saveCount ?? 0) + 1,
+                }));
+            }
+
+            console.log("save success");
+        } catch (err) {
+            console.error("Save event failed:", err);
+        }
+    }
     useEffect(() => {
         async function loadEvent() {
             try {
@@ -143,6 +205,7 @@ function EventDetailPage() {
                         "",
                     eventTypeName: data.eventTypeName ?? "",
                     genres: data.genres ?? [],
+                    saveCount: data.saveCount ?? 0,
                     eventRepeats: data.eventRepeats ?? [],
                     attendance: data.attendance ?? null,
                 };
@@ -178,7 +241,7 @@ function EventDetailPage() {
         }
 
         loadEvent();
-    }, [id, "TEST"]);
+    }, [id]);
 
     if (loading) {
         return <p className="status-message">Loading event...</p>;
@@ -200,6 +263,43 @@ function EventDetailPage() {
             : [];
     }
 
+    function isMeaningfulDescription(description) {
+        if (!description) return false;
+
+        const text = description.trim();
+        if (text.length < 40) return false;
+
+        const words = text.split(/\s+/);
+        if (words.length < 6) return false;
+
+        return true;
+    }
+
+    function buildFallbackDescription(event) {
+        const parts = [];
+
+        if (event?.eventTypeName) {
+            parts.push(`This event is part of ${event.eventTypeName}.`);
+        }
+
+        if (event?.genres?.length > 0) {
+            parts.push(`It is associated with ${event.genres.join(", ")}.`);
+        }
+
+        if (event?.venue) {
+            parts.push(`It will take place at ${event.venue}.`);
+        }
+
+        if (event?.startDateTime) {
+            parts.push(`Check the listed event time for attendance details.`);
+        }
+
+        if (event?.url) {
+            parts.push(`Use the event link for tickets or more information.`);
+        }
+
+        return parts.join(" ");
+    }
 
     const formattedDate = event.startDateTime
         ? new Date(event.startDateTime)
@@ -213,6 +313,8 @@ function EventDetailPage() {
             })
             .replace(",", "")
         : "Date to be announced";
+
+
 
     return (
         <>
@@ -266,12 +368,10 @@ function EventDetailPage() {
                             </button>
                         )}
 
-                        <button
-                            className={`btn-secondary btn-save-detail ${saved ? "is-saved" : ""}`}
-                            onClick={() => setSaved(!saved)}
-                        >
-                            <FontAwesomeIcon icon={saved ? solidBookmark : regularBookmark} />
-                        </button>
+                        <SaveEventButton
+                            saved={saved}
+                            onToggle={handleToggleSave}
+                        />
                     </div>
                 </div>
 
@@ -299,11 +399,12 @@ function EventDetailPage() {
 
             <div className="container">
                 <button
+                    type="button"
                     className="btn-back"
                     onClick={() => navigate(-1)}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} className="faArrowLeft" />
-                    <span>All EVENTS</span>
+                    <span>{getBreadcrumbText(event)}</span>
                 </button>
                 {/* <div className="bgl">
                     <img src={bgl} alt="" />
@@ -321,9 +422,13 @@ function EventDetailPage() {
                     <div className="event-body__main">
                         <p className="event-body__eyebrow">WELCOME</p>
                         <h2 className="event-body__title">About this event</h2>
+
                         <p className="event-body__description">
-                            {event.description || "More event details coming soon."}
+                            {isMeaningfulDescription(event.description)
+                                ? event.description
+                                : buildFallbackDescription(event)}
                         </p>
+
 
                         {/* <div className="event-host">
                             <div className="event-host__avatar">

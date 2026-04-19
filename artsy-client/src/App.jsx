@@ -95,6 +95,13 @@ function HomePage() {
 
   const today = new Date();
 
+  function getEventTypeLabel(eventTypeId) {
+    if (eventTypeId === "tmdbFilm") return "Film";
+    if (eventTypeId === "KZFzniwnSyZfZ7v7nJ") return "Music";
+    if (eventTypeId === "KZFzniwnSyZfZ7v7na") return "Arts & Theatre";
+    return "Other";
+  }
+
   const filteredEvents = events
     .filter((event) => {
       const matchesCategory =

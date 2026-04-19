@@ -727,7 +727,7 @@
 }
 
 /* eventdetail-page-btn */
-.btn-save-detail {
+.save-event-button {
     width: 42px;
     height: 42px;
     border: none;
@@ -744,17 +744,17 @@
     transition: all 0.2s ease;
 }
 
-.btn-save-detail.is-saved {
+.save-event-button.is-saved {
     background-color: white;
     color: var(--color-brown);
 }
 
-.btn-save-detail:hover {
+.save-event-button:hover {
     transform: scale(1.05);
     background: white;
 }
 
-.btn-save-detail.is-saved {
+.save-event-button.is-saved {
     color: var(--color-brown);
     background-color: white;
 }
