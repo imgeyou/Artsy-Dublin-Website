@@ -105,22 +105,18 @@ function EventDetailPage() {
         return parts.join(" / ");
     }
     async function handleToggleSave() {
-        console.log("save clicked");
-
         if (!dbUser?.userId) {
-            console.log("no valid dbUser");
             navigate("/login");
             return;
         }
 
-        if (!event?.eventId) {
-            console.log("no eventId");
-            return;
-        }
+        if (!event?.eventId) return;
 
         try {
+            const method = saved ? "DELETE" : "POST";
+
             const res = await fetch(`/ad-posts/${event.eventId}/save`, {
-                method: "POST",
+                method,
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
@@ -132,22 +128,19 @@ function EventDetailPage() {
             console.log("save response:", data);
 
             if (!res.ok) {
-                throw new Error(`Save failed`);
+                throw new Error(data?.error || "Save toggle failed");
             }
 
-            if (data.message === "No session") {
-                throw new Error("No session");
-            }
+            setSaved(!!data.saved);
 
-            if (data.saved) {
-                setSaved(true);
-                setEvent((prev) => ({
-                    ...prev,
-                    saveCount: (prev?.saveCount ?? 0) + 1,
-                }));
-            }
+            // 再抓一次最新 event detail
+            const eventRes = await fetch(`/ad-events/event/${event.eventId}`);
+            const eventData = await eventRes.json();
 
-            console.log("save success");
+            setEvent((prev) => ({
+                ...prev,
+                saveCount: eventData.saveCount ?? 0,
+            }));
         } catch (err) {
             console.error("Save event failed:", err);
         }

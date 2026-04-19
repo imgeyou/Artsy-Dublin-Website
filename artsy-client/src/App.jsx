@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useEffect, useState } from "react";
+import HomeIntroLoader from "./components/layout/HomeIntroLoader";
 
 import Login from './pages/Login'
 
@@ -27,22 +28,34 @@ import './styles/component.css'
 import './styles/pages/home.css'
 
 function HomePage() {
-  const [events, setEvents] = useState([mockEvents]);
+  const [events, setEvents] = useState(mockEvents);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [showLoader, setShowLoader] = useState(true);
   const [activeCategories, setActiveCategories] = useState([]);
   const [activeDate, setActiveDate] = useState("Upcoming");
   const [sortOrder, setSortOrder] = useState("Soonest");
   const [visibleCount, setVisibleCount] = useState(8);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showIntro, setShowIntro] = useState(() => {
+    return sessionStorage.getItem("artsyIntroPlayed") !== "true";
+  });
+
+  // const handleIntroFinish = () => {
+  //   sessionStorage.setItem("artsyIntroPlayed", "true");
+  //   setShowIntro(false);
+  // };
+
+  const [introDone, setIntroDone] = useState(false);
+
+  const handleIntroFinish = () => {
+    setIntroDone(true);
+  };
 
   useEffect(() => {
     setVisibleCount(8);
   }, [activeCategories, activeDate, sortOrder, searchTerm]);
 
-  // const API_BASE_URL =
-  //   import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     async function loadEvents() {
@@ -157,67 +170,123 @@ function HomePage() {
     });
 
   return (
-    <div>
-      <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <div className="section-bg-text">Artsy<br></br>Dublin</div>
-      <div className="container">
 
-        {/* <div className="bgl">
-          <img src={bgl} alt="" />
-        </div> */}
-        {/* <h1>#Exhibtion</h1> */}
+    <>
 
-        <div className="home-hero">
-          <div className="home-hero__info"
-          ><h1 className="home-hero__title">What’s On</h1>
-            <p className="home-hero__subtitle">
-              Discover events, films, comedy and more across Dublin
-            </p>
-          </div>
-
-          <FilterBar
-            activeCategories={activeCategories}
-            setActiveCategories={setActiveCategories}
-            activeDate={activeDate}
-            setActiveDate={setActiveDate}
-            sortOrder={sortOrder}
-            setSortOrder={setSortOrder}
-          />
-        </div>
-
-        {loading && <p className="status-message">Loading events...</p>}
-        {error && <p className="status-message error">{error}</p>}
-        {filteredEvents.length === 0 && !loading && (
-          <p className="status-message">No matching events found.</p>
-        )}
-
-        <div className="events_grid">
-          {filteredEvents.slice(0, visibleCount).map((event) => (
-            <EventCard
-              key={event.eventId}
-              event={event}
-            // variant={getCardVariant(index)}
-            />
-          ))}
-        </div>
-        {visibleCount < filteredEvents.length && (
-          <div className="show-more-wrap">
-            <button
-              className="show-more-btn"
-              onClick={() => setVisibleCount(visibleCount + 8)}
-            >
-              Show More
-            </button>
-          </div>
-        )}
-
-        <MarqueeText />
-
-        <CalendarSection events={events} />
-        <Footer />
+      <div className="home-header-overlay">
+        <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       </div>
+      <HomeIntroLoader
+        events={events}
+        playIntro={!introDone}
+        onFinish={handleIntroFinish}
+        titleTop="ARTSY DUBLIN"
+        titleMiddle="FIND YOUR"
+        titleBottom="NEXT EVENT"
+      />
+      {/* <div>
+        <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <div className="section-bg-text">Artsy<br></br>Dublin</div>
+        <div className="container">
 
-    </div>
+          <div className="home-hero">
+            <div className="home-hero__info"
+            ><h1 className="home-hero__title">What’s On</h1>
+              <p className="home-hero__subtitle">
+                Discover events, films, comedy and more across Dublin
+              </p>
+            </div>
+
+            <FilterBar
+              activeCategories={activeCategories}
+              setActiveCategories={setActiveCategories}
+              activeDate={activeDate}
+              setActiveDate={setActiveDate}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+            />
+          </div>
+
+          {loading && <p className="status-message">Loading events...</p>}
+          {error && <p className="status-message error">{error}</p>}
+          {filteredEvents.length === 0 && !loading && (
+            <p className="status-message">No matching events found.</p>
+          )}
+
+          <div className="events_grid">
+            {filteredEvents.slice(0, visibleCount).map((event) => (
+              <EventCard
+                key={event.eventId}
+                event={event}
+              // variant={getCardVariant(index)}
+              />
+            ))}
+          </div>
+          {visibleCount < filteredEvents.length && (
+            <div className="show-more-wrap">
+              <button
+                className="show-more-btn"
+                onClick={() => setVisibleCount(visibleCount + 8)}
+              >
+                Show More
+              </button>
+            </div>
+          )}
+
+          <MarqueeText />
+
+          <CalendarSection events={events} />
+          <Footer />
+        </div>
+
+      </div> */}
+
+      <div className={`home-page-shell ${introDone ? "intro-done" : ""}`}>
+        {/* <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} /> */}
+
+        <div className="section-bg-text">Artsy<br />Dublin</div>
+
+        <div className="container">
+          <div className="home-hero home-hero--after-intro">
+            <FilterBar
+              activeCategories={activeCategories}
+              setActiveCategories={setActiveCategories}
+              activeDate={activeDate}
+              setActiveDate={setActiveDate}
+              sortOrder={sortOrder}
+              setSortOrder={setSortOrder}
+            />
+          </div>
+
+          {loading && <p className="status-message">Loading events...</p>}
+          {error && <p className="status-message error">{error}</p>}
+          {filteredEvents.length === 0 && !loading && (
+            <p className="status-message">No matching events found.</p>
+          )}
+
+          <div className="events_grid">
+            {filteredEvents.slice(0, visibleCount).map((event) => (
+              <EventCard key={event.eventId} event={event} />
+            ))}
+          </div>
+
+          {visibleCount < filteredEvents.length && (
+            <div className="show-more-wrap">
+              <button
+                className="show-more-btn"
+                onClick={() => setVisibleCount(visibleCount + 8)}
+              >
+                Show More
+              </button>
+            </div>
+          )}
+
+          <MarqueeText />
+          <CalendarSection events={events} />
+          <Footer />
+        </div>
+      </div>
+    </>
   );
 }
 
