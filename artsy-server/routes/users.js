@@ -11,6 +11,8 @@ router.get("/:username", usersController.getUserByName);
 router.get("/:username/attended-events", usersController.getUserAttendedEvents);
 router.get("/:username/stats", usersController.getUserStats);
 router.get("/:username/journal", usersController.getUserJournal);
+router.get("/:username/interests", usersController.getUserInterests);
+router.patch("/:username/interests", usersController.updateUserInterests);
 
 // upload.single("avatar") processes the avatar file before hitting the controller
 router.post("/register", upload.single("avatar"), usersController.createUser);
