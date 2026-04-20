@@ -278,24 +278,24 @@ function PostDetailContent({
                     </div>
 
                     <div className="post-actions">
-                        <button className="btn btn-outline pdc__comment-btn" onClick={onScrollToComments}>
-                            <FontAwesomeIcon icon={faCommentDots} /> Comments
+                        <button className="btn btn-outline pdc__comment-btn btn-12" onClick={onScrollToComments}>
+                            <span><FontAwesomeIcon icon={faCommentDots} /> Comments</span>
                         </button>
                         <button
-                            className={`btn ${liked ? "btn-primary" : "btn-outline"}`}
+                            className={`btn btn-12 ${liked ? "btn-primary" : "btn-outline"}`}
                             onClick={onLikeToggle}
                         >
-                            <FontAwesomeIcon icon={liked ? solidHeart : regularHeart} />{" "}
-                            {likeCount} {liked ? "Liked" : "Like"}
+                            <span><FontAwesomeIcon icon={liked ? solidHeart : regularHeart} />{" "}
+                            {likeCount} {liked ? "Liked" : "Like"}</span>
                         </button>
 
                         {isPostOwner && !postEditing && !postDeleteConfirm && (
                             <>
-                                <button className="btn btn-outline" onClick={onEditStart}>
-                                    <FontAwesomeIcon icon={faPen} /> Edit
+                                <button className="btn btn-outline btn-12" onClick={onEditStart}>
+                                    <span><FontAwesomeIcon icon={faPen} /> Edit</span>
                                 </button>
-                                <button className="btn btn-outline btn--danger" onClick={onDeleteRequest}>
-                                    <FontAwesomeIcon icon={faTrash} /> Delete
+                                <button className="btn btn-outline btn--danger btn-12" onClick={onDeleteRequest}>
+                                    <span><FontAwesomeIcon icon={faTrash} /> Delete</span>
                                 </button>
                             </>
                         )}
@@ -303,11 +303,11 @@ function PostDetailContent({
                         {isPostOwner && postDeleteConfirm && (
                             <span className="post-delete-confirm">
                                 Delete this post?{" "}
-                                <button className="btn btn-outline btn--danger btn--sm" onClick={onDeleteConfirm}>
-                                    Yes, delete
+                                <button className="btn btn-outline btn--danger btn--sm btn-12" onClick={onDeleteConfirm}>
+                                    <span>Yes, delete</span>
                                 </button>
-                                <button className="btn btn-outline btn--sm" onClick={onDeleteCancel}>
-                                    Cancel
+                                <button className="btn btn-outline btn--sm btn-12" onClick={onDeleteCancel}>
+                                    <span>Cancel</span>
                                 </button>
                             </span>
                         )}
@@ -324,13 +324,13 @@ function PostDetailContent({
                             autoFocus
                         />
                         <div className="comment-form__btn-row" style={{ marginTop: "8px" }}>
-                            <button className="btn btn-outline btn--sm" onClick={onEditCancel}>Cancel</button>
+                            <button className="btn btn-outline btn--sm btn-12" onClick={onEditCancel}><span>Cancel</span></button>
                             <button
-                                className="btn btn-primary btn--sm"
+                                className="btn btn-primary btn--sm btn-12"
                                 onClick={onEditSave}
                                 disabled={!postEditText.trim()}
                             >
-                                Save
+                                <span>Save</span>
                             </button>
                         </div>
                     </div>

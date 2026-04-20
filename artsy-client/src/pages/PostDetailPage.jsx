@@ -306,7 +306,7 @@ function PostDetailPage() {
             <div className="home-header-overlay"><Header /></div>
 
             <div className="container" style={{ paddingTop: "120px" }}>
-                <button className="btn-back" onClick={() => navigate("/posts")}>
+                <button className="btn-back btn-12" onClick={() => navigate("/posts")}>
                     <FontAwesomeIcon icon={faArrowLeft} className="faArrowLeft" />
                     <span>All Posts</span>
                 </button>

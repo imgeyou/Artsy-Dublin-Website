@@ -660,6 +660,82 @@
 
 /* Button */
 
+/* btn-12: checkerboard wipe hover */
+.btn-12,
+.btn-12::before,
+.btn-12::after {
+    box-sizing: border-box;
+}
+
+.btn-12 {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.8rem 3rem;
+    border: 2px solid #5A3713;
+    border-radius: 99rem;
+    background: #5A3713;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-mask-image: -webkit-radial-gradient(#000, #fff);
+    transition: color 0.2s ease;
+    text-decoration: none;
+    isolation: isolate;
+}
+
+.btn-12:disabled { opacity: 0.6; cursor: default; }
+
+.btn-12:hover { color: #5A3713 !important; background-color: transparent !important; }
+
+/* Content floats above the stripe pseudo-elements */
+.btn-12 span,
+.btn-12 svg {
+    position: relative;
+    z-index: 1;
+}
+
+/* Columns 0-25% and 50-75%, slide in from bottom */
+.btn-12::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        #fff 25%, transparent 0,
+        transparent 50%, #fff 0,
+        #fff 75%, transparent 0
+    );
+    transform: translateY(100%);
+    transition: transform 0.2s ease;
+    z-index: 0;
+}
+
+/* Columns 25-50% and 75-100%, slide in from top */
+.btn-12::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 25%, #fff 0,
+        #fff 50%, transparent 0,
+        transparent 75%, #fff 0
+    );
+    transform: translateY(-100%);
+    transition: transform 0.2s ease;
+    z-index: 0;
+}
+
+.btn-12:hover::before { transform: translateY(0); }
+.btn-12:hover::after  { transform: translateY(0); }
+
 /* Eventdetail page button */
 .btn {
     padding: 14px 32px;

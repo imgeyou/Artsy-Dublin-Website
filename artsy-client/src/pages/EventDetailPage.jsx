@@ -382,13 +382,13 @@ function EventDetailPage() {
                                 href={event.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="btn btn-primary"
+                                className="btn btn-primary btn-12"
                             >
-                                Get Tickets
+                                <span>Get Tickets</span>
                             </a>
                         ) : (
-                            <button className="btn btn-primary" disabled>
-                                Tickets Unavailable
+                            <button className="btn btn-primary btn-12" disabled>
+                                <span>Tickets Unavailable</span>
                             </button>
                         )}
 
@@ -427,7 +427,7 @@ function EventDetailPage() {
             <div className="container">
                 <button
                     type="button"
-                    className="btn-back"
+                    className="btn-back btn-12"
                     onClick={() => navigate(-1)}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} className="faArrowLeft" />
@@ -463,10 +463,10 @@ function EventDetailPage() {
                                     You've logged this event — ready to share your thoughts?
                                 </p>
                                 <a
-                                    className="btn btn-review"
+                                    className="btn btn-review btn-12"
                                     href={`/events/${event.eventId}/write-post/${attendId}`}
                                 >
-                                    Write a Review
+                                    <span>Write a Review</span>
                                 </a>
                             </div>
                         )}
