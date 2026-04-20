@@ -759,6 +759,49 @@
     background-color: white;
 }
 
+/* event detail action buttons */
+.event-hero__buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Log Attendance：玻璃感、比較像狀態操作 */
+.btn-attendance {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+.btn-attendance:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #5b3a29;
+    border-color: rgba(255, 255, 255, 0.95);
+}
+
+/* 已記錄 attendance 後的狀態 */
+.btn-attendance.is-active {
+    background: #fff;
+    color: #5b3a29;
+    border-color: #fff;
+}
+
+/* Write Review：柔和米棕色，和 ticket 不同但還在同一套色系 */
+.btn-review {
+    background: rgba(216, 199, 181, 0.92);
+    color: #5b3a29;
+    border: 1px solid rgba(139, 107, 76, 0.15);
+}
+
+.btn-review:hover {
+    background: #cdb7a1;
+    color: #4b2f21;
+    border-color: rgba(139, 107, 76, 0.28);
+}
+
 .btn-back {
     display: inline-flex;
     align-items: center;
@@ -803,6 +846,40 @@
     width: 100%;
 }
 
+.event-body__review-cta {
+    margin-top: 32px;
+    padding: 28px 24px;
+    border: 1px solid rgba(139, 107, 76, 0.14);
+    border-radius: 24px;
+    background: rgba(237, 224, 206, 0.35);
+}
+
+.event-body__review-title {
+    margin-bottom: 10px;
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--color-brown);
+}
+
+.event-body__review-text {
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #6e5643;
+    max-width: 560px;
+}
+
+.btn-review {
+    background: rgba(216, 199, 181, 0.92);
+    color: #5b3a29;
+    border: 1px solid rgba(139, 107, 76, 0.15);
+}
+
+.btn-review:hover {
+    background: #cdb7a1;
+    color: #4b2f21;
+    border-color: rgba(139, 107, 76, 0.28);
+}
 
 /* ── Footer ── */
 .footer {

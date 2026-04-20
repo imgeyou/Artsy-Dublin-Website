@@ -88,6 +88,23 @@ function EventDetailPage() {
     const [error, setError] = useState(null);
     const { id } = useParams();
     const { dbUser } = useAuth();
+    const handleLogAttendance = () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+
+        navigate(`/events/${eventId}/attendance`);
+    };
+
+    const handleWriteReview = () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+
+        navigate(`/events/${eventId}/review`);
+    };
     console.log("dbUser:", dbUser);
     // const API_BASE_URL =
     //     import.meta.env.VITE_API_URL || "http://localhost:3005";
@@ -104,6 +121,7 @@ function EventDetailPage() {
 
         return parts.join(" / ");
     }
+
     async function handleToggleSave() {
         if (!dbUser?.userId) {
             navigate("/login");
@@ -361,6 +379,13 @@ function EventDetailPage() {
                             </button>
                         )}
 
+                        <button
+                            className="btn btn-attendance"
+                            onClick={handleLogAttendance}
+                        >
+                            Log Attendance
+                        </button>
+
                         <SaveEventButton
                             saved={saved}
                             onToggle={handleToggleSave}
@@ -422,6 +447,19 @@ function EventDetailPage() {
                                 : buildFallbackDescription(event)}
                         </p>
 
+                        <div className="event-body__review-cta">
+                            <h3 className="event-body__review-title">Share your experience</h3>
+                            <p className="event-body__review-text">
+                                Been to this event? Leave a review and tell others what it was like.
+                            </p>
+
+                            <button
+                                className="btn btn-review"
+                                onClick={handleWriteReview}
+                            >
+                                Write Review
+                            </button>
+                        </div>
 
                         {/* <div className="event-host">
                             <div className="event-host__avatar">
