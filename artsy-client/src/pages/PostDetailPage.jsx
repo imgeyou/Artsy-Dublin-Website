@@ -3,7 +3,7 @@
 //import react functions
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { checkLikes } from "../utils/postHelpers";
+import { checkLikes, collectAllIds, applyLikedRecursive, updateCommentContent, removeComment } from "../utils/postHelpers";
 
 //import backend api
 //const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -111,13 +111,18 @@ function PostDetailPage() {
         });
     }, [post, dbUser]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // ------- interaction handlers
+
+// ----------------------------------- interaction handlers
+    
     //open image in full screen
     function openLightbox(images, index) {
         setLightbox({ images, index });
     }
     function closeLightbox() { setLightbox(null); }
 
+
+//---------------------------- interaction with the main post
+    //handle like toggle for the main post
     async function handleLikeToggle() {
         try {
             const res = await fetch(`/ad-posts/${id}/like`, {
@@ -133,7 +138,7 @@ function PostDetailPage() {
         }
     }
 
-    // edit/delete the main post
+    // edit the main post
     async function handlePostEdit() {
         try {
             const res = await fetch(`/ad-posts/${id}`, {
@@ -148,7 +153,7 @@ function PostDetailPage() {
             // keep form open on failure
         }
     }
-
+    // delete the main post
     async function handlePostDelete() {
         try {
             const res = await fetch(`/ad-posts/${id}`, { method: "DELETE" });
@@ -159,32 +164,15 @@ function PostDetailPage() {
         }
     }
 
-    // edit/delete a comment or reply
-    async function handleEditComment(postId, content) {
-        try {
-            const res = await fetch(`/ad-posts/${postId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content }),
-            });
-            if (!res.ok) return;
-            setComments((prev) => updateCommentContent(prev, postId, content));
-        } catch {
-            // keep edit form open on failure
-        }
+    async function refreshComments() {
+        const res = await fetch(`/ad-posts/${id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setComments(data.comments ?? []);
+        setPost(prev => prev ? { ...prev, commentCount: data.commentCount } : prev);
     }
 
-    async function handleDeleteComment(postId) {
-        try {
-            const res = await fetch(`/ad-posts/${postId}`, { method: "DELETE" });
-            if (!res.ok) return;
-            setComments((prev) => removeComment(prev, postId));
-            setPost((prev) => prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount ?? 1) - 1) } : prev);
-        } catch {
-            // silent fail
-        }
-    }
-
+    //submit a comment to the main post
     async function handleCommentSubmit({ content, images }) {
         const form = new FormData();
         form.append('content', content);
@@ -197,10 +185,11 @@ function PostDetailPage() {
         });
 
         if (!res.ok) return;
-        const newComment = await res.json();
-        setComments(prev => [...prev, newComment]);
-        setPost(prev => prev ? { ...prev, commentCount: (prev.commentCount ?? 0) + 1 } : prev);
+        await refreshComments();
     }
+    
+// ----------------------------------interaction with a comment
+    // like a comment
     async function handleLikeComment(commentPostId) {
         function applyLike(list, liked, likeCount) {
             return list.map((c) => {
@@ -235,37 +224,52 @@ function PostDetailPage() {
             const { liked, likeCount } = await res.json();
             setComments((prev) => applyLike(prev, liked, likeCount));
         } catch {
-            // revert on failure
             setComments((prev) => applyLike(prev, prevLiked, prevCount));
         }
     }
 
+    // edit a comment
+    async function handleEditComment(postId, content) {
+        try {
+            const res = await fetch(`/ad-posts/${postId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ content }),
+            });
+            if (!res.ok) return;
+            setComments((prev) => updateCommentContent(prev, postId, content));
+        } catch {
+            // keep edit form open on failure
+        }
+    }
+
+    // delete a comment
+    async function handleDeleteComment(postId) {
+        try {
+            const res = await fetch(`/ad-posts/${postId}`, { method: "DELETE" });
+            if (!res.ok) return;
+            setComments((prev) => removeComment(prev, postId));
+            setPost((prev) => prev ? { ...prev, commentCount: Math.max(0, (prev.commentCount ?? 1) - 1) } : prev);
+        } catch {
+            // silent fail
+        }
+    }
+
+    // reply to a comment
     async function handleAddReply(parentId, { content, images }) {
         try {
-            const res = await fetch(`/ad-posts/${id}/comments/${parentId}`, {
+            const form = new FormData();
+            form.append('content', content);
+            images.forEach(img => form.append('images', img));
+
+            const res = await fetch(`/ad-posts/comment/${parentId}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ content, images }),
                 credentials: "include",
+                body: form,
             });
 
             if (!res.ok) return;
-
-            const newReply = await res.json();
-
-            function insertReply(comments) {
-                return comments.map((c) => {
-                    if (c.postId === parentId) {
-                        return { ...c, replies: [...(c.replies || []), newReply] };
-                    }
-                    if (c.replies?.length) {
-                        return { ...c, replies: insertReply(c.replies) };
-                    }
-                    return c;
-                });
-            }
-
-            setComments((prev) => insertReply(prev));
+            await refreshComments();
         } catch { }
     }
 
@@ -375,43 +379,5 @@ function PostDetailPage() {
         </>
     );
 }
-
-// ---- helpers to update nested comment state
-function collectAllIds(post, comments) {
-    const ids = [post.postId];
-    function collect(list) {
-        for (const c of list) {
-            ids.push(c.postId);
-            if (c.replies?.length) collect(c.replies);
-        }
-    }
-    collect(comments);
-    return ids;
-}
-
-function applyLikedRecursive(comments, likedArr) {
-    return comments.map((c) => ({
-        ...c,
-        liked: likedArr.includes(c.postId),
-        replies: c.replies?.length ? applyLikedRecursive(c.replies, likedArr) : c.replies,
-    }));
-}
-
-function updateCommentContent(comments, postId, content) {
-    return comments.map((c) => {
-        if (c.postId === postId) return { ...c, content };
-        if (c.replies?.length) return { ...c, replies: updateCommentContent(c.replies, postId, content) };
-        return c;
-    });
-}
-
-function removeComment(comments, postId) {
-    return comments
-        .filter((c) => c.postId !== postId)
-        .map((c) => c.replies?.length ? { ...c, replies: removeComment(c.replies, postId) } : c);
-}
-
-// handleCommentSubmit and handleAddReply defined at module level to avoid re-creation
-// (they need setComments/setPost/id/API_BASE_URL — kept inside component above)
 
 export default PostDetailPage;

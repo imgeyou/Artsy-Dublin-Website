@@ -1,7 +1,10 @@
 // Comment section component: CommentForm + CommentItem + CommentSection
 // used in PostDetailPagge
 
+//import react functions
 import { useState } from "react";
+
+//import icon
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faHeart as solidHeart,
@@ -10,7 +13,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 
+//import assets
 import defaultAvatar from "../../assets/images/avatar.jpeg";
+
+//import helper
 import PostImageRow from "./PostImageRow";
 import { formatDate } from "../../utils/postHelpers";
 import "../../styles/pages/post-detail.css";
@@ -24,8 +30,8 @@ function CommentForm({
     onCancel,
 }) {
     const [text, setText] = useState(initialText);
-    const [images, setImages] = useState([]);
-    const [previews, setPreviews] = useState([]);
+    const [images, setImages] = useState([]);//post images
+    const [previews, setPreviews] = useState([]);//image preview
     const [submitting, setSubmitting] = useState(false);
 
     // image upload
@@ -61,6 +67,7 @@ function CommentForm({
         }
     }
 
+// ----------------- render component
     return (
         <form className="comment-form" onSubmit={handleSubmit}>
             <img src={defaultAvatar} alt="" className="comment-form__avatar" />

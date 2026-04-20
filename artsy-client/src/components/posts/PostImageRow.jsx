@@ -1,5 +1,6 @@
 // image row component, used in postDetailPage for showing user uploaded pics
 
+//import helpers
 import { resolveImageUrl } from "../../utils/postHelpers";
 
 function PostImageRow({ images, onOpenLightbox, compact = false }) {
