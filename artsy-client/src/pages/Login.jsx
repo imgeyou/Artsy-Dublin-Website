@@ -23,10 +23,21 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validate = () => {
+    const errs = {};
+    if (!email.trim()) errs.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Please enter a valid email address.";
+    if (!password) errs.password = "Password is required.";
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); //clean old err everytime after submission
+    setError("");
+    if (!validate()) return;
     try {
       await setPersistence(auth, inMemoryPersistence);
 
@@ -90,9 +101,10 @@ export default function Login() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input"
+              onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+              className={`input${fieldErrors.email ? " input--error" : ""}`}
             />
+            {fieldErrors.email && <p className="fieldError">{fieldErrors.email}</p>}
           </div>
 
           <div className="formGroup">
@@ -102,8 +114,8 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Input your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input passwordInput"
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                className={`input passwordInput${fieldErrors.password ? " input--error" : ""}`}
               />
               <button
                 type="button"
@@ -143,6 +155,7 @@ export default function Login() {
                 Forgot Password?
               </a>
             </div>
+            {fieldErrors.password && <p className="fieldError">{fieldErrors.password}</p>}
           </div>
 
           {error && <p className="errorMsg">{error}</p>}
