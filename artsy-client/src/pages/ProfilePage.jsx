@@ -70,6 +70,7 @@ export default function ProfilePage() {
   const bioRef = useRef(null);
 
   const username = dbUser?.userName;
+  const userId = dbUser?.useId;
 
   /* ── fetch── */
   useEffect(() => {
@@ -78,10 +79,10 @@ export default function ProfilePage() {
       setLoading(true);
       try {
         const [p, a, s, i] = await Promise.all([
-          fetch(`/ad-users/${username}`,                 { credentials: "include" }),
-          fetch(`/ad-users/${username}/attended-events`, { credentials: "include" }),
-          fetch(`/ad-users/${username}/saved-events`,    { credentials: "include" }),
-          fetch(`/ad-users/${username}/interests`,       { credentials: "include" }),
+          fetch(`/ad-users/${username}`,  { credentials: "include" }),
+          fetch(`/ad-posts/attend/user/${userId}`, { credentials: "include" }),
+          fetch(`/ad-posts/saves/user/${userId}`,    { credentials: "include" }),
+          fetch(`/ad-users/${userId}/userinterests`,   { credentials: "include" }),
         ]);
         if (p.ok) {
           const data = await p.json();
@@ -127,7 +128,7 @@ export default function ProfilePage() {
     if (bioInput === bio) { setEditingBio(false); return; }
     setBioSaving(true);
     try {
-      const res = await fetch(`/ad-users/${username}`, {
+      const res = await fetch(`/ad-users/${username}/bio`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
