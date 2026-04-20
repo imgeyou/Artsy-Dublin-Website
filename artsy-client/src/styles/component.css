@@ -56,10 +56,32 @@
     display: block;
     height: 114px;
     width: 114px;
+    position: relative;
 }
 
 .header_logo img {
     width: 100%;
+}
+
+.header_logo__tooltip {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-brown);
+    color: #FBF4EA;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.header_logo--hoverable:hover .header_logo__tooltip {
+    opacity: 1;
 }
 
 .header-inner {
@@ -174,6 +196,27 @@
 .header__user-btn:hover {
     transform: scale(1.08);
     background: rgba(255, 255, 255, 0.9);
+}
+
+.header__signin-btn {
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1.5px solid #8b6b4c;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: 14px;
+    font-weight: 500;
+    color: #8b6b4c;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+}
+
+.header__signin-btn:hover {
+    background: #8b6b4c;
+    color: #fff;
 }
 
 .header__user-avatar {

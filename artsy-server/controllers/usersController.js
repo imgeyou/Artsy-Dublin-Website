@@ -117,6 +117,55 @@ class userController {
     }
   }
 
+  // H. Get user interests
+  async getUserInterests(req, res) {
+    try {
+      const interests = await usersModel.getUserInterests(req.params.username);
+      res.json(interests);
+    } catch (error) {
+      console.error("getUserInterests Error:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
+  // I. Update user interests (requires session auth)
+  async updateUserInterests(req, res) {
+    const sessionCookie = req.cookies?.session;
+    if (!sessionCookie) return res.status(401).json({ error: "No session" });
+    try {
+      const decoded = await admin.auth().verifySessionCookie(sessionCookie, true);
+      const user = await usersModel.getUserByFirebaseUid(decoded.uid);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (user.userName !== req.params.username)
+        return res.status(403).json({ error: "Forbidden" });
+      const { genreIds } = req.body;
+      await usersModel.updateUserInterests(user.userId, Array.isArray(genreIds) ? genreIds : []);
+      res.json({ message: "Interests updated" });
+    } catch (error) {
+      console.error("updateUserInterests Error:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
+  // J. Update user bio (requires session auth)
+  async updateUserBio(req, res) {
+    const sessionCookie = req.cookies?.session;
+    if (!sessionCookie) return res.status(401).json({ error: "No session" });
+    try {
+      const decoded = await admin.auth().verifySessionCookie(sessionCookie, true);
+      const user = await usersModel.getUserByFirebaseUid(decoded.uid);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (user.userName !== req.params.username)
+        return res.status(403).json({ error: "Forbidden" });
+      const { bio } = req.body;
+      await usersModel.updateUserBio(user.userId, bio ?? null);
+      res.json({ message: "Bio updated" });
+    } catch (error) {
+      console.error("updateUserBio Error:", error);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
   // G. Journal Entries
   async getUserJournal(req, res) {
     try {

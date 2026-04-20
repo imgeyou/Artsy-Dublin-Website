@@ -174,6 +174,64 @@ class usersModel {
     }
   }
 
+  // I. get user interests (genres)
+  async getUserInterests(userName) {
+    try {
+      const [results] = await pool.query(
+        `SELECT g.genreId, g.name, g.eventTypeId
+         FROM userInterests ui
+         JOIN genres g ON ui.genreId = g.genreId
+         JOIN users u ON ui.userId = u.userId
+         WHERE u.userName = ?`,
+        [userName],
+      );
+      return results;
+    } catch (err) {
+      console.error("getUserInterests Error: ", err);
+      throw err;
+    }
+  }
+
+  // J. replace user interests
+  async updateUserInterests(userId, genreIds) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query(`DELETE FROM userInterests WHERE userId = ?`, [userId]);
+      if (genreIds && genreIds.length > 0) {
+        const [validGenres] = await connection.query(
+          `SELECT genreId FROM genres WHERE genreId IN (?)`,
+          [genreIds],
+        );
+        const validIds = validGenres.map((g) => g.genreId);
+        if (validIds.length > 0) {
+          const values = validIds.map((genreId) => [userId, genreId]);
+          await connection.query(
+            `INSERT INTO userInterests (userId, genreId) VALUES ?`,
+            [values],
+          );
+        }
+      }
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      console.error("updateUserInterests Error: ", err);
+      throw err;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // K. update user bio
+  async updateUserBio(userId, bio) {
+    try {
+      await pool.query(`UPDATE users SET bio = ? WHERE userId = ?`, [bio, userId]);
+    } catch (err) {
+      console.error("updateUserBio Error: ", err);
+      throw err;
+    }
+  }
+
   // H. get user Journal
   async getUserJournal(userName, sort) {
     const sortOptions = {

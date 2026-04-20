@@ -1,6 +1,4 @@
 import {createContext, useContext, useEffect, useState, useCallback,} from "react";
-import socket from "../utils/socket";
-
 //import backend api
 //const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -19,6 +17,7 @@ export function AuthProvider({ children }) {
       const res = await fetch(`/ad-auth/check-auth`, { credentials: "include" });
       if (res.ok) {
         const user = await res.json();
+        console.log("check-auth response:", user);
         setFirebaseUser({
           uid: user.uid,
           email: user.email,
@@ -28,19 +27,15 @@ export function AuthProvider({ children }) {
           userName: user.userName,
           avatarUrl: user.avatarUrl,
         });
-        socket.disconnect();
-        socket.connect();
         console.log("OK");
       } else {
         setFirebaseUser(null);
         setDbUser(null);
-        socket.disconnect();
         console.log("NOT OK");
       }
     } catch {
       setFirebaseUser(null);
       setDbUser(null);
-      socket.disconnect();
     }
   }, []);
 
