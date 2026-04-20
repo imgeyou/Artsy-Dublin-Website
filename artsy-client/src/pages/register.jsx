@@ -26,7 +26,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [gender, setGender]             = useState("");
   const [birthday, setBirthday]         = useState("");
-  const [avatarFile, setAvatarFile]     = useState(null);
+  const [avatarFile, setAvatarFile]     = useState();
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [selected, setSelected]         = useState(new Set());
   const [error, setError]               = useState("");
@@ -85,12 +85,13 @@ export default function Register() {
       formData.append("gender", gender);
       formData.append("birthday", birthday);
       formData.append("interests", JSON.stringify([...selected]));
-      // if (avatarFile) formData.append("avatar", avatarFile);
+      if (avatarFile) formData.append("images", avatarFile);
       // console.log(formData);
 
       console.log("registering...");
       const res = await fetch("/ad-users/register", {
         method: "POST",
+        credentials: "include",
         body: formData,
       });
       console.log("register response:", res.status);
