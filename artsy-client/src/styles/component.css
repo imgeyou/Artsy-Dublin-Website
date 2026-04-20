@@ -819,7 +819,7 @@
 }
 
 /* Log Attendance：玻璃感、比較像狀態操作 */
-.btn-attendance {
+.log-event__attended-btn {
     background: rgba(255, 255, 255, 0.14);
     color: #fff;
     border: 1px solid rgba(255, 255, 255, 0.45);
@@ -827,7 +827,7 @@
     backdrop-filter: blur(10px);
 }
 
-.btn-attendance:hover {
+.log-event__attended-btn:hover {
     background: rgba(255, 255, 255, 0.95);
     color: #5b3a29;
     border-color: rgba(255, 255, 255, 0.95);
@@ -838,6 +838,119 @@
     background: #fff;
     color: #5b3a29;
     border-color: #fff;
+}
+
+.btn-attendance.is-active:hover {
+    background: #fff0f0;
+    color: #c0392b;
+    border-color: #f5c6c6;
+}
+
+.log-event__cancel-x {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-left: 2px;
+}
+
+.log-event__anchor {
+    position: relative;
+    display: inline-block;
+}
+
+/* Picker: floats above the trigger — does NOT affect layout */
+.log-event__picker {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 14px;
+    padding: 16px 18px;
+    min-width: 240px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    animation: picker-in 0.18s ease;
+}
+
+@keyframes picker-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.log-event__picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2b2b2b;
+}
+
+.log-event__close {
+    background: none;
+    border: none;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+.log-event__close:hover { color: #2b2b2b; }
+
+/* Known repeat dates list */
+.log-event__date-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.log-event__date-option {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #2b2b2b;
+    font-size: 13px;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+}
+.log-event__date-option:hover { background: #ebebeb; }
+.log-event__date-option--active {
+    background: rgba(42, 157, 110, 0.1);
+    border-color: rgba(42, 157, 110, 0.45);
+    color: #2a9d6e;
+    font-weight: 600;
+}
+
+/* Free date input fallback */
+.log-event__date-input {
+    background: #f5f5f5;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    color: #2b2b2b;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.log-event__picker-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.log-event__error {
+    font-size: 12px;
+    color: #c0392b;
+    margin: 0;
 }
 
 /* Write Review：柔和米棕色，和 ticket 不同但還在同一套色系 */

@@ -8,6 +8,7 @@ import hostAvatar from '../assets/images/avatar.jpeg'
 import EventCard from "../components/events/EventCard";
 import SaveEventButton from '../components/ui/SaveEventButton'
 import LogEventButton from '../components/events/LogEventButton'
+import LoginPrompt from '../components/common/LoginPrompt'
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -83,6 +84,7 @@ function EventDetailPage() {
     const navigate = useNavigate();
     const [saved, setSaved] = useState(false);
     const [attendId, setAttendId] = useState(null);
+    const [loginPrompt, setLoginPrompt] = useState(null);
     const reviewCtaRef = useRef(null);
 
     function handleAttendChange(id, scroll = false) {
@@ -379,6 +381,7 @@ function EventDetailPage() {
                             dbUser={dbUser}
                             eventDates={event.eventRepeats ?? []}
                             onAttendChange={handleAttendChange}
+                            onLoginRequired={(msg) => setLoginPrompt(msg)}
                         />
                         <SaveEventButton
                             saved={saved}
@@ -511,6 +514,10 @@ function EventDetailPage() {
             </div>
 
             <Footer />
+
+            {loginPrompt && (
+                <LoginPrompt message={loginPrompt} onClose={() => setLoginPrompt(null)} />
+            )}
         </>
     );
 }

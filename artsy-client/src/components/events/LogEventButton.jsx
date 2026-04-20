@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheckCircle, faCalendarCheck, faXmark, faSpinner } from "@fortawesome/free-solid-svg-icons";
 
-function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange }) {
+function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange, onLoginRequired }) {
     const wrapperRef = useRef(null);
 
     const [eventAttendId, setEventAttendId] = useState(null);
@@ -110,7 +110,7 @@ function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange }) {
         <div className="log-event__anchor" ref={wrapperRef}>
             <button
                 className="btn btn-outline"
-                onClick={() => dbUser ? setShowPicker((v) => !v) : navigate("/login")}
+                onClick={() => dbUser ? setShowPicker((v) => !v) : onLoginRequired?.("Log in to record your attendance")}
             >
                 <FontAwesomeIcon icon={faCalendarCheck} /> Log Attendance
             </button>
