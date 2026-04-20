@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
   const username = dbUser?.userName;
 
-  /* ── fetch ── */
+  /* ── fetch── */
   useEffect(() => {
     if (!username) return;
     async function fetchAll() {

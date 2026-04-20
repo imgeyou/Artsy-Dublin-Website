@@ -162,7 +162,7 @@ function WritePostPage() {
         <>
             <div className="home-header-overlay"><Header /></div>
             <div className="container" style={{ paddingTop: "120px" }}>
-                <button className="btn-back" onClick={() => navigate(-1)}>
+                <button className="btn-back btn-12" onClick={() => navigate(-1)}>
                     <FontAwesomeIcon icon={faArrowLeft} className="faArrowLeft" />
                     <span>Back</span>
                 </button>
@@ -261,14 +261,14 @@ function WritePostPage() {
                                 <div className="wp__actions">
                                     {error && <span className="wp__error">{error}</span>}
                                     <button
-                                        className="btn btn-outline"
+                                        className="btn btn-outline btn-12"
                                         onClick={() => navigate(-1)}
                                         disabled={submitting}
                                     >
                                         Cancel
                                     </button>
                                     <button
-                                        className="btn btn-primary"
+                                        className="btn btn-primary btn-12"
                                         onClick={handleSubmit}
                                         disabled={!content.trim() || submitting}
                                     >

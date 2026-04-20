@@ -11,10 +11,10 @@ function LoginPrompt({ message = "Sign in to continue", onClose }) {
             <div className="login-prompt" onClick={(e) => e.stopPropagation()}>
                 <p className="login-prompt__message">{message}</p>
                 <div className="login-prompt__actions">
-                    <button className="btn btn-primary btn--sm" onClick={() => navigate("/login")}>
+                    <button className="btn btn-primary btn--sm btn-12" onClick={() => navigate("/login")}>
                         Log in
                     </button>
-                    <button className="btn btn-outline btn--sm" onClick={() => navigate("/register")}>
+                    <button className="btn btn-outline btn--sm btn-12" onClick={() => navigate("/register")}>
                         Sign up
                     </button>
                 </div>

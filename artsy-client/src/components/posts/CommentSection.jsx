@@ -119,7 +119,7 @@ function CommentForm({
                         {onCancel && (
                             <button
                                 type="button"
-                                className="btn btn-outline btn--sm"
+                                className="btn btn-outline btn--sm btn-12"
                                 onClick={onCancel}
                             >
                                 Cancel
@@ -127,7 +127,7 @@ function CommentForm({
                         )}
                         <button
                             type="submit"
-                            className="btn btn-primary btn--sm"
+                            className="btn btn-primary btn--sm btn-12"
                             disabled={(!text.trim() && images.length === 0) || submitting}
                         >
                             {submitting ? "Saving…" : "Save"}
@@ -321,7 +321,7 @@ function CommentSection({
                 <CommentForm onSubmit={onSubmit} />
             ) : (
                 <button
-                    className="btn btn-outline comment-login-prompt-btn"
+                    className="btn btn-outline comment-login-prompt-btn btn-12"
                     onClick={() => onLoginRequired?.("Log in to leave a comment")}
                 >
                     Log in to comment…

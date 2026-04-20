@@ -96,7 +96,7 @@ function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange, onLo
     if (eventAttendId) {
         return (
             <div className="log-event--attended">
-                <button className="btn btn-attendance is-active" onClick={handleCancel} disabled={cancelling} title="Cancel attendance">
+                <button className="btn btn-attendance is-active btn-12" onClick={handleCancel} disabled={cancelling} title="Cancel attendance">
                     <FontAwesomeIcon icon={cancelling ? faSpinner : faCheckCircle} spin={cancelling} />
                     <span>Attended</span>
                     <span className="log-event__cancel-x"><FontAwesomeIcon icon={faXmark} /></span>
@@ -109,7 +109,7 @@ function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange, onLo
     return (
         <div className="log-event__anchor" ref={wrapperRef}>
             <button
-                className="btn btn-outline"
+                className="btn btn-outline btn-12"
                 onClick={() => dbUser ? setShowPicker((v) => !v) : onLoginRequired?.("Log in to record your attendance")}
             >
                 <FontAwesomeIcon icon={faCalendarCheck} /> Log Attendance
@@ -161,7 +161,7 @@ function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange, onLo
 
                     <div className="log-event__picker-actions">
                         <button
-                            className="btn btn-primary"
+                            className="btn btn-primary btn-12"
                             onClick={handleConfirm}
                             disabled={!selectedDate || logging}
                         >
