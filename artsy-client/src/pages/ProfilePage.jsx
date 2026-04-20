@@ -150,7 +150,7 @@ export default function ProfilePage() {
   return (
     <div className="pp-page">
       {/* Hollow Pacifico background */}
-      <div className="pp-bg-text" aria-hidden="true">Artsy Dublin</div>
+      <div className="pp-bg-text" aria-hidden="true">Artsy dublin</div>
 
       <Header />
 

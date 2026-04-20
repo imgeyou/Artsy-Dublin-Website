@@ -72,7 +72,7 @@ function PostCard({ post, liked = false }) {
 
                     {/* like + comment count */}
                     <div className="post-card__footer">
-                        <span className="post-card__like-count">
+                        <span className="btn-like">
                             <FontAwesomeIcon icon={liked ? faHeartSolid : faHeartRegular} />
                             {post.likeCount?.toLocaleString()} likes
                         </span>

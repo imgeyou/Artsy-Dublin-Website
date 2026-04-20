@@ -134,3 +134,25 @@
 .post-card__footer-count {
     margin-left: auto;
 }
+
+.btn-like {
+    background: none;
+    border: 1.5px solid rgba(90, 55, 19, 0.35);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-brown);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-like:hover {
+    background: var(--color-brown);
+    border-color: var(--color-brown);
+    color: #fff;
+}
