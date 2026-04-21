@@ -28,6 +28,7 @@ function CommentForm({
     autoFocus = false,
     initialText = "",
     onCancel,
+    currentUserAvatar,
 }) {
     const [text, setText] = useState(initialText);
     const [images, setImages] = useState([]);//post images
@@ -70,7 +71,7 @@ function CommentForm({
 // ----------------- render component
     return (
         <form className="comment-form" onSubmit={handleSubmit}>
-            <img src={defaultAvatar} alt="" className="comment-form__avatar" />
+            <img src={currentUserAvatar || defaultAvatar} alt="" className="comment-form__avatar" />
             <div className="comment-form__input-wrap">
                 <textarea
                     className="comment-form__input"
@@ -180,7 +181,7 @@ function CommentItem({
 
     return (
         <div className="comment-item">
-            <img src={defaultAvatar} alt="" className="comment-item__avatar" />
+            <img src={comment.avatarUrl || defaultAvatar} alt="" className="comment-item__avatar" />
 
             <div className="comment-item__body">
                 <div className="comment-item__header">
@@ -302,6 +303,7 @@ function CommentSection({
     comments,
     commentCount,
     currentUserId,
+    currentUserAvatar,
     onSubmit,
     onAddReply,
     onLikeComment,
@@ -318,7 +320,7 @@ function CommentSection({
             </h2>
 
             {isLoggedIn ? (
-                <CommentForm onSubmit={onSubmit} />
+                <CommentForm onSubmit={onSubmit} currentUserAvatar={currentUserAvatar} />
             ) : (
                 <button
                     className="btn btn-outline comment-login-prompt-btn btn-12"

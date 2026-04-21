@@ -100,7 +100,46 @@
 }
 
 .pp-avatar-wrap {
+  position: relative;
+  display: inline-block;
   margin-bottom: 20px;
+}
+
+.pp-avatar-edit-btn {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--pp-accent);
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.pp-avatar-edit-btn:hover:not(:disabled) {
+  background: var(--color-dark-blue, #2c3e50);
+}
+
+.pp-avatar-edit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pp-avatar-error {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #c0392b;
+  white-space: nowrap;
 }
 
 .pp-avatar {
@@ -379,6 +418,11 @@
   cursor: default;
   animation: chipSlide 0.45s ease both;
 }
+
+.pp-chip--selected {
+  background: var(--pp-accent-mid);
+}
+
 .pp-chip:nth-child(odd)  { transform: rotate(-0.8deg); }
 .pp-chip:nth-child(even) { transform: rotate( 0.8deg); }
 .pp-chip:hover {

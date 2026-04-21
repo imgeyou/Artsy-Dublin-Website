@@ -30,6 +30,7 @@ export default function Register() {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [selected, setSelected]         = useState(new Set());
   const [error, setError]               = useState("");
+  const [fieldErrors, setFieldErrors]   = useState({});
   const [genres, setGenres]             = useState([]);
 
   useEffect(() => {
@@ -50,12 +51,28 @@ export default function Register() {
     setSelected((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
+      if (next.size > 0) setFieldErrors((p) => ({ ...p, interests: "" }));
       return next;
     });
   };
 
+  const validate = () => {
+    const errs = {};
+    if (!username.trim()) errs.username = "Username is required.";
+    if (!email.trim()) errs.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Please enter a valid email address.";
+    if (!password) errs.password = "Password is required.";
+    else if (password.length < 6) errs.password = "Password must be at least 6 characters.";
+    if (!birthday) errs.birthday = "Date of birth is required.";
+    if (!gender) errs.gender = "Please select your gender.";
+    if (selected.size === 0) errs.interests = "Please select at least one interest.";
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async () => {
     setError("");
+    if (!validate()) return;
 
     // if (!avatarFile) {
     //   setError("Please upload a profile photo.");
@@ -172,9 +189,10 @@ export default function Register() {
               type="text"
               placeholder="username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="input"
+              onChange={(e) => { setUsername(e.target.value); setFieldErrors((p) => ({ ...p, username: "" })); }}
+              className={`input${fieldErrors.username ? " input--error" : ""}`}
             />
+            {fieldErrors.username && <p className="fieldError">{fieldErrors.username}</p>}
           </div>
 
           {/* Email */}
@@ -184,9 +202,10 @@ export default function Register() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input"
+              onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: "" })); }}
+              className={`input${fieldErrors.email ? " input--error" : ""}`}
             />
+            {fieldErrors.email && <p className="fieldError">{fieldErrors.email}</p>}
           </div>
 
           {/* Password */}
@@ -197,8 +216,8 @@ export default function Register() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input passwordInput"
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: "" })); }}
+                className={`input passwordInput${fieldErrors.password ? " input--error" : ""}`}
               />
               <button type="button" className="eyeBtn" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? (
@@ -216,6 +235,7 @@ export default function Register() {
               </button>
             </div>
             <span className="hint">At least 6 characters</span>
+            {fieldErrors.password && <p className="fieldError">{fieldErrors.password}</p>}
           </div>
 
           {/* Birthday + Gender row */}
@@ -225,23 +245,25 @@ export default function Register() {
               <input
                 type="date"
                 value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="input"
+                onChange={(e) => { setBirthday(e.target.value); setFieldErrors((p) => ({ ...p, birthday: "" })); }}
+                className={`input${fieldErrors.birthday ? " input--error" : ""}`}
                 max={new Date().toISOString().split("T")[0]}
               />
+              {fieldErrors.birthday && <p className="fieldError">{fieldErrors.birthday}</p>}
             </div>
             <div className="formGroup">
               <label className="label">Gender</label>
               <select
                 value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="input"
+                onChange={(e) => { setGender(e.target.value); setFieldErrors((p) => ({ ...p, gender: "" })); }}
+                className={`input${fieldErrors.gender ? " input--error" : ""}`}
               >
                 <option value="">Select</option>
                 {GENDER_OPTIONS.map((g) => (
                   <option key={g.value} value={g.value}>{g.label}</option>
                 ))}
               </select>
+              {fieldErrors.gender && <p className="fieldError">{fieldErrors.gender}</p>}
             </div>
           </div>
 
@@ -260,6 +282,7 @@ export default function Register() {
                 </button>
               ))}
             </div>
+            {fieldErrors.interests && <p className="fieldError">{fieldErrors.interests}</p>}
           </div>
 
           {error && <p className="errorMsg">{error}</p>}

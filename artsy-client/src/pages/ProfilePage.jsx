@@ -4,6 +4,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
 import { useAuth } from "../context/AuthContext";
+import { checkSaves } from "../utils/postHelpers";
 import "../styles/pages/ProfilePage.css";
 
 /* ─── placeholder grid ─── */
@@ -48,22 +49,35 @@ function Section({ index, number, title, count, children }) {
 
 /* ───Main─── */
 export default function ProfilePage() {
-  const { dbUser, firebaseUser } = useAuth();
+  const { dbUser, firebaseUser, refreshAuth } = useAuth();
   const navigate = useNavigate();
 
   const [profile,        setProfile]        = useState(null);
   const [attendedEvents, setAttendedEvents] = useState([]);
   const [savedEvents,    setSavedEvents]    = useState([]);
+  const [savedEventIds,  setSavedEventIds]  = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [allGenres,      setAllGenres]      = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
+
+  // Editing interests
+  const [editingInterests, setEditingInterests] = useState(false)
+  const [interestsSaving, setInterestsSaving] = useState(false)
+  const [interestsError, setInterestsError] = useState(null)
+  const [pendingGenres, setPendingGenres] = useState([]) 
 
   // Bio state
   const [bio,        setBio]        = useState("");
   const [editingBio, setEditingBio] = useState(false);
   const [bioInput,   setBioInput]   = useState("");
   const [bioSaving,  setBioSaving]  = useState(false);
+  const [bioError,   setBioError]   = useState(null);
   const bioRef = useRef(null);
+
+  // Avatar state
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError,  setAvatarError]  = useState(null);
+  const avatarInputRef = useRef(null);
 
   const username = dbUser?.userName;
   const userId = dbUser?.userId;
@@ -86,8 +100,13 @@ export default function ProfilePage() {
           setBio(data?.bio ?? "");
           setBioInput(data?.bio ?? "");
         }
-        if (a.ok) setAttendedEvents(await a.json());
-        if (s.ok) setSavedEvents(await s.json());
+        const attended = a.ok ? await a.json() : [];
+        const saved    = s.ok ? await s.json() : [];
+        setAttendedEvents(attended);
+        setSavedEvents(saved);
+        const allIds = [...attended, ...saved].map(e => e.eventId).filter(Boolean);
+        const checkedIds = await checkSaves(allIds);
+        setSavedEventIds(checkedIds);
         if (i.ok) {
           const interests = await i.json();
           setSelectedGenres(interests.map(g => g.genreId));
@@ -119,20 +138,80 @@ export default function ProfilePage() {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [editingBio, bio]);
 
+  /* ── save interests via PATCH ── */
+  async function saveInterests() {
+    setInterestsError(null);
+    setInterestsSaving(true);
+    try {
+      const res = await fetch(`/ad-users/${userId}/interests`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interests: pendingGenres }),
+      });
+      if (res.ok) {
+        setSelectedGenres(pendingGenres);
+        setEditingInterests(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setInterestsError(err.message ?? "Failed to update interests");
+      }
+    } catch (err) {
+      setInterestsError(err.message);
+    } finally {
+      setInterestsSaving(false);
+    }
+  }
+
   /* ── save bio via PATCH ── */
   async function saveBio() {
-    if (bioInput === bio) { setEditingBio(false); return; }
+    if (bioInput === bio) { setEditingBio(false); 
+      //console.log("no edit");
+      return; }
+    setBioError(null);
     setBioSaving(true);
     try {
+      //console.log("i am trying to edit");
       const res = await fetch(`/ad-users/${username}/bio`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bio: bioInput }),
       });
-      if (res.ok) { setBio(bioInput); setEditingBio(false); }
-    } finally {
+      if (res.ok) { 
+        //console.log("edit bio successful");
+        setBio(bioInput); setEditingBio(false); }
+    } catch(err){
+      setBioError(err.message);
+    }
+    finally {
       setBioSaving(false);
+    }
+  }
+
+  /* ── save avatar via PATCH ── */
+  async function saveAvatar(avatarFile) {
+    if (!avatarFile) return;
+    setAvatarError(null);
+    setAvatarSaving(true);
+    try {
+      const form = new FormData();
+      form.append("images", avatarFile);
+      const res = await fetch("/ad-users/avatar", {
+        method: "PATCH",
+        credentials: "include",
+        body: form,
+      });
+      if (!res.ok) throw new Error("Failed to update avatar");
+      const [fresh] = await Promise.all([
+        fetch(`/ad-users/${username}`, { credentials: "include" }).then(r => r.ok ? r.json() : null),
+        refreshAuth(),
+      ]);
+      if (fresh) setProfile(fresh);
+    } catch (err) {
+      setAvatarError(err.message);
+    } finally {
+      setAvatarSaving(false);
     }
   }
 
@@ -143,14 +222,17 @@ export default function ProfilePage() {
   const initials       = displayProfile?.userName?.[0]?.toUpperCase() ?? "?";
   const email          = firebaseUser?.email ?? "";
 
-  const genreLabels = selectedGenres
+  const selectedGenreLabels = selectedGenres
     .map(id => allGenres.find(x => (x.genreId ?? x.id) === id)?.name)
     .filter(Boolean);
+
+  const allGenreLabels = allGenres
+    .map(entry => entry.name)
 
   return (
     <div className="pp-page">
       {/* Hollow Pacifico background */}
-      <div className="pp-bg-text" aria-hidden="true">Artsy Dublin</div>
+      <div className="pp-bg-text" aria-hidden="true">Artsy dublin</div>
 
       <Header />
 
@@ -163,6 +245,22 @@ export default function ProfilePage() {
               ? <img src={displayProfile.avatarUrl} alt="" className="pp-avatar" />
               : <div className="pp-avatar placeholder">{initials}</div>
             }
+            <button
+              className="pp-avatar-edit-btn"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarSaving}
+              title="Change profile photo"
+            >
+              {avatarSaving ? "…" : "✎"}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => { saveAvatar(e.target.files[0]); e.target.value = ""; }}
+            />
+            {avatarError && <p className="pp-avatar-error">{avatarError}</p>}
           </div>
 
           <h2 className="pp-name">{displayProfile?.userName}</h2>
@@ -181,6 +279,7 @@ export default function ProfilePage() {
                   autoFocus
                   maxLength={280}
                 />
+                {bioError && <p className="pp-avatar-error">{bioError}</p>}
                 <div className="pp-bio-actions">
                   <span className="pp-bio-counter">{bioInput.length}/280</span>
                   <button
@@ -213,7 +312,7 @@ export default function ProfilePage() {
           {/* Stats */}
           <div className="pp-stats">
             <div><strong>{attendedEvents.length}</strong><span>Events</span></div>
-            <div><strong>{genreLabels.length}</strong><span>Interests</span></div>
+            <div><strong>{selectedGenreLabels.length}</strong><span>Interests</span></div>
             <div><strong>{savedEvents.length}</strong><span>Saved</span></div>
           </div>
         </div>
@@ -226,21 +325,67 @@ export default function ProfilePage() {
             index={0}
             number="01"
             title="My interests"
-            count={genreLabels.length > 0 ? `${genreLabels.length} genres` : null}
+            count={selectedGenreLabels.length > 0 ? `${selectedGenreLabels.length} genres` : null}
           >
+            <button
+              className="pp-avatar-edit-btn"
+              onClick={() => {setPendingGenres(selectedGenres); setEditingInterests(true);}}
+              disabled={interestsSaving}
+              title="Update interests"
+            >
+            {interestsSaving ? "…" : "✎"}
+            </button>
             <div className="pp-tags">
-              {genreLabels.length === 0
-                ? <p className="pp-empty-inline">No interests added yet.</p>
-                : genreLabels.map((g, i) => (
-                    <span
-                      key={i}
-                      className="pp-chip"
-                      style={{ animationDelay: `${i * 0.07}s` }}
+              {!editingInterests ? (
+                // if not editing interests; just render normally 
+                <>
+                  {selectedGenreLabels.length === 0
+                    ? <p className="pp-empty-inline">No interests added yet.</p>
+                    : selectedGenreLabels.map((g, i) => (
+                        <span key={i} className="pp-chip" style={{ animationDelay: `${i * 0.07}s` }}>
+                          {g}
+                        </span>
+                      ))
+                  }
+                </>
+              ) : (
+                // else; present all but nmark those that are selected
+                <>
+                  {allGenres.map((genre) => {
+                    const id = genre.genreId ?? genre.id;
+                    const isSelected = pendingGenres.includes(id);
+                    return (
+                      <span
+                        key={id}
+                        className={`pp-chip${isSelected ? " pp-chip--selected" : ""}`}
+                        onClick={() =>
+                          setPendingGenres(prev =>
+                            isSelected ? prev.filter(x => x !== id) : [...prev, id]
+                          )
+                        }
+                      >
+                        {genre.name}
+                      </span>
+                    );
+                  })}
+                  {interestsError && <p className="pp-avatar-error">{interestsError}</p>}
+                  <div className="pp-bio-actions">
+                    <button
+                      className="pp-bio-btn cancel"
+                      onClick={() => { setEditingInterests(false); setPendingGenres([]); }}
                     >
-                      {g}
-                    </span>
-                  ))
-              }
+                      Cancel
+                    </button>
+                    <button
+                      className="pp-bio-btn save"
+                      onClick={saveInterests}
+                      disabled={interestsSaving}
+                    >
+                      {interestsSaving ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </Section>
 
@@ -255,7 +400,7 @@ export default function ProfilePage() {
               <div className="pp-empty">Post a review to record your journey!</div>
             ) : (
               <div className="pp-grid">
-                {attendedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {attendedEvents.map((e, i) => <EventCard key={`${e.eventId}-${i}`} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>
@@ -271,7 +416,7 @@ export default function ProfilePage() {
               <div className="pp-empty">No saved events yet.</div>
             ) : (
               <div className="pp-grid">
-                {savedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {savedEvents.map(e => <EventCard key={e.eventId} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>

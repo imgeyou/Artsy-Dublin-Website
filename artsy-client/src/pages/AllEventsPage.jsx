@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
 import FilterBar from "../components/events/FilterBar";
 import mockEvents from "../mock/events";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { checkSaves } from "../utils/postHelpers";
 
 import "../index.css";
 import "../styles/component.css";
@@ -18,10 +20,62 @@ function getEventTypeLabel(eventTypeId) {
     return "Other";
 }
 
+function formatHeroDate(dateString) {
+    if (!dateString) return "Date TBA";
+
+    const parsed = new Date(dateString.replace(" ", "T"));
+
+    if (Number.isNaN(parsed.getTime())) return "Date TBA";
+
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    }).format(parsed);
+}
+
+function HeroMosaicCard({ event, className = "" }) {
+    if (!event) return null;
+
+    return (
+        <Link
+            to={`/events/${event.eventId}`}
+            className={`all-events-mosaic-card ${className}`}
+        >
+            <img
+                src={event.posterUrl || "https://via.placeholder.com/900x1200?text=No+Image"}
+                alt={event.title}
+                className="all-events-mosaic-card__image"
+            />
+
+            <div className="all-events-mosaic-card__overlay"></div>
+
+            <div className="all-events-mosaic-card__content">
+                <span className="all-events-mosaic-card__pill">
+                    {event.eventTypeName || getEventTypeLabel(event.eventTypeId)}
+                </span>
+
+                <p className="all-events-mosaic-card__date">
+                    {formatHeroDate(event.startDateTime)}
+                </p>
+
+                <h3>{event.title}</h3>
+
+                <p className="all-events-mosaic-card__meta">
+                    {event.venue || "Venue TBA"}
+                </p>
+            </div>
+        </Link>
+    );
+}
+
 export default function AllEventsPage() {
+    const { dbUser } = useAuth();
     const [events, setEvents] = useState(mockEvents);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [savedEventIds, setSavedEventIds] = useState([]);
+    const saveCheckedRef = useRef(false);
 
     const [activeCategories, setActiveCategories] = useState([]);
     const [activeDate, setActiveDate] = useState("Upcoming");
@@ -92,6 +146,13 @@ export default function AllEventsPage() {
     }, []);
 
     useEffect(() => {
+        if (!dbUser?.userId || loading || !events.length) return;
+        checkSaves(events.map((e) => e.eventId))
+            .then(setSavedEventIds)
+            .catch((err) => console.error("Failed to check saves:", err));
+    }, [events, dbUser?.userId, loading]);
+
+    useEffect(() => {
         setVisibleCount(12);
     }, [activeCategories, activeDate, sortOrder, searchTerm]);
 
@@ -151,7 +212,19 @@ export default function AllEventsPage() {
                 return sortOrder === "Soonest" ? dateA - dateB : dateB - dateA;
             });
     }, [events, activeCategories, activeDate, sortOrder, searchTerm]);
+    const heroEvents = useMemo(() => {
+        const featured = filteredEvents[0] ?? null;
+        const left = filteredEvents[1] ?? featured;
+        const rightTop = filteredEvents[2] ?? featured;
+        const rightBottom = filteredEvents[3] ?? left ?? featured;
 
+        return {
+            featured,
+            left,
+            rightTop,
+            rightBottom,
+        };
+    }, [filteredEvents]);
     function handleSearchSubmit() {
         setSearchTerm(inputValue.trim());
     }
@@ -249,70 +322,109 @@ export default function AllEventsPage() {
 
                         {!loading && filteredEvents.length > 0 && (
                             <>
-                                <section className="all-events-carousel-section">
-                                    <div className="all-events-section-head">
-                                        <div>
-                                            <p className="all-events-section-kicker">FEATURED</p>
-                                            <h2>Browse Events</h2>
-                                        </div>
-                                    </div>
+                                <section className="all-events-mosaic">
+                                    <HeroMosaicCard
+                                        event={heroEvents.left}
+                                        className="all-events-mosaic-card--left"
+                                    />
 
-                                    <div className="all-events-carousel">
-                                        {filteredEvents.slice(0, 12).map((event) => (
-                                            <Link to={`/events/${event.eventId}`}
-                                                key={event.eventId ?? event.title}
-                                                className="all-events-poster-card"
+                                    {heroEvents.featured && (
+                                        <article className="all-events-featured">
+                                            <Link
+                                                to={`/events/${heroEvents.featured.eventId}`}
+                                                className="all-events-featured__card"
                                             >
-                                                <div className="all-events-poster-media">
-                                                    <img
-                                                        src={
-                                                            event.posterUrl ||
-                                                            "https://via.placeholder.com/600x900?text=No+Image"
-                                                        }
-                                                        alt={event.title}
-                                                    />
-                                                    <span className="all-events-poster-tag">
-                                                        {event.eventTypeName || getEventTypeLabel(event.eventTypeId)}
-                                                    </span>
+                                                <img
+                                                    src={
+                                                        heroEvents.featured.posterUrl ||
+                                                        "https://via.placeholder.com/1400x900?text=No+Image"
+                                                    }
+                                                    alt={heroEvents.featured.title}
+                                                    className="all-events-featured__image"
+                                                />
 
-                                                    <div className="all-events-poster-body">
-                                                        <h3>{event.title}</h3>
-                                                        <p>{event.venue || "Venue TBA"}</p>
-                                                        <span>{event.startDateTime || "Date TBA"}</span>
-                                                    </div>
+                                                <div className="all-events-featured__overlay"></div>
+
+                                                <span className="all-events-featured__date">
+                                                    {formatHeroDate(heroEvents.featured.startDateTime)}
+                                                </span>
+
+                                                {/* <span className="all-events-featured__brand">
+                                                    AD
+                                                </span> */}
+
+                                                <div className="all-events-featured__content">
+                                                    <p className="all-events-featured__type">
+                                                        {heroEvents.featured.eventTypeName ||
+                                                            getEventTypeLabel(heroEvents.featured.eventTypeId)}
+                                                    </p>
+
+                                                    <h2>{heroEvents.featured.title}</h2>
+
+                                                    <p className="all-events-featured__subtitle">
+                                                        {heroEvents.featured.description?.trim()
+                                                            ? heroEvents.featured.description.slice(0, 90)
+                                                            : heroEvents.featured.venue || "Explore this featured event"}
+                                                    </p>
                                                 </div>
-
-
                                             </Link>
-                                        ))}
-                                    </div>
+
+                                            <Link
+                                                to={`/events/${heroEvents.featured.eventId}`}
+                                                className="all-events-rotating-logo"
+                                                aria-label={`Open ${heroEvents.featured.title}`}
+                                            >
+                                                <svg
+                                                    viewBox="0 0 200 200"
+                                                    className="all-events-rotating-logo__ring"
+                                                    aria-hidden="true"
+                                                >
+                                                    <defs>
+                                                        <path
+                                                            id="allEventsBadgePath"
+                                                            d="
+                              M 100,100
+                              m -72,0
+                              a 72,72 0 1,1 144,0
+                              a 72,72 0 1,1 -144,0
+                            "
+                                                        />
+                                                    </defs>
+
+                                                    <text>
+                                                        <textPath href="#allEventsBadgePath" startOffset="0%">
+                                                            ARTSY DUBLIN • VIEW EVENT • ARTSY DUBLIN • VIEW EVENT •
+                                                        </textPath>
+                                                    </text>
+                                                </svg>
+
+                                                <span className="all-events-rotating-logo__core">
+                                                    <svg
+                                                        viewBox="0 0 48 48"
+                                                        className="all-events-rotating-logo__mark"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path
+                                                            fill="currentColor"
+                                                            d="M24 6L28.6 17.4L40 22L28.6 26.6L24 38L19.4 26.6L8 22L19.4 17.4Z"
+                                                        />
+                                                        <circle cx="24" cy="22" r="3.2" fill="#1f1712" />
+                                                    </svg>
+                                                </span>
+                                            </Link>
+                                        </article>
+                                    )}
+
+                                    <HeroMosaicCard
+                                        event={heroEvents.rightTop}
+                                        className="all-events-mosaic-card--right-top"
+                                    />
+
+                                    <HeroMosaicCard
+                                        event={heroEvents.rightBottom}
+                                        className="all-events-mosaic-card--right-bottom"
+                                    />
                                 </section>
-
-                                {/* <section className="all-events-grid-section">
-                                <div className="all-events-section-head">
-                                    <div>
-                                        <p className="all-events-section-kicker">MORE TO EXPLORE</p>
-                                        <h2>All Results</h2>
-                                    </div>
-                                </div>
-
-                                <div className="events_grid all-events-results-grid">
-                                    {filteredEvents.slice(0, visibleCount).map((event) => (
-                                        <EventCard key={event.eventId ?? event.title} event={event} />
-                                    ))}
-                                </div>
-
-                                {visibleCount < filteredEvents.length && (
-                                    <div className="show-more-wrap">
-                                        <button
-                                            className="show-more-btn"
-                                            onClick={() => setVisibleCount((prev) => prev + 12)}
-                                        >
-                                            Show More
-                                        </button>
-                                    </div>
-                                )}
-                            </section> */}
                             </>
                         )}
                     </div>
@@ -330,7 +442,7 @@ export default function AllEventsPage() {
 
                             <div className="events_grid all-events-results-grid">
                                 {filteredEvents.slice(0, visibleCount).map((event) => (
-                                    <EventCard key={event.eventId ?? event.title} event={event} />
+                                    <EventCard key={event.eventId ?? event.title} event={event} savedInit={savedEventIds.includes(event.eventId)} />
                                 ))}
                             </div>
 

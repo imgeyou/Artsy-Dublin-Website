@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import socket from "../utils/socket";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import "../styles/pages/messaging.css";
 
 export default function Inbox() {
@@ -22,7 +24,7 @@ export default function Inbox() {
       const res = await fetch("/ad-messages/conversations", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load conversations");
       const data = await res.json();
-      setConversations(data);
+      setConversations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,15 +93,16 @@ export default function Inbox() {
     }
   }
 
-  if (firebaseUser === undefined || firebaseUser === null) return <div className="msg-page"><p style={{ padding: 48 }}>Loading…</p></div>;
+  if (firebaseUser === undefined || firebaseUser === null) return <><div className="home-header-overlay"><Header /></div><div className="msg-page"><p style={{ padding: 48 }}>Loading…</p></div></>;
 
   return (
-    <div className="msg-page">
+    <>
+      <div className="home-header-overlay"><Header /></div>
+      <div className="msg-page" style={{ paddingTop: "100px" }}>
       <div className="inbox-wrap">
 
         <div className="inbox-header">
           <h1 className="inbox-title">Messages</h1>
-          <Link to="/" className="inbox-home-link"> Go Home</Link>
         </div>
 
         {error && <p className="inbox-error">{error}</p>}
@@ -170,7 +173,13 @@ export default function Inbox() {
         </div>
 
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 
 }
+
+
+
+

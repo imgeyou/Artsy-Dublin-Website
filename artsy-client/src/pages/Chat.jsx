@@ -7,6 +7,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import socket from "../utils/socket";
+import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import "../styles/pages/messaging.css";
 
 export default function Chat() {
@@ -33,6 +35,7 @@ export default function Chat() {
       if (res.status === 403) throw new Error("You are not part of this conversation");
       if (!res.ok) throw new Error("Failed to load messages");
       const data = await res.json();
+      console.log(data);
       setMessages(data);
     } catch (err) {
       setError(err.message);
@@ -100,24 +103,44 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Connect socket once user is authenticated
+  useEffect(() => {
+    if (!firebaseUser) return;
+    socket.on("connect", () => console.log("socket connected:", socket.id));
+    socket.on("connect_error", (err) => console.log("socket connect_error:", err.message));
+    socket.on("disconnect", (reason) => console.log("socket disconnected:", reason));
+    if (!socket.connected) socket.connect();
+    return () => {
+      socket.off("connect");
+      socket.off("connect_error");
+      socket.off("disconnect");
+    };
+  }, [firebaseUser]);
+
   function handleSend(e) {
     e.preventDefault();
     setSendError(null);
     const text = inputText.trim();
+    //console.log("get the send text");
     if (!text) return;
     if (text.length > 2000) {
       setSendError("Message too long (max 2000 characters)");
       return;
     }
+    //console.log("socket connected?", socket.connected, "convId:", convId);
     socket.emit("send_message", { conversationId: convId, content: text });
     setInputText("");
   }
 
-  if (firebaseUser === undefined || firebaseUser === null) return <div className="chat-page"><p className="chat-hint">Loading…</p></div>;
-  if (error) return <div className="chat-page"><p className="chat-error-state">{error}</p></div>;
+  if (firebaseUser === undefined) return <><div className="home-header-overlay"><Header /></div><div className="chat-outer"><div className="chat-page"><p className="chat-hint">Loading…</p></div></div></>;
+  if (firebaseUser === null) return null;
+  if (error) return <><div className="home-header-overlay"><Header /></div><div className="chat-outer"><div className="chat-page"><p className="chat-error-state">{error}</p></div></div></>;
 
   return (
-    <div className="chat-page">
+    <>
+      <div className="home-header-overlay"><Header /></div>
+      <div className="chat-outer">
+      <div className="chat-page">
 
       {/* Header */}
       <div className="chat-header">
@@ -169,7 +192,10 @@ export default function Chat() {
         </form>
       </div>
 
-    </div>
+      </div>
+      <Footer />
+      </div>
+    </>
   );
-  
+
 }
