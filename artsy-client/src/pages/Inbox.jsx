@@ -22,7 +22,7 @@ export default function Inbox() {
       const res = await fetch("/ad-messages/conversations", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load conversations");
       const data = await res.json();
-      setConversations(data);
+      setConversations(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);
     } finally {

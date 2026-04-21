@@ -13,7 +13,7 @@ import { faStar as faStarSolid, faHeart as faHeartSolid } from "@fortawesome/fre
 import { faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
 
 
-function PostCard({ post, liked = false }) {   
+function PostCard({ post, liked = false, likeCount, onLike }) {
 
     //tranform database values
     const imageUrl = post.posterUrl;
@@ -72,10 +72,14 @@ function PostCard({ post, liked = false }) {
 
                     {/* like + comment count */}
                     <div className="post-card__footer">
-                        <span className="btn-like">
+                        <button
+                            className={`btn-like${liked ? " btn-like--active" : ""}`}
+                            onClick={(e) => { e.preventDefault(); onLike?.(); }}
+                            aria-label={liked ? "Unlike" : "Like"}
+                        >
                             <FontAwesomeIcon icon={liked ? faHeartSolid : faHeartRegular} />
-                            {post.likeCount?.toLocaleString()} likes
-                        </span>
+                            {(likeCount ?? post.likeCount)?.toLocaleString()} likes
+                        </button>
                         <span className="post-card__comment-count">
                             <FontAwesomeIcon icon={faComment} /> {post.commentCount}
                         </span>
