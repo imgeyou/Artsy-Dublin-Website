@@ -112,7 +112,7 @@ function LogEventButton({ eventId, dbUser, eventDates = [], onAttendChange, onLo
                 className="btn btn-outline btn-12"
                 onClick={() => dbUser ? setShowPicker((v) => !v) : onLoginRequired?.("Log in to record your attendance")}
             >
-                <FontAwesomeIcon icon={faCalendarCheck} /> Log Attendance
+                <FontAwesomeIcon icon={faCalendarCheck} /><span>Log Attendance</span>
             </button>
 
             {showPicker && (

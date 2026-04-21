@@ -260,10 +260,17 @@
     flex-shrink: 0;
 }
 /* CHAT*/
+.chat-outer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
 .chat-page {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: calc(100vh - 80px);
     background: var(--color-rice-yellow);
     font-family: var(--font-body);
 }

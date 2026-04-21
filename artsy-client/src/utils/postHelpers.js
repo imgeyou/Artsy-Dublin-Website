@@ -44,9 +44,13 @@ export function formatDate(dateStr) {
         .replace(",", "");
 }
 
+function fullImageUrl(relativePath) {
+    return relativePath ? `${import.meta.env.VITE_API_URL}/${relativePath}` : null;
+}
+
 //translate imageUrls from backend to presentable frontend Urls
 export function resolveImageUrl(src) {
-    return src.startsWith("uploads/") ? `/${src}` : src;
+    return src.startsWith("uploads/") ? fullImageUrl(src) : src;
 }
 
 // collect postIds from a post and all its nested comments/replies

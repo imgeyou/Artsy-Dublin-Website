@@ -374,3 +374,12 @@
         margin-left: 0;
     }
 }
+.fieldError {
+    color: #d32f2f;
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+.input--error {
+    border-color: #d32f2f !important;
+}

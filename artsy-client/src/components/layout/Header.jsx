@@ -10,6 +10,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import AnimatedTextLink from "../ui/AnimatedTextLink";
 import { useAuth } from "../../context/AuthContext";
+import socket from "../../utils/socket";
 
 function Header({ inputValue, setInputValue, onSearch }) {
     const { dbUser, refreshAuth } = useAuth();
@@ -56,6 +57,7 @@ function Header({ inputValue, setInputValue, onSearch }) {
             // ignore
         }
 
+        socket.disconnect();
         await refreshAuth();
         navigate("/");
     };
@@ -106,7 +108,7 @@ function Header({ inputValue, setInputValue, onSearch }) {
                 <nav className="header__nav">
                     <AnimatedTextLink to="/events" text="ALL EVENTS" />
                     <AnimatedTextLink to="/posts" text="COMMUNITY" />
-                    <AnimatedTextLink to="/messages" text="MESSAGE" />
+                    <AnimatedTextLink to={dbUser !== null ? "/messages" : "/login"} text="MESSAGE" />
                     <AnimatedTextLink to="/team" text="TEAM" />
                 </nav>
 

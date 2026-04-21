@@ -4,6 +4,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
 import { useAuth } from "../context/AuthContext";
+import { checkSaves } from "../utils/postHelpers";
 import "../styles/pages/ProfilePage.css";
 
 /* ─── placeholder grid ─── */
@@ -48,16 +49,13 @@ function Section({ index, number, title, count, children }) {
 
 /* ───Main─── */
 export default function ProfilePage() {
-  const { dbUser, firebaseUser } = useAuth();
+  const { dbUser, firebaseUser, refreshAuth } = useAuth();
   const navigate = useNavigate();
 
   const [profile,        setProfile]        = useState(null);
-  const [attendedEvents, setAttendedEvents] = useState([]);//fake下面是fake的
-  const [savedEvents,    setSavedEvents]    = useState([
-    { eventId: 9001, title: "Mock Jazz Night", posterUrl: "https://picsum.photos/seed/jazz/400/300", startDateTime: "2025-06-10 20:00:00", venue: "The Button Factory" },
-    { eventId: 9002, title: "Mock Art Exhibition", posterUrl: "https://picsum.photos/seed/art/400/300", startDateTime: "2025-06-15 18:00:00", venue: "Irish Museum of Modern Art" },
-    { eventId: 9003, title: "Mock Comedy Show", posterUrl: "https://picsum.photos/seed/comedy/400/300", startDateTime: "2025-06-20 21:00:00", venue: "Vicar Street" },
-  ]);
+  const [attendedEvents, setAttendedEvents] = useState([]);
+  const [savedEvents,    setSavedEvents]    = useState([]);
+  const [savedEventIds,  setSavedEventIds]  = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [allGenres,      setAllGenres]      = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
@@ -67,9 +65,16 @@ export default function ProfilePage() {
   const [editingBio, setEditingBio] = useState(false);
   const [bioInput,   setBioInput]   = useState("");
   const [bioSaving,  setBioSaving]  = useState(false);
+  const [bioError,   setBioError]   = useState(null);
   const bioRef = useRef(null);
 
+  // Avatar state
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError,  setAvatarError]  = useState(null);
+  const avatarInputRef = useRef(null);
+
   const username = dbUser?.userName;
+  const userId = dbUser?.userId;
 
   /* ── fetch── */
   useEffect(() => {
@@ -78,10 +83,10 @@ export default function ProfilePage() {
       setLoading(true);
       try {
         const [p, a, s, i] = await Promise.all([
-          fetch(`/ad-users/${username}`,                 { credentials: "include" }),
-          fetch(`/ad-users/${username}/attended-events`, { credentials: "include" }),
-          fetch(`/ad-users/${username}/saved-events`,    { credentials: "include" }),
-          fetch(`/ad-users/${username}/interests`,       { credentials: "include" }),
+          fetch(`/ad-users/${username}`,  { credentials: "include" }),
+          fetch(`/ad-posts/user/${userId}`,           { credentials: "include" }),
+          fetch(`/ad-posts/saves/user/${userId}`,    { credentials: "include" }),
+          fetch(`/ad-users/${userId}/userinterests`,   { credentials: "include" }),
         ]);
         if (p.ok) {
           const data = await p.json();
@@ -89,8 +94,13 @@ export default function ProfilePage() {
           setBio(data?.bio ?? "");
           setBioInput(data?.bio ?? "");
         }
-        if (a.ok) setAttendedEvents(await a.json());
-        if (s.ok) setSavedEvents(await s.json());
+        const attended = a.ok ? await a.json() : [];
+        const saved    = s.ok ? await s.json() : [];
+        setAttendedEvents(attended);
+        setSavedEvents(saved);
+        const allIds = [...attended, ...saved].map(e => e.eventId).filter(Boolean);
+        const checkedIds = await checkSaves(allIds);
+        setSavedEventIds(checkedIds);
         if (i.ok) {
           const interests = await i.json();
           setSelectedGenres(interests.map(g => g.genreId));
@@ -124,18 +134,53 @@ export default function ProfilePage() {
 
   /* ── save bio via PATCH ── */
   async function saveBio() {
-    if (bioInput === bio) { setEditingBio(false); return; }
+    if (bioInput === bio) { setEditingBio(false); 
+      //console.log("no edit");
+      return; }
+    setBioError(null);
     setBioSaving(true);
     try {
-      const res = await fetch(`/ad-users/${username}`, {
+      //console.log("i am trying to edit");
+      const res = await fetch(`/ad-users/${username}/bio`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bio: bioInput }),
       });
-      if (res.ok) { setBio(bioInput); setEditingBio(false); }
-    } finally {
+      if (res.ok) { 
+        //console.log("edit bio successful");
+        setBio(bioInput); setEditingBio(false); }
+    } catch(err){
+      setBioError(err.message);
+    }
+    finally {
       setBioSaving(false);
+    }
+  }
+
+  /* ── save avatar via PATCH ── */
+  async function saveAvatar(avatarFile) {
+    if (!avatarFile) return;
+    setAvatarError(null);
+    setAvatarSaving(true);
+    try {
+      const form = new FormData();
+      form.append("images", avatarFile);
+      const res = await fetch("/ad-users/avatar", {
+        method: "PATCH",
+        credentials: "include",
+        body: form,
+      });
+      if (!res.ok) throw new Error("Failed to update avatar");
+      const [fresh] = await Promise.all([
+        fetch(`/ad-users/${username}`, { credentials: "include" }).then(r => r.ok ? r.json() : null),
+        refreshAuth(),
+      ]);
+      if (fresh) setProfile(fresh);
+    } catch (err) {
+      setAvatarError(err.message);
+    } finally {
+      setAvatarSaving(false);
     }
   }
 
@@ -153,7 +198,7 @@ export default function ProfilePage() {
   return (
     <div className="pp-page">
       {/* Hollow Pacifico background */}
-      <div className="pp-bg-text" aria-hidden="true">Artsy Dublin</div>
+      <div className="pp-bg-text" aria-hidden="true">Artsy dublin</div>
 
       <Header />
 
@@ -166,6 +211,22 @@ export default function ProfilePage() {
               ? <img src={displayProfile.avatarUrl} alt="" className="pp-avatar" />
               : <div className="pp-avatar placeholder">{initials}</div>
             }
+            <button
+              className="pp-avatar-edit-btn"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarSaving}
+              title="Change profile photo"
+            >
+              {avatarSaving ? "…" : "✎"}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => { saveAvatar(e.target.files[0]); e.target.value = ""; }}
+            />
+            {avatarError && <p className="pp-avatar-error">{avatarError}</p>}
           </div>
 
           <h2 className="pp-name">{displayProfile?.userName}</h2>
@@ -184,6 +245,7 @@ export default function ProfilePage() {
                   autoFocus
                   maxLength={280}
                 />
+                {bioError && <p className="pp-avatar-error">{bioError}</p>}
                 <div className="pp-bio-actions">
                   <span className="pp-bio-counter">{bioInput.length}/280</span>
                   <button
@@ -258,7 +320,7 @@ export default function ProfilePage() {
               <div className="pp-empty">Post a review to record your journey!</div>
             ) : (
               <div className="pp-grid">
-                {attendedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {attendedEvents.map((e, i) => <EventCard key={`${e.eventId}-${i}`} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>
@@ -274,7 +336,7 @@ export default function ProfilePage() {
               <div className="pp-empty">No saved events yet.</div>
             ) : (
               <div className="pp-grid">
-                {savedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {savedEvents.map(e => <EventCard key={e.eventId} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>

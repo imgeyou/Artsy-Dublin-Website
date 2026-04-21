@@ -11,12 +11,13 @@ export default defineConfig({
     //   "/api": "https://2526-cs7025-group2.scss.tcd.ie/",
     // }
     proxy: {
-      "^/ad-": 
-      // {
-        // target: 
-        "https://2526-cs7025-group2.scss.tcd.ie/",
-        // changeOrigin: true,
-      // }
+      "^/ad-": "https://2526-cs7025-group2.scss.tcd.ie/",
+      "/socket.io": {
+        target: "https://2526-cs7025-group2.scss.tcd.ie",
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
 });
+

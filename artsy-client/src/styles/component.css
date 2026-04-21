@@ -749,7 +749,7 @@
     transition: all 0.2s ease;
 }
 
-.btn:hover {
+.btn:not(.btn-outline):hover {
     background-color: var(--color-brown);
     color: white;
 }
@@ -768,6 +768,11 @@
     background-color: transparent;
     border: 1px solid #5b3a29;
     color: #5b3a29;
+}
+
+.btn-outline:hover {
+    color: #5A3713;
+    background-color: transparent;
 }
 
 .slot-link {
