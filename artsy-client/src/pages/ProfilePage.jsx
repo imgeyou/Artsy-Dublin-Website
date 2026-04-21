@@ -60,6 +60,12 @@ export default function ProfilePage() {
   const [allGenres,      setAllGenres]      = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
 
+  // Editing interests
+  const [editingInterests, setEditingInterests] = useState(false)
+  const [interestsSaving, setInterestsSaving] = useState(false)
+  const [interestsError, setInterestsError] = useState(null)
+  const [pendingGenres, setPendingGenres] = useState([]) 
+
   // Bio state
   const [bio,        setBio]        = useState("");
   const [editingBio, setEditingBio] = useState(false);
@@ -132,6 +138,31 @@ export default function ProfilePage() {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [editingBio, bio]);
 
+  /* ── save interests via PATCH ── */
+  async function saveInterests() {
+    setInterestsError(null);
+    setInterestsSaving(true);
+    try {
+      const res = await fetch(`/ad-users/${userId}/interests`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interests: pendingGenres }),
+      });
+      if (res.ok) {
+        setSelectedGenres(pendingGenres);
+        setEditingInterests(false);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setInterestsError(err.message ?? "Failed to update interests");
+      }
+    } catch (err) {
+      setInterestsError(err.message);
+    } finally {
+      setInterestsSaving(false);
+    }
+  }
+
   /* ── save bio via PATCH ── */
   async function saveBio() {
     if (bioInput === bio) { setEditingBio(false); 
@@ -191,9 +222,12 @@ export default function ProfilePage() {
   const initials       = displayProfile?.userName?.[0]?.toUpperCase() ?? "?";
   const email          = firebaseUser?.email ?? "";
 
-  const genreLabels = selectedGenres
+  const selectedGenreLabels = selectedGenres
     .map(id => allGenres.find(x => (x.genreId ?? x.id) === id)?.name)
     .filter(Boolean);
+
+  const allGenreLabels = allGenres
+    .map(entry => entry.name)
 
   return (
     <div className="pp-page">
@@ -278,7 +312,7 @@ export default function ProfilePage() {
           {/* Stats */}
           <div className="pp-stats">
             <div><strong>{attendedEvents.length}</strong><span>Events</span></div>
-            <div><strong>{genreLabels.length}</strong><span>Interests</span></div>
+            <div><strong>{selectedGenreLabels.length}</strong><span>Interests</span></div>
             <div><strong>{savedEvents.length}</strong><span>Saved</span></div>
           </div>
         </div>
@@ -291,21 +325,67 @@ export default function ProfilePage() {
             index={0}
             number="01"
             title="My interests"
-            count={genreLabels.length > 0 ? `${genreLabels.length} genres` : null}
+            count={selectedGenreLabels.length > 0 ? `${selectedGenreLabels.length} genres` : null}
           >
+            <button
+              className="pp-avatar-edit-btn"
+              onClick={() => {setPendingGenres(selectedGenres); setEditingInterests(true);}}
+              disabled={interestsSaving}
+              title="Update interests"
+            >
+            {interestsSaving ? "…" : "✎"}
+            </button>
             <div className="pp-tags">
-              {genreLabels.length === 0
-                ? <p className="pp-empty-inline">No interests added yet.</p>
-                : genreLabels.map((g, i) => (
-                    <span
-                      key={i}
-                      className="pp-chip"
-                      style={{ animationDelay: `${i * 0.07}s` }}
+              {!editingInterests ? (
+                // if not editing interests; just render normally 
+                <>
+                  {selectedGenreLabels.length === 0
+                    ? <p className="pp-empty-inline">No interests added yet.</p>
+                    : selectedGenreLabels.map((g, i) => (
+                        <span key={i} className="pp-chip" style={{ animationDelay: `${i * 0.07}s` }}>
+                          {g}
+                        </span>
+                      ))
+                  }
+                </>
+              ) : (
+                // else; present all but nmark those that are selected
+                <>
+                  {allGenres.map((genre) => {
+                    const id = genre.genreId ?? genre.id;
+                    const isSelected = pendingGenres.includes(id);
+                    return (
+                      <span
+                        key={id}
+                        className={`pp-chip${isSelected ? " pp-chip--selected" : ""}`}
+                        onClick={() =>
+                          setPendingGenres(prev =>
+                            isSelected ? prev.filter(x => x !== id) : [...prev, id]
+                          )
+                        }
+                      >
+                        {genre.name}
+                      </span>
+                    );
+                  })}
+                  {interestsError && <p className="pp-avatar-error">{interestsError}</p>}
+                  <div className="pp-bio-actions">
+                    <button
+                      className="pp-bio-btn cancel"
+                      onClick={() => { setEditingInterests(false); setPendingGenres([]); }}
                     >
-                      {g}
-                    </span>
-                  ))
-              }
+                      Cancel
+                    </button>
+                    <button
+                      className="pp-bio-btn save"
+                      onClick={saveInterests}
+                      disabled={interestsSaving}
+                    >
+                      {interestsSaving ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </Section>
 

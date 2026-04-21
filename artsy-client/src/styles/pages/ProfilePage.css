@@ -418,6 +418,11 @@
   cursor: default;
   animation: chipSlide 0.45s ease both;
 }
+
+.pp-chip--selected {
+  background: var(--pp-accent-mid);
+}
+
 .pp-chip:nth-child(odd)  { transform: rotate(-0.8deg); }
 .pp-chip:nth-child(even) { transform: rotate( 0.8deg); }
 .pp-chip:hover {
