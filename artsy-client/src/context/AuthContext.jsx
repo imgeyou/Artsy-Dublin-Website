@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
   }, [refreshAuth]);
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, dbUser, refreshAuth }}>
+    <AuthContext.Provider value={{ firebaseUser, dbUser, refreshAuth, authLoading: firebaseUser === undefined }}>
       {children}
     </AuthContext.Provider>
   );
