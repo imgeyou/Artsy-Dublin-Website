@@ -14,7 +14,7 @@ import {
 import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 
 //import assets
-import defaultAvatar from "../../assets/images/avatar.jpeg";
+import defaultAvatar from "../../assets/images/logo.png";
 
 //import helper
 import PostImageRow from "./PostImageRow";
