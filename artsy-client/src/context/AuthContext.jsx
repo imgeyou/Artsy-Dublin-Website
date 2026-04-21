@@ -17,21 +17,16 @@ export function AuthProvider({ children }) {
       const res = await fetch(`/ad-auth/check-auth`, { credentials: "include" });
       if (res.ok) {
         const user = await res.json();
-        console.log("check-auth response:", user);
-        setFirebaseUser({
-          uid: user.uid,
-          email: user.email,
-        });
-        setDbUser({
-          userId: user.userId,
-          userName: user.userName,
-          avatarUrl: user.avatarUrl,
-        });
-        console.log("OK");
+        if (user.error) {
+          setFirebaseUser(null);
+          setDbUser(null);
+        } else {
+          setFirebaseUser({ uid: user.uid, email: user.email });
+          setDbUser({ userId: user.userId, userName: user.userName, avatarUrl: user.avatarUrl });
+        }
       } else {
         setFirebaseUser(null);
         setDbUser(null);
-        console.log("NOT OK");
       }
     } catch {
       setFirebaseUser(null);

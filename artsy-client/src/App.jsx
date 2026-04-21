@@ -26,6 +26,7 @@ import Chat from "./pages/Chat";
 import UserProfile from "./pages/UserProfile";
 import ProfilePage from "./pages/ProfilePage";
 import AllEventsPage from "./pages/AllEventsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 import './index.css'
 import './styles/component.css'
@@ -543,7 +544,7 @@ function App() {
         <Route path="/messages/:conversationId" element={<Chat />} />
         <Route path="/users/:username" element={<UserProfile />} />
         <Route path="/profile" element={<ProfilePage />} />
-
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

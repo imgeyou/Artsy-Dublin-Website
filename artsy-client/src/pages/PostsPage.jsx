@@ -13,6 +13,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import PostCard from "../components/posts/PostCard";
 import NoisyPostCard from "../components/posts/NoisyPostCard";
+import LoginPrompt from "../components/common/LoginPrompt";
 
 //import helper functions
 import { useAuth } from "../context/AuthContext";
@@ -35,15 +36,36 @@ function PostsPage() {
     const [sortBy, setSortBy] = useState("Newest");
     
     const [likedIds, setLikedIds] = useState([]);
-    const checkedIdsRef = useRef(new Set());//store ids have been checked like state
+    const [likeCounts, setLikeCounts] = useState({});
+    const checkedIdsRef = useRef(new Set());
 
+    const [loginPrompt, setLoginPrompt] = useState(null);
     const [visibleCount, setVisibleCount] = useState(10);
-    const PAGE_SIZE = 10;//default shown card num
+    const PAGE_SIZE = 10;
 
-    const { dbUser } = useAuth();//get login user info
+    const { dbUser } = useAuth();
     function requireAuth(message, action) {
         if (!dbUser) { setLoginPrompt(message); return; }
         action();
+    }
+
+    async function handleLike(postId) {
+        const wasLiked = likedIds.includes(postId);
+        // optimistic update
+        const baseCount = Number(posts.find((p) => p.postId === postId)?.likeCount ?? 0);
+        setLikedIds((prev) => wasLiked ? prev.filter((id) => id !== postId) : [...prev, postId]);
+        setLikeCounts((prev) => ({ ...prev, [postId]: Number(prev[postId] ?? baseCount) + (wasLiked ? -1 : 1) }));
+        try {
+            const res = await fetch(`/ad-posts/${postId}/like`, { method: "POST", credentials: "include" });
+            if (!res.ok) throw new Error();
+            const { liked } = await res.json();
+            // only sync the boolean — keep optimistic count, the server's count can be stale
+            setLikedIds((prev) => liked ? [...prev.filter((id) => id !== postId), postId] : prev.filter((id) => id !== postId));
+        } catch {
+            // revert both on failure
+            setLikedIds((prev) => wasLiked ? [...prev, postId] : prev.filter((id) => id !== postId));
+            setLikeCounts((prev) => ({ ...prev, [postId]: Number(prev[postId] ?? baseCount) + (wasLiked ? 1 : -1) }));
+        }
     }
 
     // ----------- set view mode
@@ -214,7 +236,13 @@ function PostsPage() {
                             <>
                                 <div className="posts-list">
                                     {visiblePosts.map((post) => (
-                                        <PostCard key={post.postId} post={post} liked={likedIds.includes(post.postId)} />
+                                        <PostCard
+                                            key={post.postId}
+                                            post={post}
+                                            liked={likedIds.includes(post.postId)}
+                                            likeCount={likeCounts[post.postId] ?? post.likeCount}
+                                            onLike={() => requireAuth("Log in to like this post", () => handleLike(post.postId))}
+                                        />
                                     ))}
                                 </div>
                                 {hasMore && (
@@ -266,6 +294,7 @@ function PostsPage() {
             </div>
 
             <Footer />
+            {loginPrompt && <LoginPrompt message={loginPrompt} onClose={() => setLoginPrompt(null)} />}
         </>
     );
 }

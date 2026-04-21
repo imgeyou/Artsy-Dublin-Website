@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
 import FilterBar from "../components/events/FilterBar";
 import mockEvents from "../mock/events";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { checkSaves } from "../utils/postHelpers";
 
 import "../index.css";
 import "../styles/component.css";
@@ -19,9 +21,12 @@ function getEventTypeLabel(eventTypeId) {
 }
 
 export default function AllEventsPage() {
+    const { dbUser } = useAuth();
     const [events, setEvents] = useState(mockEvents);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [savedEventIds, setSavedEventIds] = useState([]);
+    const saveCheckedRef = useRef(false);
 
     const [activeCategories, setActiveCategories] = useState([]);
     const [activeDate, setActiveDate] = useState("Upcoming");
@@ -90,6 +95,13 @@ export default function AllEventsPage() {
 
         loadEvents();
     }, []);
+
+    useEffect(() => {
+        if (!dbUser?.userId || loading || !events.length) return;
+        checkSaves(events.map((e) => e.eventId))
+            .then(setSavedEventIds)
+            .catch((err) => console.error("Failed to check saves:", err));
+    }, [events, dbUser?.userId, loading]);
 
     useEffect(() => {
         setVisibleCount(12);
@@ -330,7 +342,7 @@ export default function AllEventsPage() {
 
                             <div className="events_grid all-events-results-grid">
                                 {filteredEvents.slice(0, visibleCount).map((event) => (
-                                    <EventCard key={event.eventId ?? event.title} event={event} />
+                                    <EventCard key={event.eventId ?? event.title} event={event} savedInit={savedEventIds.includes(event.eventId)} />
                                 ))}
                             </div>
 

@@ -113,7 +113,8 @@ export default function Chat() {
     setInputText("");
   }
 
-  if (firebaseUser === undefined || firebaseUser === null) return <div className="chat-page"><p className="chat-hint">Loading…</p></div>;
+  if (firebaseUser === undefined) return <div className="chat-page"><p className="chat-hint">Loading…</p></div>;
+  if (firebaseUser === null) return null;
   if (error) return <div className="chat-page"><p className="chat-error-state">{error}</p></div>;
 
   return (

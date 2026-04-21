@@ -352,6 +352,7 @@ function PostDetailPage() {
                     comments={comments}
                     commentCount={post.commentCount}
                     currentUserId={dbUser?.userId}
+                    currentUserAvatar={dbUser?.avatarUrl}
                     onSubmit={handleCommentSubmit}
                     onAddReply={handleAddReply}
                     onLikeComment={handleLikeComment}

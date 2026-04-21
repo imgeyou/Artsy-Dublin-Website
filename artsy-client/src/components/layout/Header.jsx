@@ -106,7 +106,7 @@ function Header({ inputValue, setInputValue, onSearch }) {
                 <nav className="header__nav">
                     <AnimatedTextLink to="/events" text="ALL EVENTS" />
                     <AnimatedTextLink to="/posts" text="COMMUNITY" />
-                    <AnimatedTextLink to="/messages" text="MESSAGE" />
+                    <AnimatedTextLink to={dbUser !== null ? "/messages" : "/login"} text="MESSAGE" />
                     <AnimatedTextLink to="/team" text="TEAM" />
                 </nav>
 
