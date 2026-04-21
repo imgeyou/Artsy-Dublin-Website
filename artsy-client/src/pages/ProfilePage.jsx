@@ -48,7 +48,7 @@ function Section({ index, number, title, count, children }) {
 
 /* ───Main─── */
 export default function ProfilePage() {
-  const { dbUser, firebaseUser } = useAuth();
+  const { dbUser, firebaseUser, refreshAuth } = useAuth();
   const navigate = useNavigate();
 
   const [profile,        setProfile]        = useState(null);
@@ -64,6 +64,11 @@ export default function ProfilePage() {
   const [bioInput,   setBioInput]   = useState("");
   const [bioSaving,  setBioSaving]  = useState(false);
   const bioRef = useRef(null);
+
+  // Avatar state
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [avatarError,  setAvatarError]  = useState(null);
+  const avatarInputRef = useRef(null);
 
   const username = dbUser?.userName;
   const userId = dbUser?.userId;
@@ -136,6 +141,32 @@ export default function ProfilePage() {
     }
   }
 
+  /* ── save avatar via PATCH ── */
+  async function saveAvatar(avatarFile) {
+    if (!avatarFile) return;
+    setAvatarError(null);
+    setAvatarSaving(true);
+    try {
+      const form = new FormData();
+      form.append("images", avatarFile);
+      const res = await fetch("/ad-users/avatar", {
+        method: "PATCH",
+        credentials: "include",
+        body: form,
+      });
+      if (!res.ok) throw new Error("Failed to update avatar");
+      const [fresh] = await Promise.all([
+        fetch(`/ad-users/${username}`, { credentials: "include" }).then(r => r.ok ? r.json() : null),
+        refreshAuth(),
+      ]);
+      if (fresh) setProfile(fresh);
+    } catch (err) {
+      setAvatarError(err.message);
+    } finally {
+      setAvatarSaving(false);
+    }
+  }
+
   /* ── redirect if not logged in ── */
   if (!dbUser && !loading) { navigate("/login"); return null; }
 
@@ -163,6 +194,22 @@ export default function ProfilePage() {
               ? <img src={displayProfile.avatarUrl} alt="" className="pp-avatar" />
               : <div className="pp-avatar placeholder">{initials}</div>
             }
+            <button
+              className="pp-avatar-edit-btn"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={avatarSaving}
+              title="Change profile photo"
+            >
+              {avatarSaving ? "…" : "✎"}
+            </button>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={e => { saveAvatar(e.target.files[0]); e.target.value = ""; }}
+            />
+            {avatarError && <p className="pp-avatar-error">{avatarError}</p>}
           </div>
 
           <h2 className="pp-name">{displayProfile?.userName}</h2>
@@ -255,7 +302,7 @@ export default function ProfilePage() {
               <div className="pp-empty">Post a review to record your journey!</div>
             ) : (
               <div className="pp-grid">
-                {attendedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {attendedEvents.map((e, i) => <EventCard key={`${e.eventId}-${i}`} event={e} />)}
               </div>
             )}
           </Section>
