@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
+import { checkSaves } from "../utils/postHelpers";
 import "../styles/pages/ProfilePage.css";
 
 function SkeletonGrid() {
@@ -52,6 +53,7 @@ export default function UserProfile() {
 
   const [profile,        setProfile]        = useState(null);
   const [attendedEvents, setAttendedEvents] = useState([]);
+  const [savedEventIds,  setSavedEventIds]  = useState([]);
   const [allGenres,      setAllGenres]      = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [loading,        setLoading]        = useState(true);
@@ -73,7 +75,10 @@ export default function UserProfile() {
           fetch(`/ad-posts/user/${data.userId}`,          { credentials: "include" }),
           fetch(`/ad-users/${data.userId}/userinterests`, { credentials: "include" }),
         ]);
-        if (a.ok) setAttendedEvents(await a.json());
+        const attended = a.ok ? await a.json() : [];
+        setAttendedEvents(attended);
+        const checkedIds = await checkSaves(attended.map(e => e.eventId).filter(Boolean));
+        setSavedEventIds(checkedIds);
         if (i.ok) {
           const interests = await i.json();
           setSelectedGenres(interests.map(g => g.genreId));
@@ -226,7 +231,7 @@ export default function UserProfile() {
               <div className="pp-empty">No events attended yet.</div>
             ) : (
               <div className="pp-grid">
-                {attendedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {attendedEvents.map(e => <EventCard key={e.eventId} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>

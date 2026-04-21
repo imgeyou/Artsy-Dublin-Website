@@ -4,6 +4,7 @@ import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import EventCard from "../components/events/EventCard";
 import { useAuth } from "../context/AuthContext";
+import { checkSaves } from "../utils/postHelpers";
 import "../styles/pages/ProfilePage.css";
 
 /* ─── placeholder grid ─── */
@@ -54,6 +55,7 @@ export default function ProfilePage() {
   const [profile,        setProfile]        = useState(null);
   const [attendedEvents, setAttendedEvents] = useState([]);
   const [savedEvents,    setSavedEvents]    = useState([]);
+  const [savedEventIds,  setSavedEventIds]  = useState([]);
   const [loading,        setLoading]        = useState(true);
   const [allGenres,      setAllGenres]      = useState([]);
   const [selectedGenres, setSelectedGenres] = useState([]);
@@ -92,8 +94,13 @@ export default function ProfilePage() {
           setBio(data?.bio ?? "");
           setBioInput(data?.bio ?? "");
         }
-        if (a.ok) setAttendedEvents(await a.json());
-        if (s.ok) setSavedEvents(await s.json());
+        const attended = a.ok ? await a.json() : [];
+        const saved    = s.ok ? await s.json() : [];
+        setAttendedEvents(attended);
+        setSavedEvents(saved);
+        const allIds = [...attended, ...saved].map(e => e.eventId).filter(Boolean);
+        const checkedIds = await checkSaves(allIds);
+        setSavedEventIds(checkedIds);
         if (i.ok) {
           const interests = await i.json();
           setSelectedGenres(interests.map(g => g.genreId));
@@ -313,7 +320,7 @@ export default function ProfilePage() {
               <div className="pp-empty">Post a review to record your journey!</div>
             ) : (
               <div className="pp-grid">
-                {attendedEvents.map((e, i) => <EventCard key={`${e.eventId}-${i}`} event={e} />)}
+                {attendedEvents.map((e, i) => <EventCard key={`${e.eventId}-${i}`} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>
@@ -329,7 +336,7 @@ export default function ProfilePage() {
               <div className="pp-empty">No saved events yet.</div>
             ) : (
               <div className="pp-grid">
-                {savedEvents.map(e => <EventCard key={e.eventId} event={e} />)}
+                {savedEvents.map(e => <EventCard key={e.eventId} event={e} savedInit={savedEventIds.includes(e.eventId)} />)}
               </div>
             )}
           </Section>
