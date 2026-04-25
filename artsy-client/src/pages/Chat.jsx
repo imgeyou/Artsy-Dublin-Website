@@ -106,7 +106,7 @@ export default function Chat() {
   useEffect(() => {
     if (!firebaseUser) return;
     socket.on("connect", () => console.log("socket connected:", socket.id));
-    socket.on("connect_error", (err) => console.log("socket connect_error:", err.message));
+    socket.on("connect_error", (err) => console.log("socket connect_error_ud:", err.message));
     socket.on("disconnect", (reason) => console.log("socket disconnected:", reason));
     if (!socket.connected) socket.connect();
     return () => {
