@@ -22,7 +22,7 @@
 
 import { io } from "socket.io-client";
 
-const socket = io("https://2526-cs7025-group2.scss.tcd.ie", {
+const socket = io("/", {
   withCredentials: true,
   autoConnect: false,
   transports: ["polling"],
