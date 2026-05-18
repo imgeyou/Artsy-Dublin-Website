@@ -11,8 +11,8 @@ const registerSocketHandlers = require('./sockets/messaging');
 
 const app = express();
 const server = http.createServer(app); // for socket
-const hostname = 'localhost';
-const port = 3005;
+// Use PORT provided in environment or default to 3000
+const port = process.env.RAILWAY_PUBLIC_DOMAIN || 3000;
 
 // Use Morgan for logging HTTP requests
 app.use(morgan('dev'));
@@ -84,7 +84,7 @@ const io = new Server(server, {
 registerSocketHandlers(io);  
 
 // Start the server
-server.listen(port, hostname, () => {
+server.listen(port, "0.0.0.0", () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
