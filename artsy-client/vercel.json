@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/socket.io/:path*",
-      "destination": "https://artsy-dublin-website.up.railway.app/socket.io/:path*"
-    },
-    {
       "source": "/(ad-.*)",
       "destination": "https://artsy-dublin-website.up.railway.app/$1"
     },

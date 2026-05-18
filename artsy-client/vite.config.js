@@ -12,11 +12,6 @@ export default defineConfig({
     // }
     proxy: {
       "^/ad-": "https://artsy-dublin-website.up.railway.app/",
-      "/socket.io": {
-        target: "https://artsy-dublin-website.up.railway.app",
-        ws: true,
-        changeOrigin: true,
-      },
     },
   },
 });
