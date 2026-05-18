@@ -5,7 +5,6 @@
 
 const messagesModel = require("../models/messages");
 const MAX_MESSAGE_LENGTH = 2000;
-
 // 1. Start or reopen conversation with another user
 async function startConversation(req, res) {
   try {
@@ -22,10 +21,12 @@ async function startConversation(req, res) {
      return res.status(400).json({  error: "You cannot message yourself..." }) ;
    }
 
-   const conversationId =  await messagesModel.findOrCreateConversation(
+   let conversationId =  await messagesModel.findOrCreateConversation(
      currentUser.userId,
      targetUserId,
    );
+
+   conversationId = Number(conversationId);
 
    res.json({ conversationId }) ;
   } catch  (err) {
@@ -42,12 +43,13 @@ async function getInbox(req, res) {
    if (!currentUser)  return;
 
    const conversations =  await messagesModel.getConversationsForUser(currentUser.userId);
-   res.json(conversations);
-  } catch (err)  {
-   console.error ("getInbox Error:", err);
-   res.status(500).json({ error: "Internal server error" });
-  }
 
+   res.json(conversations);
+  } 
+  catch (err)  {
+   console.error ("getInbox Error:", err);
+   res.status(500).json({ error: err });
+  }
 }
 
 // 3.Open a conversation- returns all messages and marks them read
@@ -119,4 +121,8 @@ async function resolveDbUser(req, res) {
 
 
 
-module.exports = { startConversation, getInbox, getConversation, deleteConversation } ;
+module.exports = { 
+  startConversation, 
+  getInbox, getConversation, 
+  deleteConversation 
+} ;

@@ -1,6 +1,4 @@
 // this is the controller for posts related stuff
-// TODO: userId replaced with req.session.userId (after we set up the user log-in function)
-
 
 //import models
 const postsModel = require("../models/posts.js");
@@ -17,7 +15,7 @@ class postsController{
             res.json(allPosts);
         } catch (err) {
             console.error(err); 
-            res.status(500).json({ error: 'Server error' });
+            res.status(500).json({ error: err });
         }
     }
 
@@ -30,7 +28,7 @@ class postsController{
             res.json(allPosts);
         } catch (err) {
             console.error(err); 
-            res.status(500).json({ error: 'Server error' });
+            res.status(500).json({ error: err });
         }
     }
 
@@ -43,7 +41,7 @@ class postsController{
             res.json(allPosts);
         } catch (err) {
             console.error(err); 
-            res.status(500).json({ error: 'Server error' });
+            res.status(500).json({ error: err });
         }
     }
 
@@ -55,9 +53,13 @@ class postsController{
         } catch (err) {
             if (err.message === 'Post-not-found') {
                 res.status(404).json({ error: 'Post not found' });
+            } else if (err.message === 'Post-is-deleted') {
+                res.status(410).json({ error: 'Post has been deleted' });
+            } else if (err.message === 'Post-is-comment') {
+                res.status(400).json({ error: 'The requested ID belongs to a comment, not a post' });
             } else {
                 console.error(err);
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }
@@ -65,12 +67,62 @@ class postsController{
     //A5. get attendance status (run when an event page is loaded and a user is logged-in)
     async getAttendanceStatus(req, res){
         try {
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId;
             const attendanceStatus = await postsModel.getAttendanceStatus(userId, req.params.eventId);
             res.json(attendanceStatus); // null if not attended, otherwise return {eventAttendId, rating}
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Server error' });
+            res.status(500).json({ error: err });
+        }
+    }
+
+    //A6. check which visible posts the logged-in user has liked
+    async checkLikeStatusByPostId(req, res){
+        try {
+            const userId = req.user.userId;
+            const postIds = req.query.postIds.split(',').map(id => id.trim());
+            const likedPostIds = await postsModel.checkLikeStatus(postIds, userId);
+            res.json(likedPostIds);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err });
+        }
+    }
+
+    //A7. check which events in a given list the logged-in user has saved
+    async checkSaveStatus(req, res){
+        try {
+            const userId = req.user.userId;
+            const eventIds = req.query.eventIds.split(',').map(id => id.trim());
+            const savedEventIds = await postsModel.checkSaveStatus(eventIds, userId);
+            res.json(savedEventIds);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err });
+        }
+    }
+
+    //A8. get all saved events for a user
+    async getSavedEventsByUser(req, res){
+        try {
+            const userId = req.params.userId;
+            const savedEvents = await postsModel.getSavedEventsByUser(userId);
+            res.json(savedEvents);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err });
+        }
+    }
+
+    //A9. get all attended events for a user
+    async getAttendedEventsByUser(req, res){
+        try {
+            const userId = req.params.userId;
+            const attendedEvents = await postsModel.getAttendedEventsByUser(userId);
+            res.json(attendedEvents);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err });
         }
     }
 
@@ -80,18 +132,18 @@ class postsController{
         try {
             const eventId = req.params.eventId;
             const { attendedAt } = req.body;
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId; 
 
             const eventAttendId = await postsModel.logEvent(userId, eventId, attendedAt);
 
-            res.status(201).json({ eventAttendId }); //return id for frontend to use in next steps
+            res.status(201).json({ eventAttendId: Number(eventAttendId) }); //return id for frontend to use in next steps
 
         } catch (err) {
             if (err.message === 'already-attended') {
                 res.status(409).json({ error: 'Already attended' });
             } else {
                 console.error(err);
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }
@@ -100,11 +152,11 @@ class postsController{
     async createPost(req, res){
         try {
             const eventAttendedId = req.params.eventAttendedId;
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId; 
             const { content, eventId } = req.body;
             const imageUrls = await processUploadedImages(req.files);
             const postId = await postsModel.createPost(userId, eventAttendedId, eventId, content, imageUrls);
-            res.status(201).json({ postId });
+            res.status(201).json({ postId: Number(postId) });
         } catch (err) { //informative error msgs on image upload
      if (err.message.includes('Maximum amount of images') ||
         err.message.includes('invalid image format') ||
@@ -112,7 +164,7 @@ class postsController{
         return res.status(400).json({ error: err.message });
     }
     console.error(err);
-    res.status(500).json({ error:'Server error' });
+    res.status(500).json({ error:err });
         }
     }
 
@@ -120,11 +172,12 @@ class postsController{
     async createComment(req, res){
         try {
             const postParentId = req.params.parentPostId;
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId;
             const { content } = req.body;
             const imageUrls = await processUploadedImages(req.files);
             const postId = await postsModel.createComment(userId, postParentId, content, imageUrls);
-            res.status(201).json({ postId });
+            res.status(201).json({ postId: Number(postId) });
+            
        } catch (err) { //informative error msgs on image upload
      if (err.message.includes('Maximum amount of images') ||
         err.message.includes('invalid image format') ||
@@ -132,21 +185,35 @@ class postsController{
         return res.status(400).json({ error: err.message });
     }
     console.error(err);
-    res.status(500).json({ error:'Server error' });
+    res.status(500).json({ error:err });
        }
     }
+
 
     //B4. Toggle like/unlike a post
     async likeToggle(req, res){
         try {
-            const userId = 1; // TODO: replace with req.session.userId
-            const { liked, likeCount } = await postsModel.likeToggle(req.params.postId, userId);
-            res.json({ liked, likeCount });
+            const userId = req.user.userId; 
+            const liked = await postsModel.likeToggle(req.params.postId, userId);
+            res.json({ liked }); // true = liked, false = unliked
         } catch (err) {
             console.error(err);
-            res.status(500).json({ error: 'Server error' });
+            res.status(500).json({ error: err });
         }
     }
+
+    //B5. Toggle save/unsave an event
+    async saveToggle(req, res){
+        try {
+            const userId = req.user.userId; 
+            const saved = await postsModel.saveToggle(req.params.eventId, userId);
+            res.json({ saved }); // true = saved, false = unsaved
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: err });
+        }
+    }
+
 
 //C. patch methods
     //C1. update rating on an existing eventattended entry - need to get eventAttendId before
@@ -160,7 +227,7 @@ class postsController{
             if (err.message === 'record-not-found') {
                 res.status(404).json({ error: 'Attendance record not found' });
             } else {
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }
@@ -168,7 +235,7 @@ class postsController{
     //C2. edit post content
     async editPost(req, res){
         try {
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId;
             const { content } = req.body;
             await postsModel.editPost(req.params.postId, userId, content);
             res.json({ message: 'Post updated' });
@@ -179,7 +246,7 @@ class postsController{
                 res.status(403).json({ error: 'You can only edit your own posts' });
             } else {
                 console.error(err);
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }
@@ -187,7 +254,7 @@ class postsController{
     //D1. soft-delete a post or comment (and its nested comments)
     async deletePost(req, res){
         try {
-            const userId = 1; // TODO: replace with req.session.userId
+            const userId = req.user.userId;
             await postsModel.deletePost(req.params.postId, userId);
             res.json({ message: 'Post deleted' });
         } catch (err) {
@@ -197,7 +264,7 @@ class postsController{
                 res.status(403).json({ error: 'You can only delete your own posts' });
             } else {
                 console.error(err);
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }
@@ -211,7 +278,7 @@ class postsController{
             if (err.message === 'record-not-found') {
                 res.status(404).json({ error: 'Attendance record not found' });
             } else {
-                res.status(500).json({ error: 'Server error' });
+                res.status(500).json({ error: err });
             }
         }
     }

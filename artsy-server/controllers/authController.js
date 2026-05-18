@@ -70,13 +70,15 @@ class authController {
     //read cookie
     const sessionCookie = req.cookies.session;
     //check if exists
-    if (!sessionCookie) return res.status(401).json({ error: "No session" });
+    if (!sessionCookie) {
+      return res.json({ error: "No session" });}
 
     //asks Firebase to verify it's valid and not expired
     try {
       const decoded = await admin
         .auth()
         .verifySessionCookie(sessionCookie, true);
+      //res.json({sessionCookie});
 
       //get user information in the database through FirebaseUid
       const user = await usersModel.getUserByFirebaseUid(decoded.uid);
@@ -89,6 +91,29 @@ class authController {
         avatarUrl: user.avatarUrl,
       });
     } catch {
+      res.status(401).json({ error: "Invalid session" });
+    }
+  }
+
+  async authenticate(req, res, next) {
+    const sessionCookie = req.cookies.session;
+    if (!sessionCookie) return res.json("No session");
+    
+    try {
+      const decoded = await admin
+        .auth()
+        .verifySessionCookie(sessionCookie, true);
+      //get user information in the database through FirebaseUid
+      const user = await usersModel.getUserByFirebaseUid(decoded.uid);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      req.user={
+        uid: decoded.uid,
+        email: decoded.email,
+        ...user
+      }
+      next();
+    } catch(error) {
+      console.error(error.code, error.message);
       res.status(401).json({ error: "Invalid session" });
     }
   }

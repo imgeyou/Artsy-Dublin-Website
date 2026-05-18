@@ -2,7 +2,7 @@
 // TODO: const userId = req.session?.userId
 
 const model = require("../models/events");
-const postsModel = require("../models/posts");
+// const postsModel = require("../models/posts");
 
 // these also have to be async functions because we need to await the return from mysql!
 // which in turn awaits the call from the api (model side)
@@ -46,6 +46,14 @@ async function getEventsByGenre(req, res) {
     res.json(results); 
 }
 
+async function getPersonalizedEvents(req, res) {
+    const userid = req.params.userid;
+    let results = await model.getPersonalizedEvents(userid);
+    // if (!results || results.length==0)
+    //     results = await model.get();
+    res.json(results); 
+}
+
 async function getEventById (req, res) {
     const id = req.params.eventid;
     const eventDetail = await model.getEventById(id);
@@ -53,12 +61,12 @@ async function getEventById (req, res) {
 
     const eventRepeats = await model.getEventRepeatsById(id);
 
-    const userId = 1; // TODO: const userId = req.session?.userId
-    const attendance = userId
-        ? await postsModel.getAttendanceStatus(userId, id)
-        : null;
+    // const userId = 1; // TODO: const userId = req.session?.userId
+    // const attendance = userId
+    //     ? await postsModel.getAttendanceStatus(userId, id)
+    //     : null;
 
-    res.json({ ...eventDetail, eventRepeats, attendance }); // attendance: null if not logged in / not attended, otherwise { eventAttendId, rating }
+    res.json({ ...eventDetail, eventRepeats /*, attendance */ }); // attendance: null if not logged in / not attended, otherwise { eventAttendId, rating }
 }
 
 module.exports = {
@@ -66,5 +74,6 @@ module.exports = {
     updateByType,
     getEventById,
     getEventsByType,
-    getEventsByGenre
+    getEventsByGenre,
+    getPersonalizedEvents
 };

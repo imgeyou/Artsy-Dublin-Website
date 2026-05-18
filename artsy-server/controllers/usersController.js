@@ -5,17 +5,22 @@
 //C. get user by username
 //D. get user Attended Events
 //E. get user Stats: metrics of their interactions
-//F. get user Journal, with different sorted options: newest/oldest/highest/lowest
+//F. get top user reviewers
+//G. get user Journal, with different sorted options: newest/oldest/highest/lowest
+//H. edit user bio
+//I. get user interests
+//J. edit user avatar
 
-
-const usersModel = require("../models/users");
-const { admin } = require("../utils/firebaseAdmin");
+const usersModel = require("../models/users.js");
+const { admin } = require("../utils/firebaseAdmin.js");
+const { processUploadedImages } = require("./imagesController");
 
 class userController {
   //A. create a new user/register
   async createUser(req, res) {
     try {
-      const { userName, idToken, bio, gender, interests } = req.body;
+      // const { userName, idToken, bio, gender, interests } = req.body;
+      const { idToken, userName, gender, birthday, interests } = req.body;
 
       if (!userName || !idToken) {
         return res.status(400).send("userName and idToken are required");
@@ -27,9 +32,22 @@ class userController {
       const authEmail = decoded.email;
 
       //get avatar url
-      const avatarUrl = req.file
-        ? `${req.protocol}://${req.get("host")}/uploads/avatars/${req.file.filename}`
-        : null;
+      let avatarUrl = await processUploadedImages(req.files);
+      // if (req.files && req.files.avatar) {
+      //   const path = require('path');
+      //   const fs = require('fs');
+      //   const avatar = req.files.avatar;
+      //   const uploadDir = path.join(__dirname, "..", "public", "uploads", "avatars");
+      //   if (!fs.existsSync(uploadDir)) {
+      //     fs.mkdirSync(uploadDir, { recursive: true });
+      //   }
+      //   const fileName = `avatar-${Date.now()}${path.extname(avatar.name)}`;
+      //   const savePath = path.join(uploadDir, fileName);
+      //   await avatar.mv(savePath);
+      //   avatarUrl = `http://localhost:3005/ad-uploads/avatars/${fileName}`;
+
+      // }
+
 
       //get interest array
       const interestsArray = interests
@@ -44,14 +62,15 @@ class userController {
         avatarUrl,
         authEmail,
         firebaseUid,
-        bio,
+        // bio,
         gender,
         interestsArray,
+
       );
 
       res
         .status(201)
-        .json({ message: "User registered successfully", userId, avatarUrl });
+        .json({ message: "User registered successfully", userId: Number(userId), avatarUrl });
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
         if (error.sqlMessage.includes("userName")) {
@@ -63,7 +82,7 @@ class userController {
         return res.status(400).send("User already exists");
       }
       console.error("Register Error:", error);
-      res.status(500).send("Internal Server Error");
+      res.status(500).send(error.message || error.toString());
     }
   }
 
@@ -117,55 +136,6 @@ class userController {
     }
   }
 
-  // H. Get user interests
-  async getUserInterests(req, res) {
-    try {
-      const interests = await usersModel.getUserInterests(req.params.username);
-      res.json(interests);
-    } catch (error) {
-      console.error("getUserInterests Error:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  }
-
-  // I. Update user interests (requires session auth)
-  async updateUserInterests(req, res) {
-    const sessionCookie = req.cookies?.session;
-    if (!sessionCookie) return res.status(401).json({ error: "No session" });
-    try {
-      const decoded = await admin.auth().verifySessionCookie(sessionCookie, true);
-      const user = await usersModel.getUserByFirebaseUid(decoded.uid);
-      if (!user) return res.status(404).json({ error: "User not found" });
-      if (user.userName !== req.params.username)
-        return res.status(403).json({ error: "Forbidden" });
-      const { genreIds } = req.body;
-      await usersModel.updateUserInterests(user.userId, Array.isArray(genreIds) ? genreIds : []);
-      res.json({ message: "Interests updated" });
-    } catch (error) {
-      console.error("updateUserInterests Error:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  }
-
-  // J. Update user bio (requires session auth)
-  async updateUserBio(req, res) {
-    const sessionCookie = req.cookies?.session;
-    if (!sessionCookie) return res.status(401).json({ error: "No session" });
-    try {
-      const decoded = await admin.auth().verifySessionCookie(sessionCookie, true);
-      const user = await usersModel.getUserByFirebaseUid(decoded.uid);
-      if (!user) return res.status(404).json({ error: "User not found" });
-      if (user.userName !== req.params.username)
-        return res.status(403).json({ error: "Forbidden" });
-      const { bio } = req.body;
-      await usersModel.updateUserBio(user.userId, bio ?? null);
-      res.json({ message: "Bio updated" });
-    } catch (error) {
-      console.error("updateUserBio Error:", error);
-      res.status(500).send("Internal Server Error");
-    }
-  }
-
   // G. Journal Entries
   async getUserJournal(req, res) {
     try {
@@ -180,6 +150,74 @@ class userController {
       res.status(500).send("Internal Server Error");
     }
   }
-}
 
+
+  //H. edit user bio
+  async editUserBio(req, res) {
+    try {
+      const username = req.params.username;
+      const { bio } = req.body;
+      const updatedAt = new Date().toISOString().slice(0, 19).replace("T", " ");
+      await usersModel.editUserBio(username, bio, updatedAt);
+      res.json({ message: 'Bio updated' });
+    } catch (err) {
+      if (err.message === 'User-not-found') {
+        res.status(404).json({ error: 'User not found' });
+      } else {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    }
+  }
+
+  // edit user interests
+  async editUserInterests(req, res) {
+    try {
+      const username = req.params.username;
+      const { interests } = req.body;
+      const updatedAt = new Date().toISOString().slice(0, 19).replace("T", " ");
+      await usersModel.editUserInterests(username, interests, updatedAt);
+      res.json({ message: 'Interests updated' });
+    } catch (err) {
+      if (err.message === 'User-not-found') {
+        res.status(404).json({ error: 'User not found' });
+      } else {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+    }
+  }
+
+  //I. get user interests
+  async getUserInterests(req, res) {
+    try {
+      const Interests = await usersModel.getUserInterests(req.params.userId);
+      res.json(Interests);
+    } catch (err) {
+      console.error("getUserInterests Error: ", err);
+      res.status(500).send("Internal Server Error");
+    }
+  }
+
+  //J. edit user avatar
+  async editUserAvatar(req, res) {
+    try {
+      if (!req.files || !req.files.images) {
+        return res.status(400).json({ error: 'No avatar file provided' });
+      }
+      const avatarUrl = await processUploadedImages({ images: req.files.images });
+      if (!avatarUrl.length) return res.status(400).json({ error: 'Image processing failed' });
+      const fullAvatarUrl = `https://2526-cs7025-group2.scss.tcd.ie/${avatarUrl[0]}`;
+      await usersModel.editUserAvatar(req.user.userName, fullAvatarUrl);
+      res.json({ message: 'Avatar updated', fullAvatarUrl });
+    } catch (err) {
+      if (err.message === 'User-not-found') {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      console.error('editUserAvatar Error:', err);
+      res.status(500).json({ error: err.message || 'Internal Server Error' });
+    }
+  }
+
+}
 module.exports = new userController();
