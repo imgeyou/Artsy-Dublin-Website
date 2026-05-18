@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/(ad-.*)",
-      "destination": "https://2526-cs7025-group2.scss.tcd.ie/$1"
+      "destination": "https://artsy-dublin-website.up.railway.app/$1"
     },
     {
       "source": "/(.*)",
