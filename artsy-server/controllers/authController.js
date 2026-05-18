@@ -7,9 +7,10 @@
 
 //NOTE: after deployment, need to add a key to env - see getCsrfToken() comment
 
-const crypto = require('crypto');//for generating random CsrfToken
+const crypto = require('crypto');
 const { admin } = require("../utils/firebaseAdmin");
 const usersModel = require("../models/users");
+const { createSocketToken } = require("../utils/socketToken");
 
 class authController {
   //A. randomly generate session token for each login session
@@ -89,6 +90,7 @@ class authController {
         userId: user.userId,
         userName: user.userName,
         avatarUrl: user.avatarUrl,
+        socketToken: createSocketToken(user.userId),
       });
     } catch {
       res.status(401).json({ error: "Invalid session" });

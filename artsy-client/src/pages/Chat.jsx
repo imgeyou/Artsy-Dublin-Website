@@ -14,7 +14,7 @@ import "../styles/pages/messaging.css";
 export default function Chat() {
   const { conversationId } = useParams();
   const convId = parseInt(conversationId, 10);
-  const { dbUser, firebaseUser } = useAuth();
+  const { dbUser, firebaseUser, socketToken } = useAuth();
   const navigate = useNavigate();
 
   const [messages, setMessages] = useState([]);
@@ -102,9 +102,10 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Connect socket once user is authenticated
+  // Connect socket once user is authenticated and we have the signed token
   useEffect(() => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !socketToken) return;
+    socket.auth = { token: socketToken };
     socket.on("connect", () => console.log("socket connected:", socket.id));
     socket.on("connect_error", (err) => console.log("socket connect_error_ud:", err.message));
     socket.on("disconnect", (reason) => console.log("socket disconnected:", reason));
@@ -114,7 +115,7 @@ export default function Chat() {
       socket.off("connect_error");
       socket.off("disconnect");
     };
-  }, [firebaseUser]);
+  }, [firebaseUser, socketToken]);
 
   function handleSend(e) {
     e.preventDefault();
