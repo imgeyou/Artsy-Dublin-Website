@@ -6,7 +6,10 @@
 //D. get user info by firebaseUid (used by checkAuth)
 //E. get user Attended Events
 //F. get user Stats: metrics of their interactions
-//G. get user Journal, with different sorted options: newest/oldest/highest/lowest
+//G. get top reviewers
+//H. get user Journal, with different sorted options: newest/oldest/highest/lowest
+//I. edit user bio
+//J. get user interests
 
 const mysql2 = require("mysql2");
 const dbconfig = require("../utils/dbconfig");
@@ -19,7 +22,7 @@ class usersModel {
     avatarUrl,
     email,
     firebaseUid,
-    bio,
+    //bio,
     gender,
     interestsArray,
   ) {
@@ -34,12 +37,13 @@ class usersModel {
       // Step 1: Insert user
       const createdAt = new Date().toISOString().slice(0, 19).replace("T", " ");
       const QUERY = `INSERT INTO users (userName, avatarUrl, email, firebaseUid, bio, gender, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      const fullAvatarUrl = `https://2526-cs7025-group2.scss.tcd.ie/${avatarUrl}`;
       const [result] = await connection.query(QUERY, [
         userName,
-        avatarUrl || null,
+        fullAvatarUrl || null,
         email,
         firebaseUid,
-        bio || null,
+        /*bio ||*/ null,
         gender || null,
         createdAt,
       ]);
@@ -55,10 +59,11 @@ class usersModel {
 
         const validIds = validGenres.map((g) => g.genreId);
         if (validIds.length > 0) {
-          const values = validIds.map((genreId) => [userId, genreId]);
+          const placeholders = validIds.map(() => '(?,?)').join(',');
+          const flatValues = validIds.flatMap((genreId) => [userId, genreId]);
           await connection.query(
-            `INSERT INTO userInterests (userId, genreId) VALUES ?`,
-            [values],
+            `INSERT INTO userinterests (userId, genreId) VALUES ${placeholders}`,
+            flatValues,
           );
         }
       }
@@ -78,7 +83,7 @@ class usersModel {
   async getUserByName(userName) {
     try {
       const [results] = await pool.query(
-        `SELECT userId, userName, avatarUrl, bio, location, gender, createdAt 
+        `SELECT userId, userName, avatarUrl, bio, location, gender, createdAt
          FROM users WHERE userName = ?`,
         [userName],
       );
@@ -140,7 +145,7 @@ class usersModel {
   async getUserStats(userName) {
     try {
       const [results] = await pool.query(
-        `SELECT 
+        `SELECT
            COUNT(*) as eventsAttended,
            COUNT(rating) as totalReviews,
            ROUND(AVG(rating), 1) as averageRating
@@ -149,14 +154,19 @@ class usersModel {
          WHERE u.userName = ? AND ea.isDeleted = 0`,
         [userName],
       );
-      return results[0];
+      const result = results[0];
+      return {
+        eventsAttended: Number(result.eventsAttended),
+        totalReviews: Number(result.totalReviews),
+        averageRating: result.averageRating ? Number(result.averageRating) : null,
+      };
     } catch (err) {
       console.error("getUserStats Error: ", err);
       throw err;
     }
   }
 
-  // G. get top reviewers
+   // G. get top reviewers
   async getTopReviewers(limit = 5) {
     try {
       const [results] = await pool.query(
@@ -170,64 +180,6 @@ class usersModel {
       return results;
     } catch (err) {
       console.error("getTopReviewers Error: ", err);
-      throw err;
-    }
-  }
-
-  // I. get user interests (genres)
-  async getUserInterests(userName) {
-    try {
-      const [results] = await pool.query(
-        `SELECT g.genreId, g.name, g.eventTypeId
-         FROM userInterests ui
-         JOIN genres g ON ui.genreId = g.genreId
-         JOIN users u ON ui.userId = u.userId
-         WHERE u.userName = ?`,
-        [userName],
-      );
-      return results;
-    } catch (err) {
-      console.error("getUserInterests Error: ", err);
-      throw err;
-    }
-  }
-
-  // J. replace user interests
-  async updateUserInterests(userId, genreIds) {
-    const connection = await pool.getConnection();
-    try {
-      await connection.beginTransaction();
-      await connection.query(`DELETE FROM userInterests WHERE userId = ?`, [userId]);
-      if (genreIds && genreIds.length > 0) {
-        const [validGenres] = await connection.query(
-          `SELECT genreId FROM genres WHERE genreId IN (?)`,
-          [genreIds],
-        );
-        const validIds = validGenres.map((g) => g.genreId);
-        if (validIds.length > 0) {
-          const values = validIds.map((genreId) => [userId, genreId]);
-          await connection.query(
-            `INSERT INTO userInterests (userId, genreId) VALUES ?`,
-            [values],
-          );
-        }
-      }
-      await connection.commit();
-    } catch (err) {
-      await connection.rollback();
-      console.error("updateUserInterests Error: ", err);
-      throw err;
-    } finally {
-      connection.release();
-    }
-  }
-
-  // K. update user bio
-  async updateUserBio(userId, bio) {
-    try {
-      await pool.query(`UPDATE users SET bio = ? WHERE userId = ?`, [bio, userId]);
-    } catch (err) {
-      console.error("updateUserBio Error: ", err);
       throw err;
     }
   }
@@ -251,7 +203,7 @@ class usersModel {
          JOIN eventattended ea ON p.eventAttendId = ea.eventAttendId
          JOIN events e ON ea.eventId = e.eventId
          JOIN users u ON p.userId = u.userId
-         WHERE u.userName = ? AND p.type = 1 
+         WHERE u.userName = ? AND p.type = 1
          AND p.eventAttendId IS NOT NULL AND p.isDeleted = 0
          ORDER BY ${orderBy}`,
         [userName],
@@ -262,6 +214,103 @@ class usersModel {
       throw err;
     }
   }
+
+  //I. edit user bio
+  async editUserBio(username, bioContent, updatedAt) {
+        let que;
+        try {
+            que = await pool.getConnection();
+
+            const [results] = await que.query(
+                `UPDATE users
+                SET bio = ?, updatedAt = ?
+                WHERE userName = ?
+                `,[bioContent, updatedAt, username]
+            );
+
+            if (results.affectedRows === 0) throw new Error('User-not-found');
+
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
+
+
+  // edit user interests
+  async editUserInterests(username, interests, updatedAt) {
+        let que;
+        try {
+            que = await pool.getConnection();
+
+            // delete all previous userid entries in userinterests table
+            await que.query(
+              `DELETE FROM userinterests
+              WHERE userid = ?`, [username]
+            );
+
+            // add the interests one by one
+            if (interests && interests.length > 0) {
+              const [validGenres] = await que.query(
+                `SELECT genreId FROM genres WHERE genreId IN (?)`,
+                [interests],
+              );
+
+            const validIds = validGenres.map((g) => g.genreId);
+            if (validIds.length > 0) {
+              const placeholders = validIds.map(() => '(?,?)').join(',');
+              const flatValues = validIds.flatMap((genreId) => [username, genreId]);
+              await que.query(
+                `INSERT INTO userinterests (userId, genreId) VALUES ${placeholders}`,
+                flatValues,
+              );
+            }
+            }
+
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
+
+    //J. get user interests
+    async getUserInterests(userId) {
+      try {
+        const [results] = await pool.query(
+        `SELECT g.genreId, g.name, g.eventTypeId
+          FROM userinterests ui
+          JOIN genres g ON ui.genreId = g.genreId
+          JOIN users u ON ui.userId = u.userId
+          WHERE u.userId = ?`,
+          [userId],
+        );
+      return results;
+      } catch (err) {
+        console.error("getUserInterests Error: ", err);
+        throw err;
+      }
+    }
+    //K. update avatar URL
+    async editUserAvatar(username, avatarUrl) {
+        let que;
+        try {
+            que = await pool.getConnection();
+            const [results] = await que.query(
+                `UPDATE users SET avatarUrl = ?, updatedAt = NOW() WHERE userName = ?`,
+                [avatarUrl, username]
+            );
+            if (results.affectedRows === 0) throw new Error('User-not-found');
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
 }
 
 module.exports = new usersModel();

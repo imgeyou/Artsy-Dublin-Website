@@ -1,11 +1,5 @@
 // this is where we handle all raw data relating to posts (including diary (event reviews) and comments)
 
-//**NOTE-CHANGES TO DATABASE STRUCTURE:
-// 1. three new columns added to the TABLE posts: likeCount, commentCount, eventAttendId (foreign key);
-// 2. one column deleted from eventAttended: postId
-// 3. three columns added to the event table: reviewCount, saveCount, attendCount
-// 4. one column added to the eventAttended table: isDleted
-
 const path = require('path');
 require('dotenv').config({path: path.join(__dirname, '..', '.env')});
 
@@ -26,15 +20,15 @@ class postsModel {
 
             const [results] = await que.query(`
                 SELECT posts.postId, posts.content, posts.createdAt, users.username,
-                       events.eventId, events.title, events.venue, events.startDateTime, events.posterUrl,
-                       eventAttended.rating,
-                       posts.likeCount, posts.commentCount
+                    events.eventId, events.title, events.venue, events.startDateTime, events.posterUrl,
+                    eventattended.rating,
+                    posts.likeCount, posts.commentCount
                 FROM posts
-                JOIN postType ON posts.type = postType.typeId
+                JOIN posttype ON posts.type = posttype.typeId
                 JOIN users ON posts.userId = users.userId
                 JOIN events ON posts.eventId = events.eventId
-                JOIN eventAttended ON posts.eventAttendId = eventAttended.eventAttendId
-                WHERE postType.typeName = 'post'
+                JOIN eventattended ON posts.eventAttendId = eventattended.eventAttendId
+                WHERE posttype.typeName = 'post'
                 AND posts.isDeleted = 0
                 AND posts.userId = COALESCE(?, posts.userId)
                 AND posts.eventId = COALESCE(?, posts.eventId)
@@ -57,19 +51,32 @@ class postsModel {
         let que;
         try{
             que = await pool.getConnection();
+            // removed camel naming and also removed duplicate eventId access
             const [result] = await que.query(`
                 SELECT posts.postId, posts.eventId, posts.content, posts.createdAt,
-                       users.username, events.eventId, events.title,
-                       eventAttended.rating, posts.likeCount, posts.commentCount
+                       users.username, users.userId, users.avatarUrl, events.title,
+                       eventattended.rating, posts.likeCount, posts.commentCount
                 FROM posts
-                JOIN postType ON posts.type = postType.typeId
+                JOIN posttype ON posts.type = posttype.typeId
                 JOIN users ON posts.userId = users.userId
                 JOIN events ON posts.eventId = events.eventId
-                JOIN eventAttended ON posts.eventAttendId = eventAttended.eventAttendId
-                WHERE posts.postId = ? AND postType.typeName = 'post' AND posts.isDeleted = 0
+                JOIN eventattended ON posts.eventAttendId = eventattended.eventAttendId
+                WHERE posts.postId = ? AND posttype.typeName = 'post' AND posts.isDeleted = 0
             `, [postid]);
 
-            if(!result[0]) throw new Error('Post-not-found');
+            //add err handling (post-not-found) -> post is deleted / post type is comment
+            if(!result[0]){
+                const [check] = await que.query(`
+                    SELECT posts.isDeleted, posttype.typeName
+                    FROM posts
+                    JOIN posttype ON posts.type = posttype.typeId
+                    WHERE posts.postId = ?
+                `, [postid]);
+                if(!check[0]) throw new Error('Post-not-found');
+                if(check[0].typeName !== 'post') throw new Error('Post-is-comment');
+                if(check[0].isDeleted) throw new Error('Post-is-deleted');
+                throw new Error('Post-not-found');
+            }
             const rootPostId = result[0].postId;
 
             //attach imageUrls to the "images" attribute of the post object
@@ -79,7 +86,7 @@ class postsModel {
             const [allComments] = await que.query(`
                 WITH RECURSIVE commentTree AS (
                 /* base case: get direct comments */
-                SELECT posts.postId, posts.postParentId, posts.content, posts.createdAt, users.userName, posts.likeCount, posts.commentCount
+                SELECT posts.postId, posts.postParentId, posts.content, posts.createdAt, users.userName, users.userId, users.avatarUrl, posts.likeCount, posts.commentCount
                 FROM posts
                 JOIN users ON posts.userId = users.userId
                 WHERE posts.postParentId = ? AND posts.isDeleted = 0
@@ -88,7 +95,7 @@ class postsModel {
 
                 /* Recursive case: then get nested comments */
                 SELECT p.postId, p.postParentId, p.content,
-                p.createdAt, u.userName, p.likeCount, p.commentCount
+                p.createdAt, u.userName, u.userId, u.avatarUrl, p.likeCount, p.commentCount
                 FROM posts p
                 JOIN users u ON p.userId = u.userId
                 JOIN commentTree ct ON p.postParentId = ct.postId
@@ -159,6 +166,85 @@ class postsModel {
             throw err;
         } finally {
             if(que) que.release();
+        }
+    }
+
+    //A4. check which posts in a given list the user has liked
+    async checkLikeStatus(postIds, userId){
+        let que;
+        try {
+            que = await pool.getConnection();
+            const [rows] = await que.query(
+                `SELECT postId FROM postlikes WHERE userId = ? AND postId IN (?)`,
+                [userId, postIds]
+            );//postIds should be like (1, 2, 3, 4)
+            return rows.map(r => r.postId);
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
+
+    //A5. check which events in a given list the user has saved
+    async checkSaveStatus(eventIds, userId){
+        let que;
+        try {
+            que = await pool.getConnection();
+            const [rows] = await que.query(
+                `SELECT eventId FROM eventsave WHERE userId = ? AND eventId IN (?)`,
+                [userId, eventIds]
+            );
+            return rows.map(r => r.eventId); //eventIds should be like (1, 2, 3, 4)
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
+
+    //A6. get all saved events for a user
+    async getSavedEventsByUser(userId){
+        let que;
+        try {
+            que = await pool.getConnection();
+            const [rows] = await que.query(
+                `SELECT events.eventId, events.title, events.venue, events.startDateTime, events.posterUrl, events.url
+                FROM eventsave
+                JOIN events ON eventsave.eventId = events.eventId
+                WHERE eventsave.userId = ?`,
+                [userId]
+            );
+            return rows;
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
+        }
+    }
+
+    //A7. get all attended events for a user
+    async getAttendedEventsByUser(userId){
+        let que;
+        try {
+            que = await pool.getConnection();
+            const [rows] = await que.query(
+                `SELECT eventattended.eventId, eventattended.attendedAt, eventattended.rating, events.title, events.venue, events.startDateTime, events.posterUrl, events.url
+                FROM eventattended
+                JOIN events ON eventattended.eventId = events.eventId
+                WHERE eventattended.userId = ?
+                AND isDeleted = 0`,
+                [userId]
+            );
+            return rows;
+        } catch (err) {
+            console.error("Query Error: " + err);
+            throw err;
+        } finally {
+            if (que) que.release();
         }
     }
 
@@ -336,6 +422,8 @@ class postsModel {
                     `,[likePostId]
                 );
 
+                return false; //unlike
+
             } else {
                 await que.query(
                     `INSERT INTO postLikes (postId, userId) VALUES (?, ?)`,
@@ -349,14 +437,9 @@ class postsModel {
                     WHERE postId = ?
                     `,[likePostId]
                 );
-            }
 
-            // fetch the updated count from DB (source of truth)
-            const [[{ likeCount }]] = await que.query(
-                `SELECT likeCount FROM posts WHERE postId = ?`,
-                [likePostId]
-            );
-            return { liked: !result.length, likeCount };
+                return true; //like
+            }
         } catch (err) {
             console.error("Query Error: " + err);
             throw err;
@@ -364,6 +447,61 @@ class postsModel {
             if (que) que.release();
         }
     }
+
+    //B5. save an event
+    async saveToggle(saveEventId, saveUserId){
+       let que;
+       try{
+           que = await pool.getConnection();
+           const [result] = await que.query(
+               `SELECT eventId
+               FROM eventsave
+               WHERE eventId = ?
+               AND userId = ?
+               `,[saveEventId, saveUserId]
+           );
+
+           if (result.length) {
+               await que.query(
+                   `DELETE FROM eventsave 
+                   WHERE eventId = ? 
+                   AND userId = ?
+                   `,[saveEventId, saveUserId]
+               );
+
+               //decrement saveCount in TABLE events
+               await que.query(
+                   `UPDATE events 
+                   SET saveCount = saveCount - 1, updatedAt = NOW() 
+                   WHERE eventId = ?
+                   `,[saveEventId]
+               );
+
+               return false; //unsave
+
+           } else {
+               await que.query(
+                   `INSERT INTO eventsave (eventId, userId) VALUES (?, ?)`,
+                   [saveEventId, saveUserId]
+               );
+
+               //increment likeCount in TABLE posts
+               await que.query(
+                   `UPDATE events 
+                   SET saveCount = saveCount + 1, updatedAt = NOW() 
+                   WHERE eventId = ?
+                   `,[saveEventId]
+               );
+
+               return true; //unsave
+           }
+       } catch (err) {
+           console.error("Query Error: " + err);
+           throw err;
+       } finally {
+           if (que) que.release();
+       }
+   }
 
 //C. patch methods
     //C1. update rating on an existing eventattended entry
@@ -514,7 +652,6 @@ class postsModel {
             if (!attendance[0]) throw new Error('record-not-found');
 
             const eventId = attendance[0].eventId;
-            const userId = attendance[0].userId;
 
             // soft-delete any posts linked to this attendance
             const [linkedPosts] = await que.query(

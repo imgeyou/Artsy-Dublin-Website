@@ -12,5 +12,7 @@ router.get("/csrf-token", authController.getCsrfToken);
 router.post("/sessionLogin", authController.sessionLogin);
 router.post("/sessionLogout", authController.sessionLogout);
 router.get("/check-auth", authController.checkAuth);
+router.get("/authenticate", authController.authenticate);
 
 module.exports = router;
+

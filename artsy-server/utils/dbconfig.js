@@ -2,9 +2,12 @@
 require("dotenv").config();
 
 module.exports = {
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  //***the naming now is different in events and users model, need to make them consistent
+  host: process.env.DBHOST,
+  port: process.env.DBPORT,
+  user: process.env.DBUSER,
+  password: process.env.DBPASS,
+  database: process.env.DBNAME,
+  ssl: {
+    rejectUnauthorized: true
+  }
 };

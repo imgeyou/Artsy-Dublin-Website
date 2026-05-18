@@ -1,3 +1,6 @@
+//not in use ----- upload avatar function move to imageController
+
+
 const multer = require("multer");
 const path = require("path");
 

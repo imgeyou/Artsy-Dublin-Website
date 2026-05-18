@@ -164,57 +164,60 @@ async function fetchLiveEventsAndPopulate(typeName) {
 async function getEventById(eventId) {
     const [results] = await pool.query(
         `
-        SELECT  
-            e.eventId, 
-            e.title, 
-            e.url, 
-            e.description, 
-            e.venue, 
-            e.startDateTime, 
-            e.posterUrl, 
-            z.eventTypeName, 
-            JSON_ARRAYAGG(g.name) AS genres 
-        FROM events e 
+        SELECT
+            e.eventId,
+            e.title,
+            e.url,
+            e.description,
+            e.venue,
+            e.startDateTime,
+            e.posterUrl,
+            e.reviewCount,
+            e.saveCount,
+            e.attendCount,
+            z.eventTypeName,
+            JSON_ARRAYAGG(g.name) AS genres
+        FROM events e
         LEFT JOIN eventtypes z
             ON 	e.eventTypeId = z.eventTypeId
-        LEFT JOIN eventtags t 
-            ON e.eventId = t.eventId 
-        LEFT JOIN genres g 
-            ON t.genreId = g.genreId 
-        WHERE e.eventId = ? 
-        GROUP BY 
-            e.eventId, e.title, e.url, e.description, 
-            e.venue, e.startDateTime, e.posterUrl, z.eventTypeName 
+        LEFT JOIN eventtags t
+            ON e.eventId = t.eventId
+        LEFT JOIN genres g
+            ON t.genreId = g.genreId
+        WHERE e.eventId = ?
+        GROUP BY
+            e.eventId, e.title, e.url, e.description,
+            e.venue, e.startDateTime, e.posterUrl, z.eventTypeName
         `, [eventId]
     );
 
-    return results[0] || null;
+    return results[0] ?? null;
 }
 
 // TODO: MERGE INTO ABOVE get event repeats
 async function getEventRepeatsById(eventId) {
     // get any repeats of the event
-    const [results] = (await pool.query(
+    const [results] = await pool.query(
         `SELECT r.date, e.venue
         FROM events e
         CROSS JOIN eventsrepeats r
             ON e.eventId = r.eventId
-        WHERE e.eventId = ? 
+        WHERE e.eventId = ?
         AND e.startDateTime != r.date`, [eventId]
         // last line is for repeat results from API
-    ));
+    );
 
     return results;
 }
 
 // get all events in the db by type
 async function getEventsByType(typeName) {
-    let id = await pool.query(
-        `SELECT eventTypeId FROM ${process.env.DB_NAME}.eventtypes
+    const [rows] = await pool.query(
+        `SELECT eventTypeId FROM eventtypes
 	    WHERE eventTypeName = ?`, typeName);
-    
-    if(id[0].length==0) return;
-    id = id[0][0].eventTypeId;
+
+    if (!rows[0]) return;
+    const id = rows[0].eventTypeId;
 
     const [results] = await pool.query(
         `SELECT * FROM events
@@ -224,34 +227,61 @@ async function getEventsByType(typeName) {
 
 // get all events in the db by genre
 async function getEventsByGenre(genreName) {
-    let id = await pool.query(
-        `SELECT genreId FROM ${process.env.DB_NAME}.genres
+    const [idRows] = await pool.query(
+        `SELECT genreId FROM genres
 	    WHERE name = ?`, genreName);
 
-    if(id[0].length==0) return null;
-    id = id[0][0].genreId;
+    if (idRows.length === 0) return null;
+    const id = idRows[0].genreId;
 
     const [results] = await pool.query(
-    `SELECT e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId 
+    `SELECT e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId
         FROM events e
         INNER JOIN eventtags t
             ON e.eventId = t.eventId
-        LEFT JOIN genres g 
+        LEFT JOIN genres g
             ON t.genreId = g.genreId
             WHERE g.genreId = ?
-        GROUP BY 
+        GROUP BY
             e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId, g.genreId`, id);
     return results;
 }
 
+async function getEventsByGenreId(genreId) {
+    const [results] = await pool.query(
+    `SELECT e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId
+        FROM events e
+        INNER JOIN eventtags t
+            ON e.eventId = t.eventId
+        LEFT JOIN genres g
+            ON t.genreId = g.genreId
+            WHERE g.genreId = ?
+        GROUP BY
+            e.eventId, e.title, e.url, e.posterUrl, e.venue, e.startDateTime, e.eventTypeId, g.genreId`, genreId);
+    return results;
+}
 
-// helper function to check if an event already exists in the db via its title
+async function getPersonalizedEvents(userid) {
+    const [userGenres] = await pool.query(
+        `SELECT genreId FROM userinterests
+        WHERE userId = ?`, userid);
+
+    let userEvents = await Promise.all(
+        userGenres.map((id) => getEventsByGenreId(id.genreId))
+    );
+
+    let flatEvents = userEvents.flat();
+    return flatEvents;
+}
+
+
+// // helper function to check if an event already exists in the db via its title
 async function getEventByTitle(title) {
     const [results] = await pool.query(
         `SELECT * FROM events WHERE title = ?`,
         [title]
     );
-    return results[0] || null;
+    return results[0] ?? null;
 }
 
 module.exports = {
@@ -261,5 +291,6 @@ module.exports = {
     getEventById,
     getEventRepeatsById,
     getEventsByType,
-    getEventsByGenre
+    getEventsByGenre,
+    getPersonalizedEvents
 };

@@ -32,32 +32,35 @@ class MessagesModel {
   // 2. Each row includes the other user's info, last message preview, unread count
   async getConversationsForUser(userId) {
    try {
-     const [rows] = await pool.query(
-       `SELECT
-           c.conversationId,
-           c.lastMessageAt,
-           IF(c.userAId = ?, c.userBId, c.userAId) AS otherUserId,
-           u.userName  AS otherUserName,
-           u.avatarUrl  AS otherUserAvatar,
-           (SELECT content
-             FROM messages
-             WHERE conversationId = c.conversationId
-             ORDER BY createdAt DESC
-             LIMIT 1)  AS lastMessage,
-           (SELECT COUNT(*)
-              FROM messages
-             WHERE conversationId = c.conversationId
-               AND senderId != ?
-               AND isRead = 0) AS unreadCount
-         FROM conversations  c
-         JOIN users u ON u.userId = IF(c.userAId = ?, c.userBId, c.userAId)
-         WHERE c.userAId = ? OR c.userBId = ?
-         ORDER BY c.lastMessageAt DESC`,
-       [userId, userId, userId, userId, userId],
-      );
+    const [rows] = await pool.query(
+      `SELECT
+          c.conversationId,
+          UNIX_TIMESTAMP(c.lastMessageAt) * 1000 AS lastMessageAt,
+          IF(c.userAId = ?, c.userBId, c.userAId) AS otherUserId,
+          u.userName AS otherUserName,
+          u.avatarUrl AS otherUserAvatar,
+          (SELECT content
+            FROM messages
+            WHERE conversationId = c.conversationId
+            ORDER BY createdAt DESC
+            LIMIT ?) AS lastMessage,
+          (SELECT CAST(COUNT(*) AS SIGNED)
+            FROM messages
+            WHERE conversationId = c.conversationId
+              AND senderId != ?
+              AND isRead = 0) AS unreadCount
+        FROM conversations c
+        JOIN users u ON u.userId = IF(c.userAId = ?, c.userBId, c.userAId)
+        WHERE c.userAId = ? OR c.userBId = ?
+        ORDER BY c.lastMessageAt DESC`,
+      [userId, 1, userId, userId, userId, userId],
+    );
 
-     return rows;
-    } catch (err){
+     return rows.map(r => ({
+       ...r,
+       lastMessageAt: r.lastMessageAt ? new Date(Number(r.lastMessageAt)).toISOString() : null,
+     }));
+    } catch (err) {
      console.error("getConversationsForUser Error:",  err);
      throw err;
     }
@@ -69,8 +72,9 @@ class MessagesModel {
      const allowed =await this.isParticipant(conversationId, requestingUserId);
      if (!allowed) return null;
 
-     const [messages]= await pool.query(
-       `SELECT m.messageId, m.senderId, m.content, m.isRead, m.createdAt,
+     const [messages] = await pool.query(
+       `SELECT m.messageId, m.senderId, m.content, m.isRead,
+           UNIX_TIMESTAMP(m.createdAt) * 1000 AS createdAt,
            u.userName AS senderName, u.avatarUrl AS senderAvatar
            FROM messages m
            JOIN users u ON u.userId = m.senderId
@@ -78,7 +82,10 @@ class MessagesModel {
          ORDER BY m.createdAt ASC`,
        [conversationId] ,
      );
-     return messages;
+     return messages.map(m => ({
+       ...m,
+       createdAt: new Date(Number(m.createdAt)).toISOString(),
+     }));
     } catch (err){
      console.error("getMessagesByConversation Error:", err);
      throw err;
@@ -168,7 +175,7 @@ class MessagesModel {
   // 8. Return userAId and userBId so the socket handler knows who to notify
   async getConversationParticipants(conversationId) {
    try {
-     const [rows]= await pool.query(
+     const [rows] = await pool.query(
        `SELECT userAId, userBId FROM conversations WHERE conversationId = ?`,
        [conversationId],
       );
@@ -180,7 +187,5 @@ class MessagesModel {
   }
 
 }
-
-
 
 module.exports = new MessagesModel();

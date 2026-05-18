@@ -8,11 +8,12 @@ const controller = require("../controllers/eventsController");
 router.get("/", controller.get);
 router.get("/:typename", controller.getEventsByType); // typenames: "Arts-&-Theater", "Music", "Film-Showing"
 router.get("/genre/:genrename", controller.getEventsByGenre); // genrenames, e.g.: "Alternative-Rock", "Theatre", "Adventure"
+router.get("/personalizedEvents/:userid", controller.getPersonalizedEvents)
 
-// UPDATE EVENTS
+// // UPDATE EVENTS
 router.get("/update/:typename", controller.updateByType); // typenames: "Arts-&-Theater", "Music" (ticketmaster) "Film-Showing" (tmdb)
 
-// GET SINGLE EVENT DATA
+// // GET SINGLE EVENT DATA
 router.get("/event/:eventid", controller.getEventById);
 
 module.exports = router;
