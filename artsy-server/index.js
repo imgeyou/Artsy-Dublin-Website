@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const path = require("path");
 const fileUpload = require('express-fileupload');
 const registerSocketHandlers = require('./sockets/messaging');
+const mysql = require('mysql2');
 
 const app = express();
 const server = http.createServer(app); // for socket
@@ -85,7 +86,7 @@ registerSocketHandlers(io);
 
 // Start the server
 server.listen(port, "0.0.0.0", () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+  console.log(`Server running on port ${port}`);
 });
 
 // test db connection
