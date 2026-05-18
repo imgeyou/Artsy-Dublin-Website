@@ -1,6 +1,5 @@
 //This is the configure file for setting up database connection
 require("dotenv").config();
-const fs = require("fs");
 
 module.exports = {
   host: process.env.DBHOST,
@@ -11,6 +10,5 @@ module.exports = {
   ssl: {
     minVersion: 'TLSv1.2',
     rejectUnauthorized: true,
-    ca: fs.readFileSync(process.env.CA)
   }
 };
