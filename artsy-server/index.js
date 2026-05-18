@@ -12,7 +12,7 @@ const registerSocketHandlers = require('./sockets/messaging');
 const app = express();
 const server = http.createServer(app); // for socket
 // Use PORT provided in environment or default to 3000
-const port = process.env.RAILWAY_PUBLIC_DOMAIN || 3000;
+const port = process.env.PORT || 3000;
 
 // Use Morgan for logging HTTP requests
 app.use(morgan('dev'));
