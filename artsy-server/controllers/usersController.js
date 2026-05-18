@@ -13,7 +13,7 @@
 
 const usersModel = require("../models/users.js");
 const { admin } = require("../utils/firebaseAdmin.js");
-const { processUploadedImages } = require("./imagesController");
+const { uploadAvatar } = require("../utils/imageUpload");
 
 class userController {
   //A. create a new user/register
@@ -32,7 +32,7 @@ class userController {
       const authEmail = decoded.email;
 
       //get avatar url
-      let avatarUrl = await processUploadedImages(req.files);
+      const avatarUrl = [await uploadAvatar(req.files)];
       // if (req.files && req.files.avatar) {
       //   const path = require('path');
       //   const fs = require('fs');
@@ -205,11 +205,10 @@ class userController {
       if (!req.files || !req.files.images) {
         return res.status(400).json({ error: 'No avatar file provided' });
       }
-      const avatarUrl = await processUploadedImages({ images: req.files.images });
-      if (!avatarUrl.length) return res.status(400).json({ error: 'Image processing failed' });
-      const fullAvatarUrl = `https://2526-cs7025-group2.scss.tcd.ie/${avatarUrl[0]}`;
-      await usersModel.editUserAvatar(req.user.userName, fullAvatarUrl);
-      res.json({ message: 'Avatar updated', fullAvatarUrl });
+      const url = await uploadAvatar(req.files);
+      if (!url) return res.status(400).json({ error: 'No avatar file provided' });
+      await usersModel.editUserAvatar(req.user.userName, url);
+      res.json({ message: 'Avatar updated', avatarUrl: url });
     } catch (err) {
       if (err.message === 'User-not-found') {
         return res.status(404).json({ error: 'User not found' });
