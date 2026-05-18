@@ -87,7 +87,7 @@ async function fetchLiveEventsAndPopulate(typeName) {
     
     // converting from type name to id for easier frontend access
     let eventTypeId = await pool.query(
-        `SELECT eventTypeId FROM ${process.env.DB_NAME}.eventtypes
+        `SELECT eventTypeId FROM ${process.env.DBNAME}.eventtypes
 	    WHERE eventTypeName = ?`, typeName);
     
     if (eventTypeId[0][0])
