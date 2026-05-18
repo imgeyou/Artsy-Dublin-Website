@@ -10,3 +10,10 @@
 - Available @https://artsy-dublin.vercel.app/
 - Fetches data from Ticketmaster and TMDB APIs for art-based events in Dublin and films showing in Irish theaters, respectively
 - Users can create accounts with their interests, get personalized event suggestions, and connect with other users to attend events together!
+
+
+- frontend deployed on: https://vercel.com/
+- backend deployed on: https://railway.com/
+- database on: https://tidbcloud.com/
+- image upload using: https://console.cloudinary.com/
+- authentification: https://firebase.google.com/
