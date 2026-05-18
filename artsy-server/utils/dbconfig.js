@@ -2,11 +2,11 @@
 require("dotenv").config();
 
 module.exports = {
-  host: DBHOST,
-  port: DBPORT,
-  user: DBUSER,
-  password: DBPASS,
-  database: DBNAME,
+  host: process.env.DBHOST,
+  port: process.env.DBPORT,
+  user: process.env.DBUSER,
+  password: process.env.DBPASS,
+  database: process.env.DBNAME,
   ssl: {
     minVersion: 'TLSv1.2',
     rejectUnauthorized: true,
