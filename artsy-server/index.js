@@ -88,3 +88,51 @@ server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
+// test db connection
+app.get('/test-db', async (req, res) => {
+  try {
+    const connection = mysql.createConnection({
+      host: process.env.DBHOST,
+      port: process.env.DBPORT,
+      user: process.env.DBUSER,
+      password: process.env.DBPASS,
+      database: process.env.DBNAME,
+      ssl: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true
+      }
+    });
+
+    connection.connect((err) => {
+      if (err) {
+        console.error('Database connection failed:', err);
+        return res.status(500).json({ 
+          success: false, 
+          error: err.message 
+        });
+      }
+      
+      connection.query('SELECT 1 + 1 AS result', (error, results) => {
+        connection.end();
+        
+        if (error) {
+          return res.status(500).json({ 
+            success: false, 
+            error: error.message 
+          });
+        }
+        
+        res.json({ 
+          success: true, 
+          message: 'Database connected successfully!',
+          result: results[0].result
+        });
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
